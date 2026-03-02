@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% set active_tab = "drafting" %}
+{% block title %}Drafting Workspace — Seamless{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Drafting Workspace</h2>
+  <p class="description">Write with real-time enforcement. Select a context, see violations as you type.</p>
+</div>
+
+<div x-data="draftingWorkspace()" x-init="init()">
+  <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+      <label for="draft-voice">Context / Voice</label>
+      <select id="draft-voice" x-model="voiceId" @change="onVoiceChange()">
+        <option value="">Select a context...</option>
+        {% for voice in voices %}
+          <option value="{{ voice.voice_id }}">{{ voice.label }} (em dash: {{ voice.em_dash_mode }})</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <template x-if="contextInfo">
+    <div class="context-info">
+      <div class="info-item">
+        <span class="info-label">Name:</span>
+        <span class="info-value" x-text="contextInfo.name || '(none)'"></span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Email:</span>
+        <span class="info-value" x-text="contextInfo.email || '(none)'"></span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Em dash:</span>
+        <span class="info-value" x-text="contextInfo.em_dash_mode"></span>
+      </div>
+    </div>
+  </template>
+
+  <div class="drafting-layout">
+    <div class="drafting-editor">
+      <textarea
+        x-model="text"
+        @input.debounce.500ms="checkRealtime()"
+        placeholder="Start writing..."
+        style="min-height: 400px;"
+      ></textarea>
+
+      <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+        <button class="btn btn-primary" @click="fullAnalysis()">
+          Full Analysis
+        </button>
+        <button class="btn btn-ghost" @click="copyClean()">
+          Copy Text
+        </button>
+        <span x-show="checking" style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+          <span class="spinner"></span> Checking...
+        </span>
+        <span x-show="wordCount > 0" style="display: flex; align-items: center; color: var(--text-dim); font-size: 0.8rem; margin-left: auto;">
+          <span x-text="wordCount"></span> words
+        </span>
+      </div>
+    </div>
+
+    <div class="drafting-sidebar">
+      <h3>Violations <span x-show="violations.length > 0" style="color: var(--red);" x-text="'(' + violations.length + ')'"></span></h3>
+
+      <template x-if="violations.length === 0 && text.length > 0">
+        <div style="color: var(--green); font-size: 0.85rem;">Clean so far.</div>
+      </template>
+
+      <template x-if="violations.length === 0 && text.length === 0">
+        <div style="color: var(--text-dim); font-size: 0.85rem;">Start typing to see real-time checks.</div>
+      </template>
+
+      <template x-for="(v, i) in violations" :key="i">
+        <div class="violation" :class="'severity-' + v.severity" style="margin-bottom: 0.5rem;">
+          <div class="violation-header">
+            <span class="violation-label" x-text="v.label"></span>
+            <span class="violation-severity" :class="v.severity" x-text="v.severity"></span>
+          </div>
+          <div class="violation-description" x-text="v.description"></div>
+          <template x-if="v.matched_text">
+            <div class="violation-match" x-text="v.matched_text"></div>
+          </template>
+          <template x-if="v.suggestion">
+            <div class="violation-suggestion" x-text="v.suggestion"></div>
+          </template>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function draftingWorkspace() {
+  return {
+    voiceId: '',
+    text: '',
+    violations: [],
+    checking: false,
+    contextInfo: null,
+    wordCount: 0,
+
+    voiceProfiles: {{ voices | tojson }},
+
+    init() {},
+
+    onVoiceChange() {
+      const profile = this.voiceProfiles.find(p => p.voice_id === this.voiceId);
+      if (profile) {
+        this.contextInfo = {
+          name: profile.label,
+          email: '',
+          em_dash_mode: profile.em_dash_mode
+        };
+      } else {
+        this.contextInfo = null;
+      }
+      if (this.text.trim()) {
+        this.checkRealtime();
+      }
+    },
+
+    async checkRealtime() {
+      if (!this.text.trim()) {
+        this.violations = [];
+        this.wordCount = 0;
+        return;
+      }
+      this.wordCount = this.text.trim().split(/\s+/).length;
+      this.checking = true;
+
+      const formData = new FormData();
+      formData.append('text', this.text);
+      formData.append('voice_id', this.voiceId);
+
+      try {
+        const resp = await fetch('/brand/api/check-realtime', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+        this.violations = data.violations || [];
+      } catch (e) {
+        console.error('Check failed:', e);
+      } finally {
+        this.checking = false;
+      }
+    },
+
+    async fullAnalysis() {
+      if (!this.text.trim()) return;
+      this.checking = true;
+
+      const formData = new FormData();
+      formData.append('text', this.text);
+      formData.append('voice_id', this.voiceId);
+
+      try {
+        const resp = await fetch('/brand/checker/analyze', {
+          method: 'POST',
+          headers: { 'HX-Request': 'false' },
+          body: formData
+        });
+        // Redirect to full checker with results
+        const html = await resp.text();
+        // For full analysis, use the checker page
+        window.location.href = `/brand/checker?voice_id=${this.voiceId}`;
+      } catch (e) {
+        console.error('Full analysis failed:', e);
+      } finally {
+        this.checking = false;
+      }
+    },
+
+    copyClean() {
+      navigator.clipboard.writeText(this.text).then(() => {
+        const indicator = document.getElementById('save-indicator');
+        indicator.textContent = 'Copied';
+        indicator.classList.add('visible');
+        setTimeout(() => indicator.classList.remove('visible'), 2000);
+      });
+    }
+  };
+}
+</script>
+{% endblock %}

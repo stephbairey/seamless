@@ -1,0 +1,203 @@
+# identity-routing.yaml
+# Extracted from: knowledge/identities.md, domain-plans/brand-codification.md, data/client-registry.yaml
+# Purpose: Context → name/title/email/voice routing table for all outbound communications
+
+routing_rules:
+  name_axis: "Steph = business/operations, Maya = creative/author"
+  domain_axis: "Domain indicates organizational context"
+  reply_behavior: "Auto-send from whichever address received inbound message"
+  relationship_override: "If a contact knows Maya by a particular name, that name sticks even if the conversation crosses domain boundaries"
+  multi_context: "When speaking across context boundaries, voice follows the speaker, not the subject"
+
+contexts:
+  - context_id: lim-client
+    label: "LIM client work"
+    tags: ["lim", "linguainkmedia", "consulting", "web dev", "proposals", "client work"]
+    name: "Steph Bairey"
+    title: "Principal"
+    email: steph@linguainkmedia.com
+    voice_id: lim
+    notes: null
+
+  - context_id: lib-publishing
+    label: "LIB publishing / blog (public)"
+    tags: ["lib", "linguaink", "publishing", "blog", "lib-public", "creative director"]
+    name: "Maya Bairey"
+    title: "Creative Director"
+    email: maya@linguaink.com
+    voice_id: lib
+    notes: null
+
+  - context_id: lib-author-correspondence
+    label: "LIB author correspondence"
+    tags: ["lib", "author correspondence", "illustrator", "creative work"]
+    name: "Maya Bairey"
+    title: "Creative Director"
+    email: maya@linguaink.com
+    voice_id: lib
+    notes: null
+
+  - context_id: lib-business
+    label: "LIB business / publishing clients"
+    tags: ["lib", "lib-business", "contracts", "invoicing", "publishing clients", "founder"]
+    name: "Steph Bairey"
+    title: "Founder"
+    email: steph@linguaink.com
+    voice_id: lib
+    notes: null
+
+  - context_id: author-personal
+    label: "Author / personal brand"
+    tags: ["author", "bairey.com", "personal brand", "maya bairey author", "painting celia", "sailors code"]
+    name: "Maya Bairey"
+    title: "Author"
+    email: maya@bairey.com
+    voice_id: maya-personal
+    notes: null
+
+  - context_id: writing-with-maya
+    label: "Writing with Maya"
+    tags: ["writing with maya", "wwm", "craft lessons", "writing cohort", "content channel"]
+    name: "Maya Bairey"
+    title: null
+    email: maya@bairey.com
+    voice_id: writing-with-maya
+    notes: "Sign-off is sacred: 'I'm Maya. Keep writing.' — never vary"
+
+  - context_id: job-search
+    label: "Job search / LinkedIn"
+    tags: ["job search", "linkedin", "resume", "cover letter", "applications", "director of content strategy"]
+    name: "Steph Bairey"
+    title: "Director of Content Strategy"
+    email: steph@bairey.com
+    voice_id: job-search
+    notes: "Contact phone: 503-562-9700. LinkedIn: linkedin.com/in/stephbairey"
+
+  - context_id: arc-tda-governance
+    label: "ARC/TDA governance (association)"
+    tags: ["arc", "tda", "tomahawk destiny", "governance", "board", "association", "arc chair"]
+    name: "Steph Bairey"
+    title: "ARC Chair"
+    email: steph.bairey.arc@tomahawkdestiny.com
+    voice_id: arc-tda
+    notes: "Personal ARC committee correspondence"
+
+  - context_id: arc-tda-committee
+    label: "ARC/TDA governance (committee)"
+    tags: ["arc committee", "arc distribution", "arc official"]
+    name: null
+    title: null
+    email: arc@tomahawkdestiny.com
+    voice_id: arc-tda
+    notes: "Generic ARC distribution — no personal name"
+
+  - context_id: tda-website
+    label: "TDA website operations"
+    tags: ["tda website", "webmaster", "tomahawkdestiny.com"]
+    name: "Steph Bairey"
+    title: "Principal"
+    email: steph@linguainkmedia.com
+    voice_id: lim
+    notes: "TDA website work is contracted through LIM, not association work"
+
+  - context_id: tda-webmaster
+    label: "TDA webmaster"
+    tags: ["tda webmaster"]
+    name: null
+    title: null
+    email: webmaster@tomahawkdestiny.com
+    voice_id: lim
+    notes: "Operational webmaster address"
+
+  - context_id: prg
+    label: "PRG / Raging Grannies"
+    tags: ["prg", "raging grannies", "portland raging grannies", "tech granny"]
+    name: "Steph Bairey"
+    title: "Tech granny"
+    email: stephbairey@gmail.com
+    voice_id: prg
+    notes: "Grannies know her as Steph, not Maya"
+
+  - context_id: prg-newsletter
+    label: "PRG newsletter submissions"
+    tags: ["prg newsletter", "granny newsletter", "newsletter submissions"]
+    name: null
+    title: null
+    email: grannynewsletter@gmail.com
+    voice_id: prg
+    notes: "Newsletter submission/send address"
+
+  - context_id: prg-official
+    label: "PRG official / external"
+    tags: ["prg official", "prg external"]
+    name: null
+    title: null
+    email: pdxraginggrannies@gmail.com
+    voice_id: prg
+    notes: "Official PRG external-facing address"
+
+  - context_id: irg
+    label: "IRG (International Raging Grannies)"
+    tags: ["irg", "international raging grannies", "raginggrannies.org", "web granny"]
+    name: "Steph Bairey"
+    title: "Web Granny"
+    email: webgranny@gmail.com
+    voice_id: prg
+    notes: null
+
+  - context_id: personal-default
+    label: "Personal / default hub"
+    tags: ["personal", "default", "hub"]
+    name: "Steph Bairey"
+    title: null
+    email: stephbairey@gmail.com
+    voice_id: null
+    notes: "Hub account — all forwards land here"
+
+  - context_id: creative-personal
+    label: "Creative personal"
+    tags: ["creative personal", "google login"]
+    name: "Maya Bairey"
+    title: null
+    email: mjbairey@gmail.com
+    voice_id: maya-personal
+    notes: "Creative personal / community, Google-login contexts"
+
+  - context_id: nicole-dalton
+    label: "Nicole Dalton SEO content"
+    tags: ["nicole dalton", "dalton law", "ghost writing", "seo content"]
+    name: "Nicole Dalton"
+    title: null
+    email: null
+    voice_id: nicole-dalton
+    notes: "Ghost-writing: complete identity suppression. Maya does not exist in this context."
+
+# Client-specific overrides (relationship-based name sticking)
+client_overrides:
+  - client: "Sulima Malzin"
+    known_as: "Maya"
+    reason: "Author relationship, knows her as Maya"
+
+  - client: "Lynn Haller"
+    known_as: "Maya"
+    reason: "Author + former romantic partner, knows her as Maya"
+
+  - client: "Carolyn Martin"
+    known_as: "Maya"
+    reason: "Author relationship"
+
+  - client: "Daniela Morescalchi"
+    known_as: "Maya"
+    reason: "Author relationship, ex-Intel colleague"
+
+  - client: "Devon Ervin"
+    known_as: "Steph"
+    reason: "LIM consulting client"
+
+  - client: "Nicole Dalton"
+    known_as: null
+    reason: "Ghost-writing — Maya's identity fully suppressed"
+
+  - client: "Pat Schoof"
+    known_as: "Steph"
+    reason: "LIB business prospect"

@@ -1,0 +1,216 @@
+# ai-tells.yaml
+# Extracted from: knowledge/identities.md, domain-plans/brand-codification.md, knowledge/policies.md
+# Purpose: Banned vocabulary and pattern definitions for AI tells detection
+# Enforcement: Strictly applied universally. No sensitivity variation by context.
+
+enforcement:
+  mode: warning  # Flag violations, Maya decides. Never auto-fix.
+  sensitivity: strict  # No variation by context
+  layers:
+    - system_prompt  # Include blacklist in every content-generation prompt
+    - post_generation  # Regex/pattern matching on output text
+
+banned_vocabulary:
+  - word: "delve"
+    pattern: "\\bdelve[sd]?\\b"
+    severity: high
+    suggestion: "explore, examine, dig into, look at"
+
+  - word: "tapestry"
+    pattern: "\\btapestr(?:y|ies)\\b"
+    severity: high
+    suggestion: "mix, blend, range, collection"
+
+  - word: "multifaceted"
+    pattern: "\\bmultifaceted\\b"
+    severity: high
+    suggestion: "complex, varied, layered"
+
+  - word: "vibrant"
+    pattern: "\\bvibrant\\b"
+    severity: high
+    suggestion: "lively, energetic, active"
+
+  - word: "bustling"
+    pattern: "\\bbustling\\b"
+    severity: high
+    suggestion: "busy, active, crowded"
+
+  - word: "pivotal"
+    pattern: "\\bpivotal\\b"
+    severity: high
+    suggestion: "key, critical, turning point"
+
+  - word: "groundbreaking"
+    pattern: "\\bgroundbreaking\\b"
+    severity: high
+    suggestion: "new, original, first"
+
+  - word: "underscore"
+    pattern: "\\bunderscore[sd]?\\b"
+    severity: medium
+    notes: "Only flagged as verb for inanimate subjects. Flag all, let Maya dismiss valid uses."
+    suggestion: "shows, reveals, points to, makes clear"
+
+  - word: "highlight"
+    pattern: "\\bhighlight(?:s|ed|ing)?\\b"
+    severity: medium
+    notes: "Only flagged as verb for inanimate subjects. Flag all, let Maya dismiss valid uses."
+    suggestion: "shows, reveals, points to, makes clear"
+
+  - word: "foster"
+    pattern: "\\bfoster(?:s|ed|ing)?\\b"
+    severity: high
+    suggestion: "build, grow, encourage, support"
+
+  - word: "cultivate"
+    pattern: "\\bcultivat(?:e[sd]?|ing)\\b"
+    severity: high
+    suggestion: "build, develop, grow"
+
+  - word: "leverage"
+    pattern: "\\bleverag(?:e[sd]?|ing)\\b"
+    severity: high
+    suggestion: "use, apply, build on"
+
+  - word: "furthermore"
+    pattern: "\\bfurthermore\\b"
+    severity: high
+    suggestion: "also, and, plus"
+
+  - word: "moreover"
+    pattern: "\\bmoreover\\b"
+    severity: high
+    suggestion: "also, and, plus"
+
+  - word: "in essence"
+    pattern: "\\bin essence\\b"
+    severity: high
+    suggestion: "basically, really, at its core"
+
+  - word: "it's important to note"
+    pattern: "\\bit(?:'s| is) important to note\\b"
+    severity: high
+    suggestion: "Remove entirely — just state the thing"
+
+  - word: "rich cultural heritage"
+    pattern: "\\brich cultural heritage\\b"
+    severity: high
+    suggestion: "Rewrite with specifics"
+
+  - word: "enduring legacy"
+    pattern: "\\benduring legacy\\b"
+    severity: high
+    suggestion: "Rewrite with specifics"
+
+banned_patterns:
+  - pattern_id: negative-parallelism
+    label: "Negative parallelism"
+    description: "'It's not X, it's Y' construction"
+    detection_type: regex
+    pattern: "\\b[Ii]t(?:'s| is|'s) not (?:just |merely |only |simply )?\\w+[^.]*?,\\s*(?:it(?:'s| is|'s)|but)\\b"
+    severity: high
+    suggestion: "State the positive directly without the negative setup"
+
+  - pattern_id: tailing-ing
+    label: "Tailing -ing clauses"
+    description: "Sentences ending with participial phrases"
+    detection_type: regex
+    pattern: ",\\s+\\w+ing\\s+[^.]*\\.$"
+    severity: low
+    notes: "Accept false positives, mark low-confidence. Common in natural writing too."
+    suggestion: "Consider restructuring to avoid the trailing participial phrase"
+
+  - pattern_id: uniform-paragraph-length
+    label: "Uniform paragraph length"
+    description: "All paragraphs within 20% word count of each other"
+    detection_type: structural
+    threshold: 0.20  # Word count spread < 20% of mean
+    severity: medium
+    suggestion: "Vary paragraph lengths for more natural rhythm"
+
+  - pattern_id: uniform-sentence-rhythm
+    label: "Uniform sentence rhythm"
+    description: "Sentences too similar in length throughout"
+    detection_type: structural
+    threshold: 3  # Sentence length std dev < 3 words
+    severity: medium
+    suggestion: "Mix short and long sentences for more natural rhythm"
+
+  - pattern_id: anaphora
+    label: "Anaphora"
+    description: "3+ consecutive sentences starting with same word"
+    detection_type: structural
+    min_consecutive: 3
+    severity: medium
+    suggestion: "Vary sentence openings"
+
+  - pattern_id: staccato-parallels
+    label: "Staccato parallel structures"
+    description: "Series of short, punchy, identically structured sentences"
+    detection_type: regex
+    pattern: "(?:^|\\n)([A-Z]\\w{0,5}\\s\\w+\\.\\s*){3,}"
+    severity: medium
+    suggestion: "Vary sentence structure and length"
+
+  - pattern_id: promotional-enthusiasm
+    label: "Promotional enthusiasm"
+    description: "Excessive exclamation marks and superlative clustering"
+    detection_type: heuristic
+    exclamation_threshold: 2  # per 500 words
+    superlative_words: ["amazing", "incredible", "extraordinary", "revolutionary", "transformative", "game-changing", "unparalleled", "unprecedented"]
+    severity: medium
+    suggestion: "Tone down promotional language. Let the work speak for itself."
+
+  - pattern_id: importance-inflation
+    label: "Importance inflation"
+    description: "Overuse of intensifiers and importance markers"
+    detection_type: regex
+    pattern: "\\b(?:incredibly|remarkably|truly|absolutely|fundamentally|profoundly|deeply)\\s+(?:important|significant|meaningful|valuable|essential|critical|crucial)\\b"
+    severity: medium
+    suggestion: "Remove the intensifier or use specifics instead"
+
+  - pattern_id: emotional-hollowness
+    label: "Emotional hollowness"
+    description: "Generic praise phrases that say nothing specific"
+    detection_type: heuristic
+    phrases:
+      - "passionate about"
+      - "deeply committed to"
+      - "truly believes in"
+      - "making a difference"
+      - "changing lives"
+      - "world-class"
+      - "best-in-class"
+      - "thought leader"
+      - "at the end of the day"
+      - "moving the needle"
+    severity: medium
+    suggestion: "Replace with specific, concrete details"
+
+  - pattern_id: weasel-wording
+    label: "Weasel wording"
+    description: "Vague attribution and hedging"
+    detection_type: regex
+    pattern: "\\b(?:[Mm]any (?:people|experts|studies)|[Ii]t is (?:widely |generally )?(?:believed|known|accepted|thought)|[Ss]ome (?:say|argue|believe)|[Rr]esearch (?:shows|suggests|indicates))\\b"
+    severity: low
+    suggestion: "Attribute specifically or state directly"
+
+  - pattern_id: problem-solution-formula
+    label: "Problem-solution formula"
+    description: "Templated problem-agitate-solve structure"
+    detection_type: heuristic
+    keyword_proximity:
+      problem_words: ["struggle", "challenge", "problem", "pain point", "frustrated"]
+      solution_words: ["solution", "answer", "here's how", "that's where", "the good news"]
+      max_distance_sentences: 3
+    severity: low
+    suggestion: "Restructure to avoid the formulaic problem-then-solution pattern"
+
+  - pattern_id: false-ranges
+    label: "False ranges"
+    description: "Artificially broad ranges that sound comprehensive but say nothing"
+    detection_type: regex
+    pattern: "\\bfrom\\s+\\w+\\s+to\\s+\\w+(?:\\s+and\\s+(?:everything|anything)\\s+in\\s+between)?\\b"
+    severity: low
+    suggestion: "Be specific about what's actually included"

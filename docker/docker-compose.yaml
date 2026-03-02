@@ -1,0 +1,14 @@
+services:
+  seamless-dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: seamless-dashboard
+    ports:
+      - "8420:8420"
+    volumes:
+      - ../data:/app/data
+      - ../app:/app/app
+    environment:
+      - PYTHONDONTWRITEBYTECODE=1
+    restart: unless-stopped

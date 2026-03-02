@@ -1,0 +1,71 @@
+# em-dash-rules.yaml
+# Extracted from: knowledge/identities.md, domain-plans/brand-codification.md, knowledge/policies.md
+# Purpose: Em dash enforcement rules by context
+# "The single most enforced mechanical rule"
+
+enforcement:
+  mode: warning  # Flag violations, Maya decides. Never auto-fix, never hard block.
+
+# Detection patterns for em dashes
+detection:
+  em_dash_chars:
+    - "\u2014"      # — (em dash, U+2014)
+    - "\u2015"      # ― (horizontal bar, U+2015, sometimes used as em dash)
+  double_hyphen: "--"  # Common substitute, also flagged
+  patterns:
+    any_em_dash: "[\u2014\u2015]|--"
+    # For restricted mode: valid mid-sentence parenthetical use
+    valid_parenthetical: "\\w+\\s[\u2014\u2015]\\s\\w+.*\\w+\\s[\u2014\u2015]\\s\\w+"
+    # Invalid: em dash extending a thought at end of sentence
+    invalid_trailing: "[\u2014\u2015]\\s*[^\\s].*[.!?]\\s*$"
+    # Invalid: em dash at very end before period
+    invalid_terminal: "[\u2014\u2015]\\s*[.!?]?\\s*$"
+
+modes:
+  restricted:
+    label: "Restricted"
+    rule: "Permitted ONLY as mid-sentence parentheticals. Never to extend a thought at end of sentence. Discouraged overall."
+    allowed: true
+    constraint: "parenthetical_only"
+    contexts:
+      - voice_id: maya-personal
+        label: "Maya Personal"
+      - voice_id: writing-with-maya
+        label: "Writing with Maya"
+      - voice_id: lib
+        label: "Lingua Ink Books (print)"
+        notes: "Print only — online copy uses banned mode"
+      - voice_id: lim
+        label: "Lingua Ink Media"
+      - voice_id: nicole-dalton
+        label: "Nicole Dalton SEO"
+
+  banned:
+    label: "Banned"
+    rule: "Zero em dashes. Remove all instances."
+    allowed: false
+    constraint: "none_allowed"
+    contexts:
+      - voice_id: prg
+        label: "PRG Newsletter"
+      - voice_id: job-search
+        label: "Job Search / LinkedIn"
+      - label: "LIB online copy"
+        notes: "Same voice_id as lib, but online context triggers banned mode"
+        context_tag: "lib-online"
+      - label: "Devon Ervin materials"
+        notes: "Client-specific ban"
+        client: "Devon Ervin"
+
+  na:
+    label: "N/A"
+    rule: "No personality markers at all. Em dashes would be out of character regardless."
+    allowed: false
+    constraint: "no_personality_markers"
+    contexts:
+      - voice_id: arc-tda
+        label: "ARC/TDA Governance"
+
+# Special case: same content may have different rules depending on publication target
+# Example: LIB blog post (online = banned) vs LIB print book (restricted)
+publication_context_matters: true

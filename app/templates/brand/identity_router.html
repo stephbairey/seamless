@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set active_tab = "identity" %}
+{% block title %}Identity Router — Seamless{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Identity Router</h2>
+  <p class="description">Look up the correct name, title, email, and voice for any context.</p>
+</div>
+
+<div class="card">
+  <form hx-post="/brand/identity/search" hx-target="#results" hx-indicator="#search-spinner">
+    <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label for="query">Search context</label>
+        <input type="search" id="query" name="query" value="{{ query }}"
+               placeholder="e.g. LIB blog, PRG, job search, Devon..."
+               autocomplete="off">
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-bottom: 0;">
+        Search <span class="htmx-indicator"><span class="spinner" id="search-spinner"></span></span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<div id="results">
+  {% include "brand/_identity_results.html" %}
+</div>
+{% endblock %}

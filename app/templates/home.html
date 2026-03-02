@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Seamless Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Seamless Dashboard</h2>
+  <p class="description">Brand codification, identity routing, and text quality tools.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+  <a href="/brand/identity" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Identity Router</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Look up the correct name, title, email, and voice for any context. Search by keyword, client, or domain.
+    </div>
+  </a>
+
+  <a href="/brand/checker" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Text Checker</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Paste text and check for AI tells, em dash violations, and structural patterns. Context-aware enforcement.
+    </div>
+  </a>
+
+  <a href="/brand/voices" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Voice Profiles</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      View and edit all 8 voice profiles. Register, rhythm, avoids, em dash mode, sign-offs.
+    </div>
+  </a>
+
+  <a href="/brand/tokens" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Brand Tokens</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Color palettes, typography, and imagery guidelines for each brand context.
+    </div>
+  </a>
+
+  <a href="/brand/drafting" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Drafting Workspace</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Write with real-time enforcement. Select a context, see violations as you type.
+    </div>
+  </a>
+</div>
+{% endblock %}

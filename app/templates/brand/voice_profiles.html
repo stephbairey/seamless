@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% set active_tab = "voices" %}
+{% block title %}Voice Profiles — Seamless{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Voice Profiles</h2>
+  <p class="description">All 8 voice profiles. Click to expand. Edit fields inline.</p>
+</div>
+
+<div x-data="{ expanded: null }">
+  {% for profile in profiles %}
+    <div class="voice-card" :class="{ 'expanded': expanded === '{{ profile.voice_id }}' }">
+      <div class="voice-card-header" @click="expanded = expanded === '{{ profile.voice_id }}' ? null : '{{ profile.voice_id }}'">
+        <div>
+          <h3>{{ profile.label }}</h3>
+          <span class="register">{{ profile.register }}</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <span class="em-mode {{ profile.em_dash_mode }}">{{ profile.em_dash_mode }}</span>
+          <span style="color: var(--text-dim); font-size: 0.9rem;" x-text="expanded === '{{ profile.voice_id }}' ? '&#9650;' : '&#9660;'"></span>
+        </div>
+      </div>
+
+      <div class="voice-card-body" x-show="expanded === '{{ profile.voice_id }}'" x-transition>
+        <div class="voice-field">
+          <div class="voice-field-label">Context</div>
+          <div class="voice-field-value">{{ profile.context }}</div>
+        </div>
+
+        {% if profile.pronouns %}
+        <div class="voice-field">
+          <div class="voice-field-label">Pronouns</div>
+          <div class="voice-field-value">
+            Primary: {{ profile.pronouns.primary or '(none)' }}
+            {% if profile.pronouns.secondary %} / Secondary: {{ profile.pronouns.secondary }}{% endif %}
+            {% if profile.pronouns.notes %}<br><span style="color: var(--text-dim); font-size: 0.8rem;">{{ profile.pronouns.notes }}</span>{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="voice-field">
+          <div class="voice-field-label">Sentence Rhythm</div>
+          <div class="voice-field-value">{{ profile.sentence_rhythm }}</div>
+        </div>
+
+        {% if profile.characteristics %}
+        <div class="voice-field">
+          <div class="voice-field-label">Characteristics</div>
+          <ul class="list-items">
+            {% for c in profile.characteristics %}
+              <li>{{ c }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        {% if profile.avoids %}
+        <div class="voice-field">
+          <div class="voice-field-label">Avoids</div>
+          <ul class="list-items">
+            {% for a in profile.avoids %}
+              <li>{{ a }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+
+        <div class="voice-field">
+          <div class="voice-field-label">Em Dash Mode</div>
+          <div class="voice-field-value">
+            <span class="em-mode {{ profile.em_dash_mode }}">{{ profile.em_dash_mode }}</span>
+            {% if profile.em_dash_notes %}<span style="margin-left: 0.5rem; font-size: 0.8rem; color: var(--text-dim);">{{ profile.em_dash_notes }}</span>{% endif %}
+          </div>
+        </div>
+
+        {% if profile.sign_off %}
+        <div class="voice-field">
+          <div class="voice-field-label">Sign-off{% if profile.sign_off_sacred %} (sacred){% endif %}</div>
+          <div class="voice-field-value" style="font-style: italic; color: var(--accent);">{{ profile.sign_off }}</div>
+        </div>
+        {% endif %}
+
+        {% if profile.context_triggers %}
+        <div class="voice-field">
+          <div class="voice-field-label">Context Triggers</div>
+          <div class="tags">
+            {% for trigger in profile.context_triggers %}
+              <span class="tag">{{ trigger }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if profile.ghost_writing %}
+        <div class="voice-field">
+          <div class="voice-field-label">Ghost Writing</div>
+          <div class="voice-field-value" style="color: var(--yellow);">Identity: {{ profile.ghost_identity }}. Maya does not exist in this context.</div>
+        </div>
+        {% endif %}
+
+        <div style="margin-top: 1rem;"
+             x-data="{ editing: false, saving: false, saved: false }"
+             x-show="expanded === '{{ profile.voice_id }}'">
+          <button class="btn btn-ghost" @click="editing = !editing" x-text="editing ? 'Cancel' : 'Edit Profile'"></button>
+
+          <div x-show="editing" x-transition style="margin-top: 0.75rem;">
+            <div class="form-group">
+              <label for="edit-register-{{ profile.voice_id }}">Register</label>
+              <input type="text" id="edit-register-{{ profile.voice_id }}" value="{{ profile.register }}"
+                     x-ref="register">
+            </div>
+            <div class="form-group">
+              <label for="edit-rhythm-{{ profile.voice_id }}">Sentence Rhythm</label>
+              <input type="text" id="edit-rhythm-{{ profile.voice_id }}" value="{{ profile.sentence_rhythm }}"
+                     x-ref="rhythm">
+            </div>
+            <button class="btn btn-primary" @click="
+              saving = true;
+              fetch('/brand/voices/{{ profile.voice_id }}', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                  register: $refs.register.value,
+                  sentence_rhythm: $refs.rhythm.value
+                })
+              }).then(r => r.json()).then(d => {
+                saving = false;
+                saved = true;
+                setTimeout(() => saved = false, 2000);
+                document.getElementById('save-indicator').classList.add('visible');
+                setTimeout(() => document.getElementById('save-indicator').classList.remove('visible'), 2000);
+              });
+            " :disabled="saving">
+              <span x-show="!saving">Save</span>
+              <span x-show="saving"><span class="spinner"></span></span>
+            </button>
+            <span x-show="saved" style="color: var(--green); font-size: 0.85rem; margin-left: 0.5rem;">Saved</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

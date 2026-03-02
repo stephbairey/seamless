@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% set active_tab = "checker" %}
+{% block title %}Text Checker — Seamless{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Text Checker</h2>
+  <p class="description">Check text for AI tells, em dash violations, and structural patterns.</p>
+</div>
+
+<form hx-post="/brand/checker/analyze" hx-target="#checker-results" hx-indicator="#check-spinner">
+  <div class="card">
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+      <div class="form-group" style="flex: 1; margin-bottom: 0;">
+        <label for="voice_id">Context / Voice</label>
+        <select id="voice_id" name="voice_id">
+          <option value="">Any context (vocabulary + patterns only)</option>
+          {% for voice in voices %}
+            <option value="{{ voice.voice_id }}" {% if selected_voice == voice.voice_id %}selected{% endif %}>
+              {{ voice.label }}{% if voice.em_dash_mode %} (em dash: {{ voice.em_dash_mode }}){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="text">Text to check</label>
+      <textarea id="text" name="text" placeholder="Paste text here to check for AI tells, em dash violations, and structural patterns...">{{ text }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      Analyze <span class="htmx-indicator"><span class="spinner" id="check-spinner"></span></span>
+    </button>
+  </div>
+</form>
+
+<div id="checker-results">
+  {% include "brand/_checker_results.html" %}
+</div>
+{% endblock %}

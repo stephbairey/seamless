@@ -21,12 +21,22 @@ She thinks in systems, builds her own tools (n8n file routing, WordPress plugins
 seamless/
   .claude/              # Claude Code configuration
     CLAUDE.md           # This file
-    agents/             # SL subagent definitions
+    agents/             # SL subagent definitions (brand-checker.md)
     rules/              # Path-scoped rules (if needed)
-  data/                 # Machine-readable config (YAML)
+  app/                  # FastAPI dashboard application
+    main.py             # Entry point, module registry, middleware
+    config.py           # Settings, paths
+    routers/            # brand.py, dashboard.py
+    services/           # yaml_store, identity_router, text_checker, voice_profiles, brand_tokens
+    models/             # Pydantic models (identity.py)
+    templates/          # Jinja2 templates (base.html, brand/*)
+    static/css/         # Stylesheet
+  docker/               # Dockerfile + docker-compose.yaml (port 8420)
+  data/                 # Machine-readable config (YAML) — volume-mounted into Docker
   knowledge/            # Human-readable reference docs (Markdown)
   domain-plans/         # Automation instructions per domain
   agent-designs/        # Prototype subagent designs
+  requirements.txt      # Python dependencies
   secrets.env           # API credentials (GITIGNORED — never commit)
   secrets.env.example   # Template showing what credentials are needed
   gaps.md               # Unresolved items from SB
@@ -102,6 +112,11 @@ Machine-readable configuration files that SL loads directly:
 | `data/calendar-map.yaml` | 3 calendars, recurring events, integration status |
 | `data/file-routing.yaml` | TagSpaces tag vocabulary, n8n workflow IDs, all Google Drive folder IDs |
 | `data/client-registry.yaml` | Client profiles, contracts, rates, royalty splits, ClickUp project mappings |
+| `data/identity-routing.yaml` | Context → name/title/email/voice routing table, client overrides |
+| `data/voice-profiles.yaml` | 8 voice profiles: register, rhythm, avoids, em dash mode, sign-offs |
+| `data/ai-tells.yaml` | 18 banned words with regex, 12 banned patterns, enforcement config |
+| `data/em-dash-rules.yaml` | Three modes (restricted/banned/n/a), context assignments, detection patterns |
+| `data/brand-tokens.yaml` | Per-context visual tokens: colors, typography, imagery, Midjourney templates |
 
 ## Domain Plans
 Detailed automation instructions for each system domain. Implement in this order (dependencies flow downward):

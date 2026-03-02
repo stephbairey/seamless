@@ -1,0 +1,62 @@
+{% if results is not none %}
+  {% set high_count = results|selectattr('severity', 'equalto', 'high')|list|length %}
+  {% set medium_count = results|selectattr('severity', 'equalto', 'medium')|list|length %}
+  {% set low_count = results|selectattr('severity', 'equalto', 'low')|list|length %}
+  {% set total = results|length %}
+
+  <div class="check-summary">
+    {% if total == 0 %}
+      <div class="stat">
+        <div class="stat-number clean">0</div>
+        <div class="stat-label">Violations</div>
+      </div>
+      <div class="stat" style="display: flex; align-items: center;">
+        <div style="color: var(--green); font-size: 0.9rem;">Clean. This text passes all checks.</div>
+      </div>
+    {% else %}
+      <div class="stat">
+        <div class="stat-number issues">{{ total }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+      {% if high_count %}
+      <div class="stat">
+        <div class="stat-number" style="color: var(--red);">{{ high_count }}</div>
+        <div class="stat-label">High</div>
+      </div>
+      {% endif %}
+      {% if medium_count %}
+      <div class="stat">
+        <div class="stat-number" style="color: var(--yellow);">{{ medium_count }}</div>
+        <div class="stat-label">Medium</div>
+      </div>
+      {% endif %}
+      {% if low_count %}
+      <div class="stat">
+        <div class="stat-number" style="color: var(--orange);">{{ low_count }}</div>
+        <div class="stat-label">Low</div>
+      </div>
+      {% endif %}
+    {% endif %}
+  </div>
+
+  {% for violation in results %}
+    <div class="violation severity-{{ violation.severity }}">
+      <div class="violation-header">
+        <span class="violation-label">{{ violation.label }}</span>
+        <span class="violation-severity {{ violation.severity }}">{{ violation.severity }}</span>
+      </div>
+      <div class="violation-description">{{ violation.description }}</div>
+      {% if violation.matched_text %}
+        <div class="violation-match">{{ violation.matched_text }}</div>
+      {% endif %}
+      {% if violation.suggestion %}
+        <div class="violation-suggestion">{{ violation.suggestion }}</div>
+      {% endif %}
+      {% if violation.line %}
+        <div class="violation-meta">Line {{ violation.line }}{% if violation.confidence and violation.confidence != 'high' %} &middot; {{ violation.confidence }} confidence{% endif %}</div>
+      {% elif violation.confidence and violation.confidence != 'high' %}
+        <div class="violation-meta">{{ violation.confidence }} confidence</div>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% endif %}

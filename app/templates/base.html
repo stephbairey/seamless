@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Seamless Dashboard{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/main.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.8/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <h1>Seamless</h1>
+        <div class="subtitle">Dashboard</div>
+      </div>
+
+      <nav class="nav-section">
+        <div class="nav-section-label">Main</div>
+        <a href="/" class="nav-link {% if active_module == 'dashboard' %}active{% endif %}">
+          <span class="icon">&#9751;</span> Home
+        </a>
+      </nav>
+
+      <nav class="nav-section">
+        <div class="nav-section-label">Brand</div>
+        <a href="/brand/identity" class="nav-link {% if active_module == 'brand' and active_tab == 'identity' %}active{% endif %}">
+          <span class="icon">&#9879;</span> Identity Router
+        </a>
+        <a href="/brand/checker" class="nav-link {% if active_module == 'brand' and active_tab == 'checker' %}active{% endif %}">
+          <span class="icon">&#9998;</span> Text Checker
+        </a>
+        <a href="/brand/voices" class="nav-link {% if active_module == 'brand' and active_tab == 'voices' %}active{% endif %}">
+          <span class="icon">&#9835;</span> Voice Profiles
+        </a>
+        <a href="/brand/tokens" class="nav-link {% if active_module == 'brand' and active_tab == 'tokens' %}active{% endif %}">
+          <span class="icon">&#9670;</span> Brand Tokens
+        </a>
+        <a href="/brand/drafting" class="nav-link {% if active_module == 'brand' and active_tab == 'drafting' %}active{% endif %}">
+          <span class="icon">&#9997;</span> Drafting
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <div id="save-indicator" class="save-indicator">Saved</div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,201 @@
+# voice-profiles.yaml
+# Extracted from: knowledge/identities.md, domain-plans/brand-codification.md
+# Purpose: Structured voice profile definitions for all 8 voices (7 core + Nicole Dalton)
+
+profiles:
+  - voice_id: maya-personal
+    label: "Maya Personal"
+    context: "bairey.com, personal blog, author brand"
+    register: "Intimate, confessional, sensory"
+    pronouns:
+      primary: "I"
+      secondary: "you"
+      notes: "First-person throughout. 'I' dominates, 'you' for direct reader address."
+    sentence_rhythm: "Lyrical long sentences with embedded sensory detail, interrupted by short punchy truths"
+    characteristics:
+      - "Conversational disruptions ('Me? I question everything.')"
+      - "Earned vulnerability, not performed emotion"
+      - "The specific over the general"
+      - "Self-described: 'reflective and confessional, balancing introspection with enthusiasm, grounded but hopeful'"
+    avoids:
+      - "Sentimentality"
+      - "Uniform paragraph length"
+      - "Promotional enthusiasm"
+      - "Generic claims"
+      - "Tailing -ing clauses"
+    em_dash_mode: restricted
+    sign_off: null
+    context_triggers: ["bairey.com", "personal blog", "Maya Bairey author"]
+
+  - voice_id: writing-with-maya
+    label: "Writing with Maya"
+    context: "Content channel, craft lessons, writing cohort"
+    register: "Peer warmth, craft-focused"
+    pronouns:
+      primary: "I"
+      secondary: "you"
+      notes: "Warm peer-to-peer. Direct address."
+    sentence_rhythm: "Warm, direct, encouraging"
+    characteristics:
+      - "Tagline: 'Craft lessons from the writing life.'"
+      - "Anti-corporate-jargon"
+      - "Cozy visual vocabulary: hands writing in notebooks, coffee steam, soft lighting, rain on windows"
+    avoids:
+      - "Corporate jargon"
+      - "Cold or distant tone"
+    em_dash_mode: restricted
+    sign_off: "I'm Maya. Keep writing."
+    sign_off_sacred: true
+    context_triggers: ["writing with maya", "wwm", "craft lessons", "writing cohort"]
+
+  - voice_id: prg
+    label: "PRG Newsletter"
+    context: "Portland Raging Grannies newsletter and communications"
+    register: "Peer warmth, politically direct"
+    pronouns:
+      primary: "we"
+      secondary: "you"
+      notes: "Grannies talking to grannies."
+    sentence_rhythm: "Clean, functional, no unnecessary flourish"
+    characteristics:
+      - "Warm, direct, not preachy, not sanitized"
+      - "Preserve political language ('fascist violence' stays)"
+      - "Professional but not corporate"
+      - "Identity: Steph (grannies know her as Steph)"
+    avoids:
+      - "Em dashes (banned entirely)"
+      - "Double hyphens"
+      - "Preachiness"
+      - "Corporate tone"
+      - "Sanitizing political language"
+    em_dash_mode: banned
+    sign_off: null
+    context_triggers: ["prg", "raging grannies", "granny newsletter"]
+
+  - voice_id: lib
+    label: "Lingua Ink Books"
+    context: "LIB website, publishing communications, author relations"
+    register: "Institutional warmth, mentor energy"
+    pronouns:
+      primary: "we"
+      secondary: "you"
+      third: "I"
+      notes: "Fluid pronoun shifting: 'we' (company), 'you' (reader), 'I' (Maya stepping through brand)"
+    sentence_rhythm: "Supportive, encouraging, authoritative but gentle"
+    characteristics:
+      - "Supportive mentor voice"
+      - "Encouraging, warm, gentle authority"
+      - "Inclusive, respectful, honest, high-integrity"
+      - "Inspirational, story-driven"
+      - "CTAs are invitational, never salesy"
+      - "Anti-vanity press positioning"
+      - "Transparent, mission-driven"
+      - "Blog posts: 800-1000 words, subheadings, FAQ section, min 2 internal + 2 external links"
+    avoids:
+      - "Em dashes in online copy"
+      - "Hard sell"
+      - "Jargon without explanation"
+      - "Condescension toward older/newer writers"
+      - "Youth-oriented slang"
+      - "Exclamation-point excess"
+    em_dash_mode: restricted
+    em_dash_notes: "Restricted in print, banned in online copy"
+    sign_off: null
+    context_triggers: ["lib", "linguaink", "lingua ink books", "publishing"]
+
+  - voice_id: lim
+    label: "Lingua Ink Media"
+    context: "LIM consulting, proposals, client communications"
+    register: "Professional warmth, consulting confidence"
+    pronouns:
+      primary: "we"
+      secondary: "you"
+      notes: "'We' for company capabilities, 'you' for client."
+    sentence_rhythm: "Calm, confident, practical"
+    characteristics:
+      - "Trusted expert consultant"
+      - "Confident, expert, straight-talking with empathy"
+      - "Slightly witty, savvy"
+      - "Inspirational yet practical"
+      - "'Turning complexity into clarity'"
+      - "Definitive language: 'We will revitalize your website content' NOT 'we might try to improve...'"
+      - "Professional wit permitted in controlled doses"
+    avoids:
+      - "Empty buzzwords (synergy, leverage, cutting-edge, utilize)"
+      - "Alarmist/shaming language"
+      - "Jargon without translation"
+      - "Arrogance"
+    em_dash_mode: restricted
+    sign_off: null
+    context_triggers: ["lim", "linguainkmedia", "lingua ink media", "consulting"]
+
+  - voice_id: job-search
+    label: "Job Search / LinkedIn"
+    context: "Job applications, cover letters, LinkedIn profile"
+    register: "Professional restraint, clean closers"
+    pronouns:
+      primary: "I"
+      secondary: "you"
+      notes: "Confident without braggy."
+    sentence_rhythm: "Claim-then-evidence rhythm"
+    characteristics:
+      - "Opens with 'this is who I am' statement before naming the role"
+      - "Flowing prose in cover letters (no bullets/headers), single page"
+      - "Clean quiet closers, no overselling"
+      - "Signed 'Best, Steph Bairey.'"
+    avoids:
+      - "Em dashes (banned entirely)"
+      - "Bulleted lists in cover letters"
+      - "Bragging"
+      - "Superlatives"
+    em_dash_mode: banned
+    sign_off: "Best, Steph Bairey."
+    context_triggers: ["job search", "linkedin", "cover letter", "resume", "applications"]
+
+  - voice_id: arc-tda
+    label: "ARC/TDA Governance"
+    context: "Association governance, board reports, committee communications"
+    register: "Deliberately impersonal, procedural neutral"
+    pronouns:
+      primary: "the committee"
+      secondary: null
+      notes: "No 'I'. Use 'the committee' or collective voice."
+    sentence_rhythm: "Matter-of-fact, procedural, neutral"
+    characteristics:
+      - "No first person singular"
+      - "Word documents preferred"
+      - "Board reports: one page, Aptos Display 11pt"
+      - "Sections: Membership, Completed, In Progress, Upcoming, Support Needed"
+    avoids:
+      - "All personality markers"
+      - "First person singular"
+      - "Loaded language (especially in enforcement)"
+      - "Warmth"
+      - "Humor"
+    em_dash_mode: na
+    sign_off: null
+    context_triggers: ["arc", "tda", "governance", "board report", "committee"]
+
+  - voice_id: nicole-dalton
+    label: "Nicole Dalton SEO Content"
+    context: "Ghost-written SEO content for Dalton Law"
+    register: "Fierce, strategic, ghost-written"
+    pronouns:
+      primary: "you"
+      secondary: null
+      notes: "Direct second-person. Clear quotable sentences."
+    sentence_rhythm: "Short paragraphs (2-3 sentences), no walls of text"
+    characteristics:
+      - "Fierce courtroom advocate"
+      - "Strategic litigator"
+      - "Calm caring guide"
+      - "Required structure: Headline + Subheadline > Hook > Quick Answers > Scene-Setting > Case Example > Nicole's Take > Practical Steps > Testimonial > Localized CTA"
+    avoids:
+      - "Cliches"
+      - "Generic claims ('experienced,' 'compassionate')"
+      - "Walls of text"
+    em_dash_mode: restricted
+    sign_off: null
+    context_triggers: ["nicole dalton", "dalton law"]
+    ghost_writing: true
+    ghost_identity: "Nicole Dalton"

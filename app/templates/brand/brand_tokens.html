@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% set active_tab = "tokens" %}
+{% block title %}Brand Tokens — Seamless{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Brand Tokens</h2>
+  <p class="description">Color palettes, typography, and imagery guidelines for each brand context.</p>
+</div>
+
+{% for token in tokens %}
+  <div class="card">
+    <div class="card-header">
+      <h3>{{ token.label }}</h3>
+      {% if token.website %}
+        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ token.website }}</span>
+      {% endif %}
+    </div>
+
+    <div class="card-body">
+      {% if token.colors %}
+      <div class="voice-field">
+        <div class="voice-field-label">Colors</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.375rem;">
+          {% for color in token.colors %}
+            <div class="color-swatch">
+              <div class="swatch-circle" style="background-color: {{ color.hex }};"></div>
+              <div class="swatch-info">
+                <div>{{ color.name }}</div>
+                <div class="swatch-hex">{{ color.hex }} &middot; {{ color.role }}</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if token.typography %}
+      <div class="voice-field">
+        <div class="voice-field-label">Typography</div>
+        <div style="margin-top: 0.375rem;">
+          {% for font in token.typography %}
+            <div style="margin-bottom: 0.375rem;">
+              <span style="font-size: 1.1rem; font-weight: 600;">{{ font.font }}</span>
+              <span style="font-size: 0.75rem; color: var(--text-dim); margin-left: 0.5rem;">{{ font.role }}{% if font.source %} ({{ font.source }}){% endif %}{% if font.size %} {{ font.size }}{% endif %}</span>
+              {% if font.fallbacks %}
+                <span style="font-size: 0.7rem; color: var(--text-dim);"> / {{ font.fallbacks|join(', ') }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if token.imagery %}
+        {% if token.imagery.style %}
+        <div class="voice-field">
+          <div class="voice-field-label">Imagery Style</div>
+          <div class="voice-field-value">{{ token.imagery.style }}</div>
+        </div>
+        {% endif %}
+
+        {% if token.imagery.visual_elements %}
+        <div class="voice-field">
+          <div class="voice-field-label">Visual Elements</div>
+          <div class="tags">
+            {% for elem in token.imagery.visual_elements %}
+              <span class="tag">{{ elem }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if token.imagery.midjourney_template %}
+        <div class="voice-field">
+          <div class="voice-field-label">Midjourney Template</div>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-raised); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); color: var(--text-muted);">
+            {{ token.imagery.midjourney_template }}
+          </div>
+        </div>
+        {% endif %}
+      {% endif %}
+
+      {% if token.document_format %}
+      <div class="voice-field">
+        <div class="voice-field-label">Document Format</div>
+        <div class="voice-field-value">
+          {{ token.document_format.type }}{% if token.document_format.max_pages %}, max {{ token.document_format.max_pages }} page{% endif %}
+          {% if token.document_format.sections %}
+            <div class="tags" style="margin-top: 0.375rem;">
+              {% for section in token.document_format.sections %}
+                <span class="tag">{{ section }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if token.notes %}
+      <div class="voice-field">
+        <div class="voice-field-label">Notes</div>
+        <div class="voice-field-value" style="color: var(--yellow); font-size: 0.8rem;">{{ token.notes }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% if results is not none %}
+  {% if results|length == 0 %}
+    <div class="empty-state">
+      <div class="icon">&#128269;</div>
+      <p>No matching contexts found for "{{ query }}".</p>
+    </div>
+  {% else %}
+    <div style="margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--text-muted);">
+      {{ results|length }} result{{ 's' if results|length != 1 else '' }} for "{{ query }}"
+    </div>
+    {% for result in results %}
+      <div class="identity-result">
+        <div class="context-label">{{ result.context.label }}</div>
+        <div class="name">{{ result.context.name or '(no personal name)' }}</div>
+
+        <div class="details">
+          <div class="detail-item">
+            <div class="detail-label">Title</div>
+            <div class="detail-value">{{ result.context.title or '(none)' }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Email</div>
+            <div class="detail-value">{{ result.context.email or '(none)' }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Voice</div>
+            <div class="detail-value">{{ result.context.voice_id or '(none)' }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Match Score</div>
+            <div class="detail-value">{{ "%.1f"|format(result.match_score) }}</div>
+          </div>
+        </div>
+
+        {% if result.context.notes %}
+          <div style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-muted); font-style: italic;">
+            {{ result.context.notes }}
+          </div>
+        {% endif %}
+
+        <div class="tags">
+          {% for tag in result.context.tags %}
+            <span class="tag {% if tag in result.matched_tags %}matched{% endif %}">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endif %}
