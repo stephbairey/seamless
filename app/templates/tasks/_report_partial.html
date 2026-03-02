@@ -1,0 +1,126 @@
+{% if error %}
+<div style="background: rgba(248,113,113,0.1); border: 1px solid var(--red); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <p style="font-size: 0.85rem; color: var(--red);">{{ error }}</p>
+</div>
+{% endif %}
+
+{% if report %}
+<div style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+  Week of {{ report.week_start.strftime('%B %d') }} — {{ report.week_end.strftime('%B %d, %Y') }}
+</div>
+
+{# Summary stats #}
+<div class="check-summary" style="margin-bottom: 1.5rem;">
+  <div class="stat">
+    <div class="stat-number {% if report.completed_count > 0 %}clean{% endif %}">{{ report.completed_count }}</div>
+    <div class="stat-label">Completed</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number {% if report.overdue_count > 0 %}issues{% endif %}">{{ report.overdue_count }}</div>
+    <div class="stat-label">Overdue</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">{{ report.created_count }}</div>
+    <div class="stat-label">Created</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">{{ report.total_active }}</div>
+    <div class="stat-label">Active</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+  {# Approach distribution #}
+  <div class="card">
+    <div class="card-header">
+      <h3>Approach Distribution</h3>
+    </div>
+    <div class="card-body">
+      {% set approach_colors = {'Dread': 'var(--red)', 'Reluctant': 'var(--orange)', 'Indifferent': 'var(--yellow)', 'Interested': '#fbbf24', 'Excited': 'var(--green)'} %}
+      {% set approach_order = ['Dread', 'Reluctant', 'Indifferent', 'Interested', 'Excited'] %}
+      {% set total_approach = report.by_approach.values()|sum %}
+      {% if total_approach > 0 %}
+      <div style="display: flex; height: 24px; border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 0.75rem;">
+        {% for name in approach_order %}
+        {% set count = report.by_approach.get(name, 0) %}
+        {% if count > 0 %}
+        <div style="width: {{ (count / total_approach * 100)|round(1) }}%; background: {{ approach_colors.get(name, 'var(--text-dim)') }};" title="{{ name }}: {{ count }}"></div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% for name in approach_order %}
+      {% set count = report.by_approach.get(name, 0) %}
+      {% if count > 0 %}
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ approach_colors.get(name, 'var(--text-dim)') }}; flex-shrink: 0;"></span>
+        <span style="font-size: 0.8rem;">{{ name }}</span>
+        <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: auto;">{{ count }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% else %}
+      <p style="font-size: 0.85rem; color: var(--text-dim);">No active tasks with Approach values.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# Revenue breakdown #}
+  <div class="card">
+    <div class="card-header">
+      <h3>Revenue Visibility</h3>
+    </div>
+    <div class="card-body">
+      {% set rev_colors = {'Direct, High': 'var(--green)', 'Direct, Low': '#4ade80', 'Indirect': 'var(--yellow)', 'Passive': 'var(--orange)', 'None': 'var(--text-dim)'} %}
+      {% set rev_order = ['Direct, High', 'Direct, Low', 'Indirect', 'Passive', 'None'] %}
+      {% for name in rev_order %}
+      {% set count = report.by_revenue.get(name, 0) %}
+      {% if count > 0 %}
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+        <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ rev_colors.get(name, 'var(--text-dim)') }}; flex-shrink: 0;"></span>
+        <span style="font-size: 0.8rem;">{{ name }}</span>
+        <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: auto;">{{ count }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {# Project breakdown #}
+  <div class="card" style="grid-column: 1 / -1;">
+    <div class="card-header">
+      <h3>By Project</h3>
+    </div>
+    <div class="card-body">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.5rem;">
+        {% for project, count in report.by_project|dictsort(by='value', reverse=true) %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.375rem 0.5rem; background: var(--bg-raised); border-radius: var(--radius-sm);">
+          <span style="font-size: 0.8rem;">{{ project }}</span>
+          <span style="font-size: 0.8rem; font-weight: 600; color: var(--accent);">{{ count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Overdue tasks #}
+{% if report.overdue_tasks %}
+<div class="card" style="margin-top: 1.5rem; border-color: var(--red);">
+  <div class="card-header">
+    <h3 style="color: var(--red);">Overdue Tasks ({{ report.overdue_tasks|length }})</h3>
+  </div>
+  <div class="card-body">
+    {% for task in report.overdue_tasks %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.375rem 0; border-bottom: 1px solid var(--border);">
+      <div>
+        <a href="/tasks/detail/{{ task.id }}" style="text-decoration: none; color: var(--text); font-size: 0.85rem;">{{ task.name }}</a>
+        <span style="font-size: 0.75rem; color: var(--text-dim); margin-left: 0.5rem;">{{ task.project }}</span>
+      </div>
+      <span style="font-size: 0.75rem; color: var(--red);">Due {{ task.due_date.strftime('%b %d') if task.due_date else '?' }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endif %}

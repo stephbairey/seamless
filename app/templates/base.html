@@ -24,6 +24,19 @@
       </nav>
 
       <nav class="nav-section">
+        <div class="nav-section-label">Tasks</div>
+        <a href="/tasks/create" class="nav-link {% if active_module == 'tasks' and active_tab == 'create' %}active{% endif %}">
+          <span class="icon">&#10010;</span> Create Task
+        </a>
+        <a href="/tasks/list" class="nav-link {% if active_module == 'tasks' and active_tab == 'list' %}active{% endif %}">
+          <span class="icon">&#9776;</span> Task List
+        </a>
+        <a href="/tasks/report" class="nav-link {% if active_module == 'tasks' and active_tab == 'report' %}active{% endif %}">
+          <span class="icon">&#9733;</span> Weekly Report
+        </a>
+      </nav>
+
+      <nav class="nav-section">
         <div class="nav-section-label">Brand</div>
         <a href="/brand/identity" class="nav-link {% if active_module == 'brand' and active_tab == 'identity' %}active{% endif %}">
           <span class="icon">&#9879;</span> Identity Router

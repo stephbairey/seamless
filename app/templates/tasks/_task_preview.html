@@ -1,0 +1,91 @@
+<div class="card" style="border-color: var(--accent);">
+  <div class="card-header">
+    <h3>Review Before Creating</h3>
+    <span class="badge">Preview</span>
+  </div>
+  <div class="card-body">
+    <form method="post" action="/tasks/create/submit">
+      <input type="hidden" name="name" value="{{ name }}">
+      <input type="hidden" name="due_date" value="{{ due_date }}">
+      <input type="hidden" name="description" value="{{ description }}">
+
+      <div style="background: var(--bg-raised); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+        <p style="font-size: 1rem; font-weight: 600;">{{ name }}</p>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Due: {{ due_date }}</p>
+        {% if description %}
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">{{ description }}</p>
+        {% endif %}
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        {# Project #}
+        <div class="form-group">
+          <label>Project {% if not inferred.project %}<span style="color: var(--red); font-size: 0.7rem;">MUST SET</span>{% elif not inferred.project_confident %}<span style="color: var(--yellow); font-size: 0.7rem;">VERIFY</span>{% else %}<span style="color: var(--green); font-size: 0.7rem;">INFERRED</span>{% endif %}</label>
+          <select name="project_id">
+            <option value="">— Select —</option>
+            {% for opt in project_options %}
+            <option value="{{ opt.id }}" {% if inferred.project and inferred.project.id == opt.id %}selected{% endif %}>{{ opt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {# Effort #}
+        <div class="form-group">
+          <label>Effort <span style="color: var(--green); font-size: 0.7rem;">INFERRED</span></label>
+          <select name="effort_id">
+            {% for opt in effort_options %}
+            <option value="{{ opt.id }}" {% if inferred.effort and inferred.effort.id == opt.id %}selected{% endif %}>{{ opt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {# Revenue #}
+        <div class="form-group">
+          <label>Revenue <span style="color: var(--green); font-size: 0.7rem;">INFERRED</span></label>
+          <select name="revenue_id">
+            {% for opt in revenue_options %}
+            <option value="{{ opt.id }}" {% if inferred.revenue and inferred.revenue.id == opt.id %}selected{% endif %}>{{ opt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {# Scope #}
+        <div class="form-group">
+          <label>Scope <span style="color: var(--green); font-size: 0.7rem;">INFERRED</span></label>
+          <select name="scope_id">
+            {% for opt in scope_options %}
+            <option value="{{ opt.id }}" {% if inferred.scope and inferred.scope.id == opt.id %}selected{% endif %}>{{ opt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {# Approach — ALWAYS asks #}
+        <div class="form-group">
+          <label>Approach <span style="color: var(--yellow); font-size: 0.7rem;">YOUR CALL</span></label>
+          <select name="approach_id">
+            <option value="">— How do you feel about this? —</option>
+            {% for opt in approach_options %}
+            <option value="{{ opt.id }}">{{ opt.name }}</option>
+            {% endfor %}
+          </select>
+          <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.25rem;">Defaults to Indifferent if left blank</p>
+        </div>
+
+        {# Readiness #}
+        <div class="form-group">
+          <label>Readiness <span style="color: var(--green); font-size: 0.7rem;">INFERRED</span></label>
+          <select name="readiness_id">
+            {% for opt in readiness_options %}
+            <option value="{{ opt.id }}" {% if inferred.readiness and inferred.readiness.id == opt.id %}selected{% endif %}>{{ opt.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Create Task in ClickUp</button>
+        <a href="/tasks/create" class="btn btn-ghost">Start Over</a>
+      </div>
+    </form>
+  </div>
+</div>

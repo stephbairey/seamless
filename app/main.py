@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
-from app.routers import brand, dashboard
+from app.routers import brand, dashboard, tasks
 
 app = FastAPI(title=APP_TITLE)
 
@@ -15,6 +15,7 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 MODULE_REGISTRY = [
     {"id": "dashboard", "label": "Home", "icon": "home", "path": "/"},
     {"id": "brand", "label": "Brand", "icon": "palette", "path": "/brand/identity"},
+    {"id": "tasks", "label": "Tasks", "icon": "tasks", "path": "/tasks/"},
 ]
 
 # Make registry available to all templates
@@ -26,3 +27,4 @@ async def inject_modules(request: Request, call_next):
 
 app.include_router(dashboard.router)
 app.include_router(brand.router, prefix="/brand", tags=["brand"])
+app.include_router(tasks.router, prefix="/tasks", tags=["tasks"])

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Tasks — Weekly Report{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Weekly Report</h2>
+  <p class="description">Task summary for the current week</p>
+</div>
+
+<div style="margin-bottom: 1.5rem;">
+  <button class="btn btn-primary"
+          hx-post="/tasks/report/generate" hx-target="#report-area" hx-swap="innerHTML">
+    Generate Report
+    <span class="htmx-indicator"><span class="spinner"></span></span>
+  </button>
+</div>
+
+<div id="report-area">
+  {% if loaded and report %}
+  {% include "tasks/_report_partial.html" %}
+  {% elif not loaded %}
+  <div class="empty-state">
+    <div class="icon">&#9776;</div>
+    <p>Click Generate Report to pull data from ClickUp.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

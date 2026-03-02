@@ -9,6 +9,8 @@ services:
     volumes:
       - ../data:/app/data
       - ../app:/app/app
+    env_file:
+      - ../secrets.env
     environment:
       - PYTHONDONTWRITEBYTECODE=1
     restart: unless-stopped

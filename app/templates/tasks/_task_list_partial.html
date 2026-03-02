@@ -1,0 +1,33 @@
+{% if error %}
+<div style="background: rgba(248,113,113,0.1); border: 1px solid var(--red); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <p style="font-size: 0.85rem; color: var(--red);">{{ error }}</p>
+</div>
+{% endif %}
+
+{% if tasks %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+  <p style="font-size: 0.85rem; color: var(--text-muted);">{{ tasks|length }} task{{ 's' if tasks|length != 1 else '' }}</p>
+  <form method="post" action="/tasks/bulk-status" id="bulk-form" style="display: flex; gap: 0.5rem; align-items: center;">
+    <select name="status" form="bulk-form" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+      <option value="">Bulk status...</option>
+      <option value="Not Started">Not Started</option>
+      <option value="Begun">Begun</option>
+      <option value="Complete">Complete</option>
+      <option value="On Hold">On Hold</option>
+      <option value="Waiting">Waiting</option>
+      <option value="Scratch">Scratch</option>
+    </select>
+    <button type="submit" class="btn btn-ghost" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">Apply</button>
+  </form>
+</div>
+
+{% for task in tasks %}
+{% include "tasks/_task_card.html" %}
+{% endfor %}
+
+{% elif loaded %}
+<div class="empty-state">
+  <div class="icon">&#9744;</div>
+  <p>No tasks match these filters.</p>
+</div>
+{% endif %}

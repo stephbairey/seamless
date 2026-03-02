@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Tasks — {{ task.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+    <a href="/tasks/list" class="btn btn-ghost" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">&larr; Back</a>
+    <h2 style="font-size: 1.25rem;">{{ task.name }}</h2>
+  </div>
+  {% if task.url %}
+  <a href="{{ task.url }}" target="_blank" style="font-size: 0.8rem; color: var(--accent);">Open in ClickUp</a>
+  {% endif %}
+</div>
+
+{% if success_message %}
+<div style="background: rgba(74,222,128,0.1); border: 1px solid var(--green); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <p style="font-size: 0.85rem; color: var(--green);">{{ success_message }}</p>
+</div>
+{% endif %}
+
+{% if error %}
+<div style="background: rgba(248,113,113,0.1); border: 1px solid var(--red); border-radius: var(--radius); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <p style="font-size: 0.85rem; color: var(--red);">{{ error }}</p>
+</div>
+{% endif %}
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+  {# Main info #}
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h3>Details</h3>
+        {% if task.is_overdue %}
+        <span class="badge" style="background: rgba(248,113,113,0.15); color: var(--red);">Overdue</span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        {% if task.description %}
+        <div style="margin-bottom: 1rem;">
+          <p style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Description</p>
+          <p style="font-size: 0.875rem; white-space: pre-wrap;">{{ task.description }}</p>
+        </div>
+        {% endif %}
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div>
+            <p style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Status</p>
+            <p style="font-size: 0.875rem; font-weight: 500;">{{ task.status }}</p>
+          </div>
+          <div>
+            <p style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Due Date</p>
+            <p style="font-size: 0.875rem; {% if task.is_overdue %}color: var(--red); font-weight: 500;{% endif %}">
+              {{ task.due_date.strftime('%B %d, %Y') if task.due_date else 'Not set' }}
+            </p>
+          </div>
+          <div>
+            <p style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Created</p>
+            <p style="font-size: 0.875rem;">{{ task.date_created.strftime('%B %d, %Y') if task.date_created else 'Unknown' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# Sidebar: fields + status update #}
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <h3>Fields</h3>
+      </div>
+      <div class="card-body">
+        <div style="display: grid; gap: 0.5rem;">
+          {% for label, value in [('Project', task.project), ('Effort', task.effort), ('Revenue', task.revenue), ('Scope', task.scope), ('Approach', task.approach), ('Readiness', task.readiness)] %}
+          <div>
+            <p style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">{{ label }}</p>
+            <p style="font-size: 0.85rem;">{{ value or '—' }}</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Update Status</h3>
+      </div>
+      <div class="card-body">
+        <form method="post" action="/tasks/detail/{{ task.id }}/status">
+          <div class="form-group">
+            <select name="status">
+              {% for s in statuses %}
+              <option value="{{ s }}" {% if task.status == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Update Status</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

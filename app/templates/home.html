@@ -4,10 +4,40 @@
 {% block content %}
 <div class="page-header">
   <h2>Seamless Dashboard</h2>
-  <p class="description">Brand codification, identity routing, and text quality tools.</p>
+  <p class="description">Brand codification, identity routing, text quality, and task management.</p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+  <a href="/tasks/create" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Create Task</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Create tasks with inferred custom fields. Two-step preview before submitting to ClickUp.
+    </div>
+  </a>
+
+  <a href="/tasks/list" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Task List</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Filter and sort tasks by project, status, approach, effort, and more. Bulk status updates.
+    </div>
+  </a>
+
+  <a href="/tasks/report" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Weekly Report</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Completed/overdue counts, approach distribution, revenue visibility, project breakdown.
+    </div>
+  </a>
+
   <a href="/brand/identity" class="card" style="text-decoration: none; color: inherit;">
     <div class="card-header">
       <h3>Identity Router</h3>
