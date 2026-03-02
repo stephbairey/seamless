@@ -1,0 +1,305 @@
+# Client Registry (Phase 2 enriched)
+# Phase 2 output — Seamless Bootstrap
+# Source: extraction/business-operations/clients.md, contracts, invoices, royalty reports
+# Status: APPROVED (Phase 2). Phase 5: ClickUp option IDs corrected to match clickup-fields.yaml system snapshot.
+# Note: Enriched from Phase 1 initial with contract details, pricing, relationship types, contacts
+
+clients:
+  # ── Publishing Authors (Lingua Ink Books) ──
+
+  - name: "Sulima Malzin"
+    clickup_project: "Sulima Malzin"
+    clickup_option_id: "6a62e5e9-0dc5-4f5c-b11e-0fabbb917105"
+    has_file_routing: true
+    has_website: true
+    website: "sulimamalzin.net"
+    substack: "sulima.substack.com"
+    ga4_property_id: "420435585"
+    active: true
+    relationship: "Author + mentor"
+    age: 86
+    service_type: "publishing"
+    brand: "LIB"
+    identity: "Maya"
+    contract_type: "informal"
+    contract_fee: 0
+    royalty_split: "0% — labor of love"
+    books:
+      - "Arms Filled with Bittersweet"
+      - "All in the Soup Together"
+      - "Words That Dance"
+      - "Tributaries"
+    consignment:
+      - venue: "Broadway Books"
+        titles: ["Arms Filled with Bittersweet"]
+      - venue: "Second Shapes Bookstore"
+        titles: "all published"
+      - venue: "NIWA"
+        titles: "all published"
+    weekly_cadence: "Thursday 9am call"
+    note: "Most important client. IP bequest discussed. Publishing relationship predates LIB (Sep 2022)."
+
+  - name: "Carolyn Martin"
+    clickup_project: "Carolyn Martin"
+    clickup_option_id: "2c96fe38-9057-418c-bfec-4d60f919f0ff"
+    has_file_routing: false
+    has_website: true
+    website: "carolynmartinpoet.com"
+    active: true
+    relationship: "Author"
+    service_type: "publishing"
+    brand: "LIB"
+    identity: "Maya"
+    contract_type: "fee-based"
+    contract_fee: 400
+    royalty_split: "50/50 Amazon"
+    books:
+      - "Metrophobia"
+    book_launched: "2025-08"
+    sales_total: 55.19
+    consignment:
+      - venue: "Second Shapes Bookstore"
+        titles: "all published"
+    note: "Poetry chapbook. No explicit contract term length."
+
+  - name: "Daniela Morescalchi"
+    pen_name: "Wren Cavanagh"
+    clickup_project: "Daniela Morescalchi"
+    clickup_option_id: "633e3bc7-055b-47fe-b65b-c2950b0e596e"
+    has_file_routing: false
+    has_website: false
+    active: true
+    relationship: "Author (ex-Intel colleague)"
+    service_type: "publishing"
+    brand: "LIB"
+    identity: "Maya"
+    contract_type: "revenue-share"
+    contract_fee: 0
+    royalty_split: "60/40 author/publisher"
+    contract_term: "10 years per work"
+    contract_signed: "2025-08-25"
+    books:
+      - "Bits and Pieces: Cat Daddies Mysteries, Book 1"
+      - "Of Cats and Sea Monsters: Cat Daddies Mysteries, Book 2"
+      - "Ghouls and Guns (untitled)"
+    published: false
+    note: "Publication waiting for Book 2 completion. 5 novellas planned."
+
+  - name: "Lynn Haller"
+    clickup_project: "Lynn Haller"
+    clickup_option_id: "be20a38f-8990-4e37-ab2b-04a9a62c0404"
+    has_file_routing: true
+    has_website: true
+    website: "lynnahaller.com"
+    ga4_property_id: "520632482"
+    active: true
+    relationship: "Author + former romantic partner"
+    service_type: "publishing + web"
+    brand: "LIB"
+    identity: "Maya"
+    books:
+      - "The Hallway of Doorknobs"
+    published: false
+    target_launch: "2026-05-12"
+    brand_color: "#a78fbf"
+    brand_font: "Merriweather Sans"
+    hosting: "NixiHost Basic Shared ($15/mo)"
+    note: "Nearing completion. Children's picture book (IFS therapy). Left writing cohort."
+
+  # ── Publishing Prospects ──
+
+  - name: "Pat Schoof"
+    active: true
+    relationship: "Prospect"
+    service_type: "publishing"
+    brand: "LIB"
+    identity: "Steph"
+    email: "pnschoof@comcast.net"
+    referral: "Jennifer Lashua (runningjen@gmail.com)"
+    proposal_sent: "2026-02-15"
+    proposal_type: "dual-path (a la carte vs. imprint)"
+    status: "engaged, asking questions, no decision"
+    note: "52-winery Napa travel guide. Has completed all prep work."
+
+  - name: "Dr. Wendy Leigh White"
+    active: true
+    relationship: "Prospect"
+    service_type: "publishing"
+    email: "nd@drwendyleighwhite.com"
+    status: "periodic check-ins, no proposal requested"
+
+  - name: "Suzanne Manser, PhD"
+    active: true
+    relationship: "Prospect"
+    service_type: "publishing"
+    email: "suzanne@suzannemanserphd.com"
+    status: "periodic check-ins, no proposal requested"
+
+  # ── Consulting Clients (Lingua Ink Media) ──
+
+  - name: "Nicole Dalton"
+    clickup_project: "Dalton Law"
+    clickup_option_id: "848daa77-22e1-48d1-9156-f692b966d244"
+    has_file_routing: false
+    has_website: false
+    active: true
+    relationship: "Client"
+    service_type: "consulting (SEO/content)"
+    brand: "LIM"
+    identity: "Steph"
+    rate_per_hour: 166.66
+    retainer: 5000
+    client_address: "2904 Main St, Vancouver WA 98663"
+    phase1_complete: true
+    phase1_articles: 14
+    contract_signed: true
+    note: "Trial attorney. Phase 1 done. Pain diary app side opportunity."
+
+  - name: "Devon Ervin"
+    clickup_project: "Devon Ervin"
+    clickup_option_id: "04b61649-4b90-4525-a8fe-7b4654baf4b6"
+    has_file_routing: false
+    has_website: true
+    websites:
+      - "devonervin.com"
+      - "hopeforyourheartcoaching.com"
+      - "makingspaceforwhatmattersmost.com"
+    active: true
+    relationship: "Client"
+    service_type: "consulting (web dev)"
+    brand: "LIM"
+    identity: "Steph"
+    rate_per_hour: 195
+    project_ceiling: 1950
+    email: "devonervin2010@gmail.com"
+    brand_colors: ["#4c6e90", "#57a8b9", "#d4c2b5", "#faf8f5"]
+    brand_fonts: ["Questrial", "Work Sans"]
+    em_dashes_banned: true
+    note: "Life coach. Still in progress. WordPress/Enfold/Avia, no staging."
+
+  - name: "Accessible Travel Americas"
+    active: false
+    relationship: "Closed"
+    service_type: "consulting (SEO)"
+    brand: "LIM"
+    note: "SEO audit delivered (~$2K). Closed — given to developer friend."
+
+business_lines:
+  - name: "Lingua Ink Books"
+    clickup_project: "Lingua Ink Books"
+    clickup_option_id: "5018e8c5-0c2f-4f11-af92-d857b8e007c6"
+    website: "linguaink.com"
+    ga4_property_id: "481632955"
+    identity: "Maya"
+    title: "Creative Director"
+
+  - name: "Lingua Ink Media"
+    clickup_project: "Lingua Ink Media"
+    clickup_option_id: "80b8f09f-0235-49dc-9d72-a914dff7888e"
+    website: "linguainkmedia.com"
+    identity: "Steph"
+    title: "Principal"
+
+  - name: "Lingua Ink Courses"
+    clickup_project: "Lingua Ink Courses"
+    clickup_option_id: "6b74f9c5-229f-4b67-bb10-9d3511304627"
+    products:
+      - name: "The Gentle Guide to Self-Publishing on Amazon"
+        status: "in progress, ~8hrs copyediting remaining"
+        price_range: "$30-50"
+      - name: "The Self-Pub Cheat Sheet for Poets & Memoirists"
+        status: "in progress (same project as Gentle Guide, different product)"
+        price_range: "$29-59"
+
+  - name: "Lingua Ink Cohorts"
+    clickup_project: "Lingua Ink Cohorts"
+    clickup_option_id: "ea7c1965-6a37-4086-9224-72db30b70203"
+    note: "Paid cohort in development. Market research validates $300-500 for 6 weeks."
+
+  - name: "Free Cohort"
+    clickup_project: "Free Cohort"
+    clickup_option_id: "724689ff-6931-47c1-b15b-f6b27971bc88"
+    schedule: "Thu (writing) + Sun (writing + critique)"
+    members: ["Iris", "Maura", "Julie", "Kay", "Deb", "Maya"]
+    note: "Free, since Sept 2024. Separate ClickUp project for time tracking."
+
+organizations:
+  - name: "Tomahawk Destiny Association"
+    clickup_project: "Tomahawk Destiny"
+    clickup_option_id: "226fe75e-8c30-4a59-ac6c-82cf375c5e55"
+    pete_role: "Board President"
+    roles:
+      association:
+        maya_role: "ARC Chair"
+        relationship: "volunteer/organizational"
+        identity: "Steph"
+      website:
+        maya_role: "LIM contractor"
+        relationship: "business/client"
+        identity: "Steph"
+        budget_rebuild: 1000
+        owed: 1223.39
+        annual_support: 350
+        annual_support_status: "pending board approval"
+        webmaster_committee_member: false
+        note: "Bill Bowling is sole Webmaster Committee member and official Webmaster. Maya's website work is contracted through LIM."
+    note: "71-home floating home community. Two distinct relationships: ARC governance (association) and website support (LIM business client). Same people, different capacity."
+
+  - name: "Portland Raging Grannies"
+    clickup_project: "Raging Grannies"
+    clickup_option_id: "48dfc203-1c7a-4fbd-8d3b-4ef845159629"
+    maya_role: "Tech granny"
+    identity: "Steph"
+    brand_color: "#bf3434"
+    newsletter_brand_colors: ["#d6616c", "#bd3435"]
+    gaggle_lists:
+      - "prg-members@gaggle.email"
+      - "grannynewsletter@gaggle.email"
+      - "granny-newsletter@gaggle.email"
+      - "prg-enviro-team@gaggle.email"
+      - "prg-gender-team@gaggle.email"
+      - "prg-rij-team@gaggle.email"
+      - "prg-social-team@gaggle.email"
+      - "prg-gagh@gaggle.email"
+    note: "Grannies know her as Steph. Sole admin of 8 gaggle.email lists. Newsletter, website, Zoom, PayPal, Drive, all tech."
+
+  - name: "International Raging Grannies"
+    maya_role: "Web Granny"
+    websites: ["raginggrannies.org", "raginggrannies.net"]
+    hosting: "FastComet (paid through Mar 2027, $670 biennial)"
+    note: "80+ gaggles worldwide. Site migration in progress."
+
+personal:
+  - name: "Maya Bairey"
+    clickup_project: "Maya Bairey"
+    clickup_option_id: "d721cedf-c9b5-4375-8bcd-1201711fe58a"
+    website: "bairey.com"
+    ga4_property_id: "420399644"
+    books:
+      - title: "Painting Celia"
+        status: "published"
+        launched: "2024-05"
+        all_time_sales: 507.20
+      - title: "Sailor's Code"
+        status: "novel in progress"
+    consignment:
+      - venue: "Broadway Books"
+        titles: ["Painting Celia"]
+      - venue: "Second Shapes Bookstore"
+        titles: ["Painting Celia"]
+      - venue: "NIWA"
+        titles: ["Painting Celia"]
+
+  - name: "Personal"
+    clickup_project: "Personal"
+    clickup_option_id: "72cdbc47-5044-49a8-93f0-31c26c95e469"
+
+  - name: "Job Search"
+    clickup_project: "Job Search"
+    clickup_option_id: "1be4ed5e-cf46-4a43-ac1e-f041836fa7ea"
+    target_title: "Director of Content Strategy"
+    identity: "Steph"
+    contact_email: "steph@bairey.com"
+    contact_phone: "503-562-9700"
+    linkedin: "linkedin.com/in/stephbairey"
+    agencies: ["Aquent", "Clover Search Works"]

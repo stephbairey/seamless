@@ -1,0 +1,219 @@
+# calendar-map.yaml
+# Phase 1 output — Technical Systems / Calendar
+# Source: extraction/technical-systems/calendar.md
+# Source: extraction/technical-systems/questions.md (Q14-Q20)
+# Source: maya-corrections.md (2026-02-27)
+# Extracted: 2026-02-27
+
+primary_view: linguainkmedia@gmail.com   # Maya views all calendars here
+timezone: America/Los_Angeles
+
+calendars:
+  linguainkmedia@gmail.com:
+    identity: lingua-ink-media
+    purpose: "Business/operational — client meetings, org commitments, business tasks"
+    invite_context: "Used when contact knows Maya as Steph/Lingua Ink"
+    active: true
+    naming_conventions:
+      client_formal: "ClientName and Steph @ Lingua Ink (created by Calendly)"
+      client_informal: "Client:Maya"
+      multi_person: "Name:Name:Name"
+      clickup_legacy: "checkmark prefix + task name [Project] - task_id (abandoned sync, legacy only)"
+      personal_leakage: "[Personal] suffix on some items"
+
+  mjbairey@gmail.com:
+    identity: maya-bairey
+    purpose: "Creative/writing — cohort, critique groups, publishing tasks"
+    invite_context: "Used when contact knows Maya as Maya"
+    active: true
+    naming_conventions:
+      writing_groups: "Writing Cohort, Writing Group, Monday Critique Group, Tuesday Critique Group"
+      publishing_tasks: "Action-oriented (Upload Paperback, Apply to Book Awards, Create a Media Kit)"
+      social_media: "Post to Socials, Send Newsletter Blast, Kindle Sale Post"
+    note: "Canonical home for Writing Cohort; duplicates on other calendars are accidental"
+
+  stephbairey@gmail.com:
+    identity: steph-bairey
+    purpose: "Home/personal — household events, Pete's entries via Alexa, local dashboard display"
+    invite_context: "Personal/family"
+    active: true
+    note: "Largest calendar, goes back to 2000. Also displays on local dashboard."
+    naming_conventions:
+      financial: "Account ($amount) or Paycheck ($amount)"
+      personal_appt: "Steph: Provider/Activity"
+      todo: "To Do] TaskDescription (single bracket)"
+      milestones: "Nth Hook up Anniversary, Nth Marriage anniversary"
+      work_blocks: "Do Not Schedule: WORK, HEADS DOWN"
+      peterday: "PETERDAY — recurring event"
+
+integrations:
+  clickup_sync:
+    status: abandoned
+    detail: "ClickUp native calendar sync didn't work well; checkmark-prefixed events are legacy artifacts"
+    # Source: maya-corrections.md 2026-02-27, Q15
+
+  dashboard_display:
+    calendar: stephbairey@gmail.com
+    detail: "stephbairey calendar displays on local household dashboard"
+    # Source: Q17
+
+  pete_access:
+    calendar: stephbairey@gmail.com
+    method: alexa
+    detail: "Pete adds events to stephbairey via Alexa"
+    # Source: Q17
+
+  delivery_tracking:
+    status: legacy
+    detail: "Delivery: events on stephbairey are legacy; Maya now uses a different tracking method"
+    # Source: maya-corrections.md 2026-02-27, Q18
+
+  writing_cohort_duplication:
+    canonical_calendar: mjbairey@gmail.com
+    detail: "Should only be on mjbairey; copies on other calendars are accidental via email confusion"
+    # Source: maya-corrections.md 2026-02-27, Q19
+
+  additional_calendars:
+    detail: "Other calendars exist (e.g., scb.zombie family birthdays) but are not part of regular processes"
+    # Source: Q20
+
+recurring_events:
+  # --- linguainkmedia@gmail.com ---
+  - event: create PRG newsletter
+    calendar: linguainkmedia@gmail.com
+    frequency: monthly
+    schedule: "3rd Sunday, 10:00-11:00"
+    status: active
+
+  - event: Royalty reports
+    calendar: linguainkmedia@gmail.com
+    frequency: quarterly
+    schedule: "1st of January, April, July, October"
+    status: active
+
+  - event: Writing Cohort / Entrepreneur Cohort
+    calendar: linguainkmedia@gmail.com
+    frequency: twice-weekly
+    schedule: "Thursdays and Sundays, 12:00-14:00"
+    status: active
+    note: "Canonical home is mjbairey; presence here is accidental duplication"
+
+  - event: HoD meeting series
+    calendar: linguainkmedia@gmail.com
+    frequency: weekly
+    schedule: "Tuesdays, 13:00-14:00"
+    status: active
+    note: "HoD = The Hallway of Doorknobs (Lynn Haller's book project)"
+
+  - event: Story Lounge
+    calendar: linguainkmedia@gmail.com
+    frequency: weekly
+    schedule: "Fridays, 09:00-10:00"
+    status: active
+    note: "Intel alumni meetup"
+
+  - event: Raging Grannies Monthly Meeting / PRG meeting
+    calendar: stephbairey@gmail.com
+    frequency: monthly
+    schedule: "3rd Sunday, varies"
+    status: active
+
+  - event: Second Sunday
+    calendar: linguainkmedia@gmail.com
+    frequency: monthly
+    schedule: "3rd Sunday, 10:00-11:00"
+    status: active
+
+  - event: Devon Ervin and Steph @ Lingua Ink
+    calendar: linguainkmedia@gmail.com
+    frequency: weekly
+    schedule: "Thursdays, 10:00-11:00"
+    status: active
+
+  - event: PRG Gender Equity meeting
+    calendar: linguainkmedia@gmail.com
+    frequency: bi-weekly
+    schedule: "Mondays, 15:00-16:00"
+    status: active
+
+  - event: "Sulima:Maya"
+    calendar: linguainkmedia@gmail.com
+    frequency: weekly
+    schedule: "Thursdays, 09:00-10:00"
+    status: active
+
+  - event: "Daniela:Maya"
+    calendar: linguainkmedia@gmail.com
+    frequency: weekly
+    schedule: Thursdays
+    status: active
+
+  # --- mjbairey@gmail.com ---
+  - event: Writing Cohort
+    calendar: mjbairey@gmail.com
+    frequency: twice-weekly
+    schedule: "Thursdays and Sundays, 12:00-14:00"
+    status: active
+    note: "Canonical calendar for this event"
+
+  - event: Writing Group / Critique Group
+    calendar: mjbairey@gmail.com
+    frequency: weekly
+    schedule: "Thursdays, 13:00-15:00"
+    status: active
+
+  - event: Monday Critique Group
+    calendar: mjbairey@gmail.com
+    frequency: weekly
+    schedule: Mondays
+    status: active
+
+  - event: Tuesday Critique Group
+    calendar: mjbairey@gmail.com
+    frequency: weekly
+    schedule: Tuesdays
+    status: active
+
+  - event: Lynn
+    calendar: mjbairey@gmail.com
+    frequency: weekly
+    schedule: "Thursdays, 13:00-15:00"
+    status: active
+
+  - event: Sal Zoom
+    calendar: mjbairey@gmail.com
+    frequency: periodic
+    status: observed
+
+  # --- stephbairey@gmail.com ---
+  - event: Writing Cohort
+    calendar: stephbairey@gmail.com
+    frequency: twice-weekly
+    schedule: "Thursdays and Sundays, 12:00-14:00"
+    status: active
+    note: "Accidental duplication; canonical home is mjbairey"
+
+  - event: Story Lounge
+    calendar: stephbairey@gmail.com
+    frequency: periodic
+    status: observed
+
+  - event: ARC / ARC Meeting
+    calendar: stephbairey@gmail.com
+    frequency: monthly
+    status: active
+
+  - event: TDA Board Meeting
+    calendar: stephbairey@gmail.com
+    frequency: periodic
+    status: active
+
+  - event: Gender equity meeting
+    calendar: stephbairey@gmail.com
+    frequency: monthly
+    status: active
+
+  - event: Send PRG Newsletter
+    calendar: stephbairey@gmail.com
+    frequency: monthly
+    status: active

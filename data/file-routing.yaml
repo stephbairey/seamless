@@ -1,0 +1,204 @@
+# File Routing Configuration
+# Phase 1 output — Seamless Bootstrap
+# Sources: extraction/technical-systems/file-management.md, sources/system-snapshots/google_drive_id_matrix.json
+# Maya-reviewed: 2026-02-27
+
+system:
+  pipeline: "TagSpaces -> Google Drive intake folder -> n8n -> destination folder"
+  philosophy: "Describe what a thing IS, let the system figure out where it GOES"
+  tag_format: "Bracketed tags appended to filename, e.g. [Cover Painting-Celia]"
+  max_tags: 2
+  routing_key: "Alphabetically sorted tag pair (symmetry rule)"
+  fallback: "Unsorted folder per client (graceful degradation)"
+  trigger: "Hourly schedule in n8n"
+  matrix_source: "sources/system-snapshots/google_drive_id_matrix.json"
+
+  future_direction: "Maya wants a new automated file routing system. The matrices are a barrier to scaling beyond 3 clients. All clients have Google Drive folders."
+
+clients_with_automation:
+  - name: Lynn
+    workflow_name: "Sort LYNN files"
+    workflow_id: "sB5xfJmIuOMT9kmb"
+    client_tag: "Lynn"
+    intake_folder: "/LYNN"
+    unsorted_folder_id: "1tp5aFpswfMYtgc_L4jUzXybzxgwJf2_t"
+    active: true
+
+  - name: Maya
+    workflow_name: "Sort MAYA files"
+    workflow_id: "nU8lKfEFO4DxTyex"
+    client_tag: "Maya"
+    intake_folder: "/MAYA"
+    unsorted_folder_id: "1ykOtB1Lzao_-YY5kILRep2J-yduW-yvd"
+    active: true
+
+  - name: Sulima
+    workflow_name: "Sort SULIMA files"
+    workflow_id: "MIK98RtLqhWtfJH4"
+    client_tag: "Sulima"
+    intake_folder: "/SULIMA"
+    unsorted_folder_id: "1R0aAzfFYL8pB08eBBG09IYcExjLDE6S1"
+    active: true
+
+  - name: Lingua Ink
+    note: "Placeholder matrix exists in google_drive_id_matrix.json but not yet wired into n8n. Only 4 cells route (project self-pairs to book folder names). 480 of 484 cells go to Unsorted."
+    active: false
+
+tag_vocabulary:
+  client_tags:
+    - Lynn
+    - Maya
+    - Sulima
+
+  universal_content_tags:
+    - Source
+    - Asset
+    - Copy
+    - Design
+    - Marketing
+    - Newsletter
+    - Inspo
+    - Admin
+    - Cover
+    - Info
+    - Backup
+    - Headshot
+    - Interior
+    - OLD
+    - Video
+    - PSD
+    - Featured-image
+    - Social-image
+
+  partial_content_tags:
+    - tag: B-Roll
+      present_in: [Lynn, Maya]
+      absent_from: [Sulima]
+
+  project_tags:
+    lynn:
+      - Hallway-of-Doorknobs
+      - Untitled-Libby
+      - Workbook
+    maya:
+      - Painting-Celia
+      - "Sailor's-Code"
+      - Untitled-Kelsey
+    sulima:
+      - All-in-the-Soup        # All in the Soup Together
+      - Arms-Filled-with-Bittersweet
+      - Tributaries
+      - Words-That-Dance
+
+# Google Drive folder structure per client
+# Complete folder IDs from google_drive_id_matrix.json
+folder_ids:
+  maya:
+    Admin: "1Uzt32vdzpwWtCvlMdeebxtAKYtcWjuqg"
+    "Book - Painting Celia": "1HYgKE8KHG3aHa5yssRP5QkYSCkixs6Iv"
+    "Book - Painting Celia / Master": "1DFhdaCYC_iJgfjdYpxcsFzWAFicWQ8rq"
+    "Book - Sailor's Code": "1tZYdQCEeHiMObOUF-vn2Zx_IAgH-pQe2"
+    "Book - Sailor's Code / Images": "10-l2HN5-JdQ1wdyNFcAqKZSjXjALfSYK"
+    "Book - Sailor's Code / Images / inspo board": "1rhSpHnbdGgoIfhTgPch_sURRbLSaOXNr"
+    "Book - Sailor's Code / Old Drafts": "1bPQhvonXrOuVejyMlMUVGfUN6WhSALQh"
+    "Book - Untitled Kelsey": "1RTlmvtOz279OOwW6rzsKi07hzWmbIFdE"
+    Marketing: "1liZVn5ML72uIAoAhHkp-gcvV2PUbMxIC"
+    "Marketing / Headshots": "1zeczUMlzYUAQv6t1ZFF7jlnsLiPswUow"
+    "Marketing / Newsletter": "1Ge-0kbMlbbq3Mm6u9ueKITY5H0oFxbXU"
+    "Marketing / Newsletter / Featured images": "1OKRuU32zpyFN5YaBQYI705aj65HsiG0H"
+    "Marketing / Newsletter / Swap": "1zd3Jmaus_vr6WqA6PN_AhFjUGzSzxBLm"
+    "Marketing / Social images": "1qUXWXlXls6AuziR3mRgM2QESSlalhpSF"
+    "Marketing / Video": "19dJbRq6GVwGrt9mZJ3NegsuriQ7G57vt"
+    "Marketing / Video / avatar assets": "1ALfA55QMpu13gxa7B_3IRUX-SmrBnxoK"
+    "Marketing / Video / avatar videos": "1W8Y4bqFiMkmSx2m8uEIz4Dd6oSTNAkB6"
+    "Marketing / Video / b-roll raw": "17Vpl_wq3CFxhMMj6HCAUT2W3p6_DN0sX"
+    "Marketing / Video / b-roll ready": "1FC8zEzxTdLCn-vWgOM5enGiy_jRBEwat"
+    PSDs: "1epreGeMwReI4rZGEjathYmZXj34jDL67"
+    SHARED: "1_LCIUpgcYaAx73YJuHpcrfeA9usyncbb"
+    "Source files": "121Q8rdnvAjNHDkawLfHg1IAV8Ay02DxJ"
+    Unsorted: "1ykOtB1Lzao_-YY5kILRep2J-yduW-yvd"
+    Website: "1vJ4qdW0sz59qamDioXgHygOnhBGyjEJt"
+    "Website / Assets": "1I8Dez0rhnfK1BdJs4O_7ZALuUN5bIurm"
+    "Website / Copy": "1jxC5-kXTYEthBsr18OtKpgTbs3XTKHfV"
+    "Website / Design": "1R6_DoZSY0HqNG3atkRihKyjnXlXM-qLn"
+    "~old": "1FPVSF11YWp7DV9SCG-6uUx43KYfhn84i"
+
+  lynn:
+    OLD: "1WJLQaqCT-dbigvaPr0qwSqfWa2okmQuj"
+    Admin: "1h1RSiSTe8nrUgL9drpkfcOyaHLW0Vmr5"
+    "Book - Hallway of Doorknobs": "1pvum72Gav0Uo8l2Gv7XqWLHAcp7ebOav"
+    "Book - Hallway of Doorknobs / HoD Master": "1dM3Pt_wGXjnnlbfBPJI8dieMraaQL4C1"
+    "Book - Untitled Libby": "1i6YgttRUxsS8eDzNreRHS1kLyFjc8Vbm"
+    "Book - Untitled Libby / Libby Master": "1wexIzo5Ussu7VuYyqOhS6MYq6MINi23o"
+    "Book - Workbook": "1_8XrgWpWpUec4gny3ZkWdj64jT2GJa9c"
+    "Book - Workbook / Workbook Master": "1hsALaGE1uMGEfF8hxLBG-nvKpEPQGgR3"
+    Marketing: "1nuzqw-fwBX5MyYFA7SCpoxlQ8wv3TzCW"
+    "Marketing / Headshots": "1hy21y43nwHZaLegDb93aDROu37Vp1JTn"
+    "Marketing / Video": "1eErACYiOk3jQ2x4SoXSaidAA-qkmTaCG"
+    PSDs: "1fVOTDgQc_VukLst1Vj82KytYqi_ziha0"
+    SHARED: "1-9MTa4xIe9axdFIxtM5MsD_-0YVh1lcx"
+    Unsorted: "1tp5aFpswfMYtgc_L4jUzXybzxgwJf2_t"
+    "Source files": "1I_HVTZQRAf_MjuUMOLp5geQoy-HQGOs5"
+    "Source files / Headshots raw": "1lzO-IBukmKDAW4mSi407ZL4wF64coiTT"
+    Website: "1LgyF2LrrjxXP2fMravNrvtY7u47xueAN"
+    "Website / Assets": "14uCOjuWxxahpyW0J5tCTsPM_LD3cvxyr"
+    "Website / Copy": "1TlC1fMx-wUCxZY1xZiY0DEtoBfOgTShm"
+    "Website / Design": "1Vcm6nyosh52PWrXYbZw0z1hhlfD5bNIo"
+
+  sulima:
+    OLD: "1ASTrMyT8BoZ1R3JFTD4faPJqC2wAwo-Z"
+    Admin: "1Wwn62wgXvWL4xPfCsCRGLl2nGC6yMHnn"
+    PSDs: "1D4VHUORJN08hK49qS1ZCEZ0CwV7aMR_h"
+    SHARED: "1nNs4IL7Vrx_xuRxmKE-kCqmBizvBMgcV"
+    "Source files": "1oa1DjYEEwdm9wJQW8XDZUDk4jrqlG5QB"
+    Unsorted: "1R0aAzfFYL8pB08eBBG09IYcExjLDE6S1"
+    "BOOK - All in the Soup Together": "1wXYsN253TZTVcBPueU0Ayy595L3WR3SH"
+    "BOOK - All in the Soup Together / Master": "1PL6nLdN9Jc7QmcXAjkMqnieR9R_tY8l3"
+    "BOOK - Tributaries": "1yF_yKsQkQwSwIIPflP8B1nITKy_4MrH1"
+    "BOOK - Words That Dance": "1XVA06M6iqqw1tnHE74sTIg-4I-kQXmaC"
+    "BOOK - Arms Filled with Bittersweet": "1z-sFkqO7SWcgnPRxaJAk1jziLahxBLWo"
+    Website: "1kaBTXf2AfKiaRQFJ4NWqKNYwltwwp0M_"
+    "Website / Copy": "1jibhxXBXsZUgsTYiudGBCjD7cdAILiiA"
+    "Website / Design": "1Wxi1Qx2VmUJJRXaACsUpIwCwLL-MeLSh"
+    "Website / Assets": "17eP1Ps9zdVPnVgQdYS3YuaFMui4sbtPi"
+    "Website / Assets / Featured images": "1ugMOJqdYEXN530v90JNVR1Jm4CtWtFz5"
+    Marketing: "1D4BOx2y0gJ6IaGCUqBoJ6lOROpoXeUL7"
+    "Marketing / Social images": "1NT5GSrqVKJwtOsn6fTB5iZOyxdGqUWbh"
+
+# Routing matrices are 22x22 tag-pair lookups stored in google_drive_id_matrix.json.
+# Each matrix[tagA][tagB] = Google Drive folder ID (or "Unsorted").
+# The n8n workflow alphabetically sorts the tag pair before lookup (symmetry rule).
+# The full matrices are too large for inline YAML — reference the JSON source directly.
+routing_matrices:
+  note: "Complete matrices in sources/system-snapshots/google_drive_id_matrix.json"
+  maya:
+    dimensions: "22 x 22 (3 project + 19 content tags including B-Roll)"
+    matrix_key: "MAYA_routing_matrix"
+  lynn:
+    dimensions: "22 x 22 (3 project + 19 content tags including B-Roll)"
+    matrix_key: "LYNN_routing_matrix"
+  sulima:
+    dimensions: "22 x 22 (4 project + 18 content tags, no B-Roll)"
+    matrix_key: "SULIMA_routing_matrix"
+  lingua_ink:
+    dimensions: "22 x 22 (4 project + 18 content tags, same as Sulima)"
+    matrix_key: "LINGUA INK_routing_matrix"
+    status: "Placeholder. Only 4 of 484 cells route (project self-pairs). Not wired to n8n."
+
+other_workflows:
+  - name: "Amazon Deliveries - Workflow 1 Shipped"
+    workflow_id: "X6g71NgalPNjSTdH"
+    purpose: "Parse Amazon shipped notifications from Gmail to Google Sheets"
+    trigger: "Hourly schedule"
+    active: true
+
+  - name: "Amazon Deliveries - Workflow 2 Delivered"
+    workflow_id: "eQWY5Lf4nBEEFtjT"
+    purpose: "Parse Amazon delivered notifications from Gmail to Google Sheets"
+    trigger: "Hourly schedule"
+    active: true
+
+  - name: "Get Google Folder IDs"
+    purpose: "Utility to discover folder IDs from Google Drive"
+    active: false
+    note: "Manual/utility workflow, not scheduled"

@@ -1,0 +1,257 @@
+# email-identities.yaml
+# Phase 1 output — Seamless Bootstrap
+# Sources: extraction/technical-systems/email.md,
+#          extraction/technical-systems/questions.md (Q8-Q13)
+# Generated: 2026-02-27
+
+hub_account: stephbairey@gmail.com
+
+all_forwarding: true  # All addresses forward to stephbairey@gmail.com — domain emails at hosting level, Gmail accounts via Gmail forwarding. Every address funnels into one inbox.
+
+identities:
+  # --- Gmail-native addresses (no external mail server) ---
+
+  - address: stephbairey@gmail.com
+    display_name: "Steph Bairey"
+    reply_to: stephbairey@gmail.com
+    smtp_server: null  # Gmail native
+    smtp_port: null
+    tls: null
+    identity_context: steph-bairey
+    role_description: "Default; personal/community; receives all forwards"
+    status: active
+
+  - address: mjbairey@gmail.com
+    display_name: "Maya Bairey"
+    reply_to: mjbairey@gmail.com
+    smtp_server: null  # Gmail native
+    smtp_port: null
+    tls: null
+    identity_context: maya-bairey
+    role_description: "Creative personal/community, Google-login contexts"
+    status: active
+
+  - address: scb.zombie@gmail.com
+    display_name: "Steph Bairey"
+    reply_to: scb.zombie@gmail.com
+    smtp_server: null  # Gmail native
+    smtp_port: null
+    tls: null
+    identity_context: steph-bairey
+    role_description: "Legacy — should be retired but tied to too many signups; also Microsoft account login for upstairs dev machine"
+    status: legacy
+
+  - address: grannynewsletter@gmail.com
+    display_name: "PRG Newsletter"
+    reply_to: null  # default
+    smtp_server: null  # Gmail native
+    smtp_port: null
+    tls: null
+    identity_context: prg
+    role_description: "PRG newsletter submissions and sends"
+    status: active
+
+  - address: pdxraginggrannies@gmail.com
+    display_name: "Portland Raging Grannies"
+    reply_to: null  # default
+    smtp_server: null  # Gmail native
+    smtp_port: null
+    tls: null
+    identity_context: prg
+    role_description: "PRG official/external"
+    status: active
+
+  - address: webgranny@gmail.com
+    display_name: "Steph Bairey"
+    reply_to: null  # default
+    smtp_server: null  # Gmail native
+    smtp_port: null
+    tls: null
+    identity_context: prg
+    role_description: "Personal address for tech work done for the International Raging Grannies (IRG)"
+    status: active
+
+  # --- bairey.com domain addresses ---
+
+  - address: maya@bairey.com
+    display_name: "Maya Bairey"
+    reply_to: null
+    smtp_server: mail.bairey.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: maya-bairey
+    role_description: "Author correspondence, writing cohort, NIWA"
+    status: active
+
+  - address: steph@bairey.com
+    display_name: "Steph Bairey"
+    reply_to: null
+    smtp_server: mail.bairey.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: steph-bairey
+    role_description: "Personal/job search/formal/government-name contexts"
+    status: active
+
+  - address: webgranny@bairey.com
+    display_name: "Steph Bairey"
+    reply_to: null
+    smtp_server: mail.bairey.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: prg
+    role_description: "Legacy — predates inbox access to webgranny@gmail.com"
+    status: legacy
+
+  # --- linguaink.com domain addresses ---
+
+  - address: info@linguaink.com
+    display_name: "Lingua Ink"
+    reply_to: null
+    smtp_server: dfw-s07.nixihost.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: lingua-ink
+    role_description: "Front-facing generic Lingua Ink contact"
+    status: active
+
+  - address: maya@linguaink.com
+    display_name: "Maya Bairey"
+    reply_to: null
+    smtp_server: mail.linguaink.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: lingua-ink
+    role_description: "Creative director work, illustrator coordination, author clients (LIB creative work)"
+    status: active
+
+  - address: steph@linguaink.com
+    display_name: "Steph Bairey"
+    reply_to: null
+    smtp_server: dfw-s07.nixihost.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: lingua-ink
+    role_description: "Lingua Ink Books business, publishing clients"
+    status: active
+
+  # --- linguainkmedia.com domain addresses ---
+
+  - address: maya@linguainkmedia.com
+    display_name: "Maya Bairey"
+    reply_to: null
+    smtp_server: mail.linguainkmedia.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: lingua-ink
+    role_description: "LIM creative work under Maya identity. Use when Maya hat is appropriate for LIM context."
+    status: active
+    note: "Exists at Nixihost but not yet configured as Gmail Send-As. Maya prefers to start using this."
+
+  - address: connect@linguainkmedia.com
+    display_name: "Lingua Ink Media"
+    reply_to: null
+    smtp_server: mail.linguainkmedia.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: lingua-ink
+    role_description: "LIM public-facing contact address (on website). Equivalent role to info@linguaink.com for LIB."
+    status: active
+    note: "Front-facing address for LIM. Not yet configured as Gmail Send-As."
+
+  - address: steph@linguainkmedia.com
+    display_name: "Steph Bairey"
+    reply_to: null
+    smtp_server: mail.linguainkmedia.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: lingua-ink
+    role_description: "Lingua Ink Media business, TDA client projects, web dev"
+    status: active
+
+  # --- tomahawkdestiny.com domain addresses ---
+
+  - address: arc@tomahawkdestiny.com
+    display_name: "ARC"
+    reply_to: null
+    smtp_server: mail.tomahawkdestiny.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: arc-tda
+    role_description: "Generic ARC distribution list"
+    status: active
+
+  - address: steph.bairey.arc@tomahawkdestiny.com
+    display_name: "Steph Bairey (ARC)"
+    reply_to: null
+    smtp_server: mail.tomahawkdestiny.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: arc-tda
+    role_description: "Personal ARC committee correspondence"
+    status: active
+
+  - address: webmaster@tomahawkdestiny.com
+    display_name: "Webmaster"
+    reply_to: null
+    smtp_server: iah-s01.nixihost.com
+    smtp_port: 587
+    tls: true  # TLS (not SSL like the others)
+    identity_context: arc-tda
+    role_description: "TDA website operations"
+    status: active
+
+  # --- lynnahaller.com domain address ---
+
+  - address: doorknobs@lynnahaller.com
+    display_name: "Maya Bairey"
+    reply_to: null
+    smtp_server: mail.lynnahaller.com
+    smtp_port: 465
+    tls: false  # SSL, not TLS
+    identity_context: lingua-ink
+    role_description: "Shared distribution list for Lynn Haller / Hallway of Doorknobs book correspondence"
+    status: active
+
+routing_rules:
+  name_axis: "Steph = business/operations, Maya = creative/author"
+  domain_axis: "Domain indicates organizational context"
+  reply_behavior: "Auto-sends from whichever address received inbound message"
+  override: "Relationship history can override strict role logic — some contacts know Maya first"
+
+labels:
+  # Client/relationship
+  - Authors
+  - Carolyn
+  - Cohort
+  - Daniela
+  - Devon
+  - Lynn
+  - Nicole
+  - Sulima
+  # Organizational
+  - ARC
+  - PRG
+  - PRG/Newsletter
+  - PRG/PRG Bumpf
+  - PRG/PRG To Do
+  - PRG/Webgranny
+  - Tomahawk
+  # Business
+  - Amazon
+  - Business
+  - Business/SEO
+  - Business/Tools
+  - Jobs
+  - Lingua Ink
+  - Taxes
+  # Content/reference
+  - Articles
+  - Articles/Business
+  - Articles/SEO
+  - Articles/Tools
+  - Substack
+  # Personal
+  - KEEPERS
+  - My Travel
+  - Snoozed

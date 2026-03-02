@@ -1,0 +1,217 @@
+# ClickUp Field Configuration
+# Phase 1 output from Seamless Bootstrap (SB)
+# Source: extraction/technical-systems/clickup.md
+# Primary data source: sources/system-snapshots/clickup-fields.json
+# Generated: 2026-02-27
+# Status: DRAFT -- awaiting Maya review
+
+workspace:
+  workspace_id: "90132317650"
+  space_id: "90139879792"
+  space_name: "Task Dashboard"
+  list_id: "901318968458"
+  list_name: "Master Task List"
+
+statuses:
+  - "Not Started"
+  - "On Hold"
+  - "Waiting"
+  - "Begun"
+  - "Scratch"
+  - "Complete"
+
+custom_fields:
+
+  - name: "Project"
+    field_id: "9f921ca1-1b45-4b49-a463-a550287cc5b2"
+    type: "drop_down"
+    required: true
+    date_created_epoch_ms: 1756483731756
+    date_created: "2025-08-29"
+    options:
+      - name: "Lingua Ink Books"
+        id: "5018e8c5-0c2f-4f11-af92-d857b8e007c6"
+        color: "#800000"
+        orderindex: 0
+      - name: "Lingua Ink Media"
+        id: "80b8f09f-0235-49dc-9d72-a914dff7888e"
+        color: "#e50000"
+        orderindex: 1
+      - name: "Dalton Law"
+        id: "848daa77-22e1-48d1-9156-f692b966d244"
+        color: "#AF7E2E"
+        orderindex: 2
+      - name: "Lynn Haller"
+        id: "be20a38f-8990-4e37-ab2b-04a9a62c0404"
+        color: "#0231E8"
+        orderindex: 3
+      - name: "Tomahawk Destiny"
+        id: "226fe75e-8c30-4a59-ac6c-82cf375c5e55"
+        color: "#02BCD4"
+        orderindex: 4
+      - name: "Lingua Ink Courses"
+        id: "6b74f9c5-229f-4b67-bb10-9d3511304627"
+        color: "#FF4081"
+        orderindex: 5
+      - name: "Lingua Ink Cohorts"
+        id: "ea7c1965-6a37-4086-9224-72db30b70203"
+        color: "#FF7FAB"
+        orderindex: 6
+      - name: "Daniela Morescalchi"
+        id: "633e3bc7-055b-47fe-b65b-c2950b0e596e"
+        color: "#E65100"
+        orderindex: 7
+      - name: "Sulima Malzin"
+        id: "6a62e5e9-0dc5-4f5c-b11e-0fabbb917105"
+        color: "#f9d900"
+        orderindex: 8
+      - name: "Carolyn Martin"
+        id: "2c96fe38-9057-418c-bfec-4d60f919f0ff"
+        color: "#ff7800"
+        orderindex: 9
+      - name: "Maya Bairey"
+        id: "d721cedf-c9b5-4375-8bcd-1201711fe58a"
+        color: "#81B1FF"
+        orderindex: 10
+      - name: "Personal"
+        id: "72cdbc47-5044-49a8-93f0-31c26c95e469"
+        color: "#b5bcc2"
+        orderindex: 11
+      - name: "Raging Grannies"
+        id: "48dfc203-1c7a-4fbd-8d3b-4ef845159629"
+        color: "#bf55ec"
+        orderindex: 12
+      - name: "Free Cohort"
+        id: "724689ff-6931-47c1-b15b-f6b27971bc88"
+        color: "#3397dd"
+        orderindex: 13
+      - name: "Job Search"
+        id: "1be4ed5e-cf46-4a43-ac1e-f041836fa7ea"
+        color: "#667684"
+        orderindex: 14
+      - name: "Devon Ervin"
+        id: "04b61649-4b90-4525-a8fe-7b4654baf4b6"
+        color: "#AF7E2E"
+        orderindex: 15
+
+  - name: "Effort"
+    field_id: "5db96854-9117-4857-8306-6f740ec31c3e"
+    type: "drop_down"
+    required: true
+    date_created_epoch_ms: 1756483822484
+    date_created: "2025-08-29"
+    options:
+      - name: "Tiny"
+        id: "eeb46716-6bfb-4c17-be01-fb618fb7842b"
+        color: "#FF4081"
+        orderindex: 0
+      - name: "Small"
+        id: "91613c05-d60f-4da0-afa4-9ddbd27bb9b8"
+        color: "#7C4DFF"
+        orderindex: 1
+      - name: "Medium"
+        id: "2bc84c77-3957-41a7-be7d-1a6f25f54933"
+        color: "#f900ea"
+        orderindex: 2
+      - name: "Big"
+        id: "853902f3-5554-43f2-8ed2-11f94e2612af"
+        color: "#9b59b6"
+        orderindex: 3
+      - name: "Very Big"
+        id: "6bdba8d9-d606-4eb4-b320-231a61bc2219"
+        color: "#1bbc9c"
+        orderindex: 4
+
+  - name: "Revenue"
+    field_id: "44470f88-d8e2-4e14-9f39-c63b30e6aede"
+    type: "drop_down"
+    required: true
+    date_created_epoch_ms: 1756483951529
+    date_created: "2025-08-29"
+    options:
+      - name: "None"
+        id: "7ab3a7e0-1fc2-4074-b353-db128d792628"
+        color: "#FF4081"
+        orderindex: 0
+      - name: "Indirect"
+        id: "fd4654d4-843e-4e7c-b9d6-d3b34950ed30"
+        color: "#7C4DFF"
+        orderindex: 1
+      - name: "Passive"
+        id: "9267bc99-c45e-45ff-abbf-578e9d2dcce6"
+        color: "#7C4DFF"
+        orderindex: 2
+      - name: "Direct, Low"
+        id: "4e797c63-fc86-4e35-92cd-695fb386514e"
+        color: "#AF7E2E"
+        orderindex: 3
+      - name: "Direct, High"
+        id: "73b3ec47-f245-4f2a-bd4d-b7c29a7e4d87"
+        color: "#E65100"
+        orderindex: 4
+
+  - name: "Scope"
+    field_id: "1e4539b4-0525-4b2e-9223-a3eef644f91f"
+    type: "drop_down"
+    required: true
+    date_created_epoch_ms: 1762209397543
+    date_created: "2025-10-03"
+    options:
+      - name: "Internal"
+        id: "b709a410-20b4-4532-8119-af25b8463d9b"
+        color: "#FF4081"
+        orderindex: 0
+      - name: "External"
+        id: "e06f82ab-ba76-4a87-8583-0b4d54caf938"
+        color: "#7C4DFF"
+        orderindex: 1
+
+  - name: "Approach"
+    field_id: "b977f131-3c07-4b5d-935b-6a872c2cc0b6"
+    type: "drop_down"
+    required: true
+    date_created_epoch_ms: 1762209964010
+    date_created: "2025-10-03"
+    options:
+      - name: "Dread"
+        id: "85e692cb-1530-4248-b7e8-0d7899c2ec7e"
+        color: "#e50000"
+        orderindex: 0
+      - name: "Reluctant"
+        id: "63b001e8-f862-480b-8449-d69ad0d6f77d"
+        color: "#E65100"
+        orderindex: 1
+      - name: "Indifferent"
+        id: "c5f38d05-209f-4525-9b69-e14af13552c8"
+        color: "#ff7800"
+        orderindex: 2
+      - name: "Interested"
+        id: "f8414b5b-b7db-4c47-8144-34117a6a04e9"
+        color: "#f9d900"
+        orderindex: 3
+      - name: "Excited"
+        id: "9f2f98ac-4575-4b80-b909-9b111c0c2e99"
+        color: "#1bbc9c"
+        orderindex: 4
+
+  - name: "Readiness"
+    field_id: "3b795a7d-728c-49ae-b00e-82a6dbd28431"
+    type: "drop_down"
+    required: true
+    date_created_epoch_ms: 1762210334564
+    date_created: "2025-10-03"
+    options:
+      - name: "Prepared"
+        id: "f297da50-a58f-41a3-8124-f588cf1fe6cc"
+        color: "#04A9F4"
+        orderindex: 0
+      - name: "Upskilling"
+        id: "331fcc23-6dae-4e34-a6d3-26f34b89d463"
+        color: "#bf55ec"
+        orderindex: 1
+
+naming_conventions:
+  task_name_format: "lowercase verb first, short and actionable"
+  due_dates: "mandatory"
+  descriptions: "optional, used for notes, zoom links, meeting notes"
+  checklists: "not used"
