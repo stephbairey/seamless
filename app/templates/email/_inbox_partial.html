@@ -1,0 +1,77 @@
+{% if error %}
+  <div class="card" style="border-left: 3px solid var(--red);">
+    <div class="card-body" style="color: var(--red);">{{ error }}</div>
+  </div>
+{% endif %}
+
+{% if messages %}
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+    <span style="font-size: 0.85rem; color: var(--text-muted);">
+      {{ messages | length }} message{{ 's' if messages | length != 1 else '' }}
+      {% if unlabeled_count %} &middot; {{ unlabeled_count }} unlabeled{% endif %}
+    </span>
+  </div>
+
+  {% for msg in messages %}
+    {% set cls = classifications.get(msg.id) if classifications else None %}
+    <div class="card" style="padding: 1rem; margin-bottom: 0.5rem; {% if cls and cls.priority == 'high' %}border-left: 3px solid var(--red);{% endif %}">
+      <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            {% if msg.is_unread %}
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0;"></span>
+            {% endif %}
+            <span style="font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ msg.subject }}
+            </span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+            {{ msg.sender }}
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-dim);">
+            {{ msg.snippet[:120] }}{% if msg.snippet | length > 120 %}...{% endif %}
+          </div>
+          {% if msg.labels %}
+            <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.5rem;">
+              {% for label in msg.labels %}
+                {% if not label.startswith('INBOX') and not label.startswith('UNREAD') and not label.startswith('CATEGORY_') and not label == 'IMPORTANT' and not label == 'STARRED' %}
+                  <span class="tag">{{ label }}</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <div style="flex-shrink: 0; text-align: right;">
+          <div style="font-size: 0.75rem; color: var(--text-dim);">
+            {% if msg.date %}{{ msg.date.strftime('%b %d, %H:%M') }}{% endif %}
+          </div>
+          {% if cls and cls.priority == 'high' %}
+            <span style="font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 999px; background: rgba(248,113,113,0.15); color: var(--red); margin-top: 0.25rem; display: inline-block;">
+              Priority
+            </span>
+          {% endif %}
+          <div style="margin-top: 0.5rem;">
+            <a href="/email/reply/{{ msg.id }}" class="btn btn-ghost" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+              Reply
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {% if cls and cls.suggested_label and not has_user_labels.get(msg.id, False) %}
+        {% include "email/_classify_partial.html" %}
+      {% endif %}
+
+      {% if cls and cls.needs_manual_review %}
+        <div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: rgba(251,191,36,0.1); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--yellow);">
+          Needs review: {{ cls.review_reason }}
+        </div>
+      {% endif %}
+    </div>
+  {% endfor %}
+{% elif loaded %}
+  <div class="empty-state">
+    <div class="icon">&#10003;</div>
+    <p>No messages matched your query.</p>
+  </div>
+{% endif %}

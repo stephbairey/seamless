@@ -1,0 +1,20 @@
+<div style="margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: var(--accent-dim); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+  <div style="font-size: 0.8rem;">
+    <span style="color: var(--text-muted);">Suggested:</span>
+    <span style="color: var(--accent); font-weight: 500;">{{ cls.suggested_label }}</span>
+    {% if cls.matched_client %}
+      <span style="color: var(--text-dim);"> ({{ cls.match_method }}: {{ cls.matched_client }})</span>
+    {% endif %}
+    {% if cls.confidence != 'high' %}
+      <span style="font-size: 0.7rem; color: var(--yellow);"> [{{ cls.confidence }}]</span>
+    {% endif %}
+  </div>
+  <div style="display: flex; gap: 0.375rem;">
+    <form hx-post="/email/label/{{ msg.id }}" hx-target="closest .card" hx-swap="outerHTML" style="display: inline;">
+      <input type="hidden" name="label_name" value="{{ cls.suggested_label }}">
+      <button type="submit" class="btn btn-primary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+        Apply
+      </button>
+    </form>
+  </div>
+</div>

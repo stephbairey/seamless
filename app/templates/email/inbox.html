@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Inbox — Email Triage{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Email Inbox</h2>
+  <p class="description">Fetch, classify, and label messages. Unlabeled messages get classification suggestions.</p>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
+  <form hx-post="/email/inbox/fetch" hx-target="#inbox-results" hx-indicator="#fetch-spinner"
+        style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end;">
+    <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+      <label for="query">Search query</label>
+      <input type="text" id="query" name="query" value="{{ query or '' }}"
+             placeholder="e.g. is:unread, from:sulima, newer_than:1d">
+    </div>
+    <div class="form-group" style="width: 100px; margin-bottom: 0;">
+      <label for="max_results">Max</label>
+      <input type="text" id="max_results" name="max_results" value="{{ max_results or '25' }}"
+             style="width: 100%;">
+    </div>
+    <div class="form-group" style="margin-bottom: 0;">
+      <label>&nbsp;</label>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary">
+          Fetch & Classify
+        </button>
+        <span id="fetch-spinner" class="htmx-indicator" style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+          <span class="spinner"></span> Fetching...
+        </span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div id="inbox-results">
+  {% if loaded %}
+    {% include "email/_inbox_partial.html" %}
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">&#9993;</div>
+      <p>Enter a search query and click Fetch & Classify to load messages.</p>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+        Common queries: <code>is:unread</code>, <code>newer_than:1d</code>, <code>has:nouserlabels is:unread</code>
+      </p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

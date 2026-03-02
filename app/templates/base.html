@@ -37,6 +37,19 @@
       </nav>
 
       <nav class="nav-section">
+        <div class="nav-section-label">Email</div>
+        <a href="/email/inbox" class="nav-link {% if active_module == 'email' and active_tab == 'inbox' %}active{% endif %}">
+          <span class="icon">&#9993;</span> Inbox
+        </a>
+        <a href="/email/digest" class="nav-link {% if active_module == 'email' and active_tab == 'digest' %}active{% endif %}">
+          <span class="icon">&#128203;</span> Digest
+        </a>
+        <a href="/email/reply" class="nav-link {% if active_module == 'email' and active_tab == 'reply' %}active{% endif %}">
+          <span class="icon">&#9997;</span> Reply Draft
+        </a>
+      </nav>
+
+      <nav class="nav-section">
         <div class="nav-section-label">Brand</div>
         <a href="/brand/identity" class="nav-link {% if active_module == 'brand' and active_tab == 'identity' %}active{% endif %}">
           <span class="icon">&#9879;</span> Identity Router

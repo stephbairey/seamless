@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <h2>Seamless Dashboard</h2>
-  <p class="description">Brand codification, identity routing, text quality, and task management.</p>
+  <p class="description">Brand codification, identity routing, text quality, task management, and email triage.</p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
@@ -35,6 +35,36 @@
     </div>
     <div class="card-body">
       Completed/overdue counts, approach distribution, revenue visibility, project breakdown.
+    </div>
+  </a>
+
+  <a href="/email/inbox" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Email Inbox</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Fetch and classify messages. Suggest labels for unlabeled mail, detect priority items.
+    </div>
+  </a>
+
+  <a href="/email/digest" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Daily Digest</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Priority items, newsletter candidates, and grouped messages at a glance.
+    </div>
+  </a>
+
+  <a href="/email/reply" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Reply Drafting</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Identity-aware reply drafts in the correct voice. Edit, check, and save as Gmail draft.
     </div>
   </a>
 

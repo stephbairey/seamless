@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Reply Draft — Email Triage{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Reply Draft</h2>
+  <p class="description">Identity-aware reply in the correct voice. Edit before saving as Gmail draft.</p>
+</div>
+
+{% if not msg_id %}
+  <div class="empty-state">
+    <div class="icon">&#9997;</div>
+    <p>Select a message from the <a href="/email/inbox" style="color: var(--accent);">Inbox</a> to draft a reply.</p>
+  </div>
+{% else %}
+  {% if original %}
+    <div class="context-info" style="margin-bottom: 1rem;">
+      <div class="info-item">
+        <span class="info-label">Replying to:</span>
+        <span class="info-value">{{ original.sender }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Subject:</span>
+        <span class="info-value">{{ original.subject }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Send as:</span>
+        <span class="info-value">{{ send_as_info.send_as_name }} &lt;{{ send_as_info.send_as }}&gt;</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Voice:</span>
+        <span class="info-value">{{ send_as_info.voice_id or '(default)' }}</span>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom: 1rem;">
+      <div class="card-header" onclick="this.parentElement.querySelector('.card-body').classList.toggle('expanded')"
+           style="cursor: pointer;">
+        <h3>Original Message</h3>
+        <span style="font-size: 0.8rem; color: var(--text-dim);">click to expand</span>
+      </div>
+      <div class="card-body" style="display: none; white-space: pre-wrap; font-size: 0.85rem; max-height: 300px; overflow-y: auto;">{{ original.body_text or original.snippet }}</div>
+    </div>
+
+    <div class="drafting-layout">
+      <div class="drafting-editor">
+        <div class="form-group">
+          <label for="instructions">Instructions (optional)</label>
+          <input type="text" id="instructions" name="instructions"
+                 placeholder="e.g. Confirm Thursday call, mention new book update"
+                 style="margin-bottom: 0.75rem;">
+        </div>
+
+        <div style="margin-bottom: 0.75rem;">
+          <button class="btn btn-primary"
+                  hx-post="/email/reply/{{ msg_id }}/generate"
+                  hx-target="#reply-result"
+                  hx-indicator="#gen-spinner"
+                  hx-include="#instructions">
+            Generate Draft
+          </button>
+          <span id="gen-spinner" class="htmx-indicator" style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+            <span class="spinner"></span> Generating...
+          </span>
+        </div>
+
+        <div id="reply-result">
+          {% if draft %}
+            {% include "email/_reply_preview.html" %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="drafting-sidebar" id="violations-sidebar">
+        <h3>Violations <span id="violation-count"></span></h3>
+        <div id="violations-list">
+          <div style="color: var(--text-dim); font-size: 0.85rem;">Generate a draft to see violations.</div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .card-body.expanded { display: block !important; }
+</style>
+{% endblock %}

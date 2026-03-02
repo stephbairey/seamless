@@ -1,0 +1,133 @@
+{% if error %}
+  <div class="card" style="border-left: 3px solid var(--red); padding: 1rem; margin-bottom: 0.75rem;">
+    <div style="color: var(--red); font-size: 0.85rem;">{{ error }}</div>
+  </div>
+{% endif %}
+
+{% if draft %}
+  <div x-data="replyEditor()" x-init="init()">
+    <textarea
+      id="reply-body"
+      x-model="body"
+      @input.debounce.500ms="checkText()"
+      style="min-height: 300px; margin-bottom: 0.75rem;"
+    >{{ draft.body }}</textarea>
+
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <button class="btn btn-primary"
+              @click="saveDraft()"
+              :disabled="saving">
+        <span x-show="!saving">Save as Gmail Draft</span>
+        <span x-show="saving" style="display: flex; align-items: center; gap: 0.375rem;">
+          <span class="spinner"></span> Saving...
+        </span>
+      </button>
+      <button class="btn btn-ghost" @click="recheck()">
+        Re-check
+      </button>
+      <span x-show="wordCount > 0" style="font-size: 0.8rem; color: var(--text-dim); margin-left: auto;">
+        <span x-text="wordCount"></span> words
+      </span>
+    </div>
+
+    {% if draft.violations %}
+      <script>
+        // Populate violations sidebar on load
+        document.addEventListener('DOMContentLoaded', function() {
+          const violations = {{ draft.violations | tojson }};
+          updateViolationsSidebar(violations);
+        });
+      </script>
+    {% endif %}
+
+    <template x-if="saveResult">
+      <div :class="saveResult.ok ? 'card' : 'card'" style="margin-top: 0.75rem; padding: 0.75rem;"
+           :style="saveResult.ok ? 'border-left: 3px solid var(--green);' : 'border-left: 3px solid var(--red);'">
+        <div :style="saveResult.ok ? 'color: var(--green);' : 'color: var(--red);'" style="font-size: 0.85rem;"
+             x-text="saveResult.message"></div>
+      </div>
+    </template>
+  </div>
+{% endif %}
+
+<script>
+function updateViolationsSidebar(violations) {
+  const countEl = document.getElementById('violation-count');
+  const listEl = document.getElementById('violations-list');
+  if (!countEl || !listEl) return;
+
+  if (violations.length === 0) {
+    countEl.textContent = '';
+    listEl.innerHTML = '<div style="color: var(--green); font-size: 0.85rem;">Clean.</div>';
+    return;
+  }
+
+  countEl.textContent = '(' + violations.length + ')';
+  countEl.style.color = 'var(--red)';
+
+  listEl.innerHTML = violations.map(function(v) {
+    return '<div class="violation severity-' + v.severity + '" style="margin-bottom: 0.5rem;">' +
+      '<div class="violation-header">' +
+        '<span class="violation-label">' + v.label + '</span>' +
+        '<span class="violation-severity ' + v.severity + '">' + v.severity + '</span>' +
+      '</div>' +
+      '<div class="violation-description">' + v.description + '</div>' +
+      (v.matched_text ? '<div class="violation-match">' + v.matched_text + '</div>' : '') +
+      (v.suggestion ? '<div class="violation-suggestion">' + v.suggestion + '</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function replyEditor() {
+  return {
+    body: {{ (draft.body if draft else '') | tojson }},
+    saving: false,
+    saveResult: null,
+    wordCount: 0,
+
+    init() {
+      this.wordCount = this.body.trim() ? this.body.trim().split(/\s+/).length : 0;
+    },
+
+    async checkText() {
+      this.wordCount = this.body.trim() ? this.body.trim().split(/\s+/).length : 0;
+      const formData = new FormData();
+      formData.append('text', this.body);
+      formData.append('voice_id', '{{ draft.voice_id if draft else "" }}');
+      try {
+        const resp = await fetch('/email/reply/{{ draft.message_id if draft else "" }}/check', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+        updateViolationsSidebar(data.violations || []);
+      } catch (e) {
+        console.error('Check failed:', e);
+      }
+    },
+
+    async recheck() {
+      await this.checkText();
+    },
+
+    async saveDraft() {
+      this.saving = true;
+      this.saveResult = null;
+      const formData = new FormData();
+      formData.append('body', this.body);
+      try {
+        const resp = await fetch('/email/reply/{{ draft.message_id if draft else "" }}/save', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await resp.json();
+        this.saveResult = data;
+      } catch (e) {
+        this.saveResult = { ok: false, message: 'Failed to save draft: ' + e.message };
+      } finally {
+        this.saving = false;
+      }
+    }
+  };
+}
+</script>

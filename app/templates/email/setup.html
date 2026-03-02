@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Email — Setup Required{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Email Triage</h2>
+  <p class="description">Gmail classification, labeling, and identity-aware reply drafting</p>
+</div>
+
+<div class="card" style="max-width: 600px;">
+  <div class="card-header">
+    <h3>Gmail OAuth Credentials Required</h3>
+    <span class="badge" style="background: rgba(248,113,113,0.15); color: var(--red);">Not Configured</span>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom: 1rem;">The email triage module needs Google OAuth2 credentials to access your Gmail account.</p>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Setup steps:</p>
+      <ol style="font-size: 0.85rem; color: var(--text-muted); padding-left: 1.25rem;">
+        <li style="margin-bottom: 0.5rem;">Go to Google Cloud Console → APIs & Services → Credentials</li>
+        <li style="margin-bottom: 0.5rem;">Create or select your OAuth2 client (Desktop type)</li>
+        <li style="margin-bottom: 0.5rem;">Enable the Gmail API in your project</li>
+        <li style="margin-bottom: 0.5rem;">Use the OAuth playground or a token script to get a refresh token with scopes:
+          <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px; display: block; margin-top: 0.375rem; font-size: 0.8rem;">gmail.readonly gmail.modify gmail.compose</code>
+        </li>
+        <li style="margin-bottom: 0.5rem;">Add credentials to <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code>:</li>
+      </ol>
+      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem; overflow-x: auto;">GMAIL_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GMAIL_CLIENT_SECRET=your_client_secret
+GMAIL_REFRESH_TOKEN=your_refresh_token</pre>
+    </div>
+
+    <p style="font-size: 0.8rem; color: var(--text-dim);">After adding the credentials, restart the dashboard container.</p>
+  </div>
+</div>
+{% endblock %}
