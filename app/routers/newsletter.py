@@ -202,6 +202,7 @@ async def compose_update(
     rewrite_type: str = Form(None),
     source_url: str = Form(None),
     extra_context: str = Form(None),
+    sender_name: str = Form(None),
 ):
     updates = {}
     if headline is not None:
@@ -223,11 +224,23 @@ async def compose_update(
         updates["source_url"] = source_url.strip()
     if extra_context is not None:
         updates["extra_context"] = extra_context
+    if sender_name is not None:
+        updates["sender_name"] = sender_name.strip()
 
     newsletter_store.update_item(item_id, updates)
 
     ctx = _base_ctx(request, "compose")
     issue = newsletter_store.get_current_issue()
+
+    # If HTMX is targeting a specific item card, return just that item
+    hx_target = request.headers.get("HX-Target", "")
+    if request.headers.get("HX-Request") and hx_target == f"item-{item_id}":
+        updated_item = next((i for i in issue.items if i.id == item_id), None)
+        if updated_item:
+            ctx["item"] = updated_item
+            return templates.TemplateResponse("newsletter/_compose_item.html", ctx)
+
+    # Otherwise return full list (e.g. exclude button, reorder)
     items = [i for i in issue.items if i.status == "included"]
     _sort_items(items)
     ctx["issue"] = issue

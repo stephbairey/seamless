@@ -12,7 +12,7 @@
     <!-- Content -->
     <div style="flex: 1; min-width: 0;">
       <!-- Row 1: headline, category, event_date, Save -->
-      <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#compose-list" hx-swap="innerHTML">
+      <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
         <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
           <input type="text" name="headline" value="{{ item.headline }}"
                  placeholder="Headline..." style="flex: 1; font-weight: 600; font-size: 0.95rem;">
@@ -29,15 +29,19 @@
         </div>
       </form>
 
-      <!-- Subject / From -->
+      <!-- Subject / From (editable) -->
       <div style="font-size: 0.8rem; color: var(--text-muted);">{{ item.subject }}</div>
-      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem;">
-        From {{ item.sender_name or 'Unknown' }}
-      </div>
+      <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#item-{{ item.id }}" hx-swap="outerHTML"
+            style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+        <span style="font-size: 0.75rem; color: var(--text-dim);">From</span>
+        <input type="text" name="sender_name" value="{{ item.sender_name }}"
+               placeholder="Sender name" style="font-size: 0.75rem; width: 180px; padding: 0.15rem 0.4rem;">
+        <button type="submit" class="btn btn-ghost" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;">Save</button>
+      </form>
 
       <!-- Rewrite type + source URL + extra context -->
       <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-        <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#compose-list" hx-swap="innerHTML"
+        <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#item-{{ item.id }}" hx-swap="outerHTML"
               style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; flex: 1;">
           <select name="rewrite_type" style="width: 180px; font-size: 0.8rem;">
             <option value="" {% if not item.rewrite_type %}selected{% endif %}>Auto (from category)</option>
@@ -58,7 +62,7 @@
       <!-- Extra context (collapsible) -->
       <details style="margin-top: 0.5rem;">
         <summary style="font-size: 0.8rem; color: var(--text-dim); cursor: pointer;">Extra context</summary>
-        <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#compose-list" hx-swap="innerHTML"
+        <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#item-{{ item.id }}" hx-swap="outerHTML"
               style="margin-top: 0.25rem;">
           <textarea name="extra_context" style="min-height: 80px; font-size: 0.8rem;"
                     placeholder="Paste additional info here (flyer text, PDF content, etc.)">{{ item.extra_context }}</textarea>
@@ -108,7 +112,7 @@
       {% if item.rewritten_body %}
       <details open style="margin-top: 0.5rem;">
         <summary style="font-size: 0.8rem; color: var(--text-dim); cursor: pointer;">Rewritten body</summary>
-        <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#compose-list" hx-swap="innerHTML"
+        <form hx-post="/newsletter/compose/update/{{ item.id }}" hx-target="#item-{{ item.id }}" hx-swap="outerHTML"
               style="margin-top: 0.25rem;">
           <textarea name="rewritten_body" style="min-height: 150px; font-size: 0.8rem; font-family: var(--font-mono);">{{ item.rewritten_body }}</textarea>
           <button type="submit" class="btn btn-ghost" style="font-size: 0.8rem; margin-top: 0.25rem;">Save Rewrite</button>

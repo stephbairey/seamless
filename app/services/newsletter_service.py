@@ -420,15 +420,20 @@ class NewsletterService:
             "",
             "OUTPUT FORMAT RULES:",
             "- Use <br/> on its own line for line breaks. Use <br/> then <br/> for paragraph breaks.",
-            "- Use <strong> for bold (never <b>).",
+            "- Use <strong> for bold (never <b>, never markdown **bold**).",
             "- Use &raquo; for >> link markers.",
             "- Use &amp; for ampersands, &hellip; for ellipsis.",
+            "- When an email address appears, wrap it in a mailto link: <a href=\"mailto:user@example.com\">user@example.com</a>",
             "- NO <p> tags (your output goes inside an existing <p>).",
             "- NO em dashes. Zero. Replace with commas, periods, colons, or restructure.",
             "- NO double hyphens (--). Use single hyphen surrounded by spaces ( - ) if needed.",
             "- Do NOT include the 'From: Name' attribution line. The system adds that separately.",
             "- Do NOT include a headline/title. The system handles that separately.",
             "- Output ONLY the body content fragment.",
+            "",
+            "IMPORTANT: Work with whatever content you have. If the email body is thin or missing details,",
+            "write the best rewrite you can from what's available. Never ask the editor to resend or provide more info.",
+            "If key details (date, location) are missing, simply omit those lines rather than inserting placeholders.",
             "",
         ]
 
@@ -441,7 +446,6 @@ class NewsletterService:
                 "Follow with: what to bring, what to wear, how to RSVP, contact info.",
                 "Use separate lines with <br/> for scannable details.",
                 "Strip email scaffolding ('Hi Steph', 'wanted to make sure', etc.).",
-                "If not an official PRG action, end with: 'This is not an official PRG action, but grannies are welcome to attend individually.'",
                 "If there are multiple dates in one email, keep them all clearly labeled.",
                 "Spell out acronyms on first use (except ICE, PRG).",
             ],
@@ -515,6 +519,10 @@ class NewsletterService:
         text = raw.strip()
         # Strip stray <p> tags
         text = re.sub(r'</?p[^>]*>', '', text)
+        # Convert markdown bold to <strong>
+        text = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+        # Convert markdown italic to <em>
+        text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'<em>\1</em>', text)
         # Normalize <br> variants to <br/>
         text = re.sub(r'<br\s*/?>', '<br/>', text)
         # Strip leading/trailing <br/>
