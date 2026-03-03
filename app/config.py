@@ -31,3 +31,8 @@ GCAL_STEPHBAIREY_TOKEN = os.environ.get("GCAL_STEPHBAIREY_TOKEN", "")
 
 # Anthropic API (for reply drafting)
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
+# File Management
+INTAKE_DIR = Path(os.environ.get("INTAKE_DIR", "/intake"))
+GDRIVE_DIR = Path(os.environ.get("GDRIVE_DIR", "/gdrive"))
+SORT_LOG_FILE = DATA_DIR / "sort-history.json"

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Files — Setup Required{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>File Sorter</h2>
+  <p class="description">Tag-based file routing from MAGIC SORT to Google Drive</p>
+</div>
+
+<div class="card" style="max-width: 640px;">
+  <div class="card-header">
+    <h3>Volume Mounts Required</h3>
+    <span class="badge" style="background: rgba(248,113,113,0.15); color: var(--red);">Not Configured</span>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom: 1rem;">The file sorter needs two volume mounts: the MAGIC SORT intake folder and the Google Drive projects folder.</p>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: {% if intake_ready %}var(--green){% else %}var(--red){% endif %}; flex-shrink: 0;"></span>
+        <span style="font-size: 0.85rem; font-weight: 600;">Intake folder (/intake)</span>
+        <span style="font-size: 0.75rem; color: {% if intake_ready %}var(--green){% else %}var(--red){% endif %};">
+          {% if intake_ready %}Ready{% else %}Not mounted{% endif %}
+        </span>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+        Source: <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">C:\Users\scbzo\Downloads\MAGIC SORT</code>
+      </p>
+      {% if not intake_ready %}
+      <p style="font-size: 0.8rem; color: var(--text-dim);">
+        Make sure the folder exists on Windows. Docker mounts it as <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">/intake</code>.
+      </p>
+      {% endif %}
+    </div>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: {% if gdrive_ready %}var(--green){% else %}var(--red){% endif %}; flex-shrink: 0;"></span>
+        <span style="font-size: 0.85rem; font-weight: 600;">Google Drive (/gdrive)</span>
+        <span style="font-size: 0.75rem; color: {% if gdrive_ready %}var(--green){% else %}var(--red){% endif %};">
+          {% if gdrive_ready %}Ready{% else %}Not mounted{% endif %}
+        </span>
+      </div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+        Source: <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">G:\My Drive\ALL PROJECTS</code>
+      </p>
+      {% if not gdrive_ready %}
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">
+        Mount the G: drive in WSL first, then rebuild Docker:
+      </p>
+      <div style="font-family: var(--font-mono); background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.8rem; line-height: 1.8;">
+        wsl sudo mkdir -p /mnt/g<br>
+        wsl sudo mount -t drvfs G: /mnt/g
+      </div>
+      {% endif %}
+    </div>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Rebuild the container</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">After fixing mounts, rebuild:</p>
+      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto; line-height: 1.8;">docker-compose -f docker/docker-compose.yaml down
+docker-compose -f docker/docker-compose.yaml up -d --build</pre>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+        <code style="font-size: 0.75rem;">restart</code> does NOT reload volume mounts. Must do <code style="font-size: 0.75rem;">down</code> then <code style="font-size: 0.75rem;">up</code>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

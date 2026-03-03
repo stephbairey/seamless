@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Sort History — File Sorter{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Sort History</h2>
+  <p class="description">Log of previous sort operations.</p>
+</div>
+
+{% if history %}
+{% for entry in history %}
+<div class="card" style="padding: 1rem; margin-bottom: 0.75rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+    <div style="font-weight: 600; font-size: 0.9rem;">
+      {{ entry.timestamp[:16] | replace('T', ' ') }}
+    </div>
+    <div style="display: flex; gap: 0.75rem; font-size: 0.8rem;">
+      <span style="color: var(--green);">{{ entry.routed }} sorted</span>
+      {% if entry.unroutable > 0 %}
+      <span style="color: var(--yellow);">{{ entry.unroutable }} unroutable</span>
+      {% endif %}
+      {% if entry.errors > 0 %}
+      <span style="color: var(--red);">{{ entry.errors }} error{{ 's' if entry.errors != 1 else '' }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if entry.files %}
+  <div x-data="{ open: false }">
+    <button @click="open = !open" class="btn btn-ghost" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+      <span x-text="open ? 'Hide details' : 'Show details'"></span>
+    </button>
+    <div x-show="open" x-cloak style="margin-top: 0.5rem;">
+      {% for f in entry.files %}
+      <div style="display: flex; justify-content: space-between; padding: 0.25rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem;">
+        <span style="color: var(--text);">{{ f.clean_name }}</span>
+        <span style="color: var(--text-dim);">{{ f.client }}/{{ f.subfolder }}</span>
+      </div>
+      {% endfor %}
+
+      {% if entry.unroutable_files %}
+      <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+        <div style="color: var(--yellow); font-weight: 500; margin-bottom: 0.25rem;">Unroutable:</div>
+        {% for f in entry.unroutable_files %}
+        <div style="color: var(--text-dim); padding: 0.125rem 0;">{{ f.filename }} ({{ f.reason }})</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if entry.error_files %}
+      <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+        <div style="color: var(--red); font-weight: 500; margin-bottom: 0.25rem;">Errors:</div>
+        {% for f in entry.error_files %}
+        <div style="color: var(--text-dim); padding: 0.125rem 0;">{{ f.filename }} ({{ f.error }})</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+{% else %}
+<div class="empty-state">
+  <div class="icon">&#128203;</div>
+  <p>No sort history yet. Sort some files from the intake page to see results here.</p>
+</div>
+{% endif %}
+{% endblock %}

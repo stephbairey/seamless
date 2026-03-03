@@ -9,6 +9,8 @@ services:
     volumes:
       - ../data:/app/data
       - ../app:/app/app
+      - "/mnt/c/Users/scbzo/Downloads/MAGIC SORT:/intake"
+      - "/mnt/g/My Drive/ALL PROJECTS:/gdrive"
     env_file:
       - ../secrets.env
     environment:

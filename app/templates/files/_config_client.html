@@ -1,0 +1,104 @@
+{% if client_success %}
+<div style="background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--green);">
+  {{ client_success }}
+</div>
+{% endif %}
+{% if client_error %}
+<div style="background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--red);">
+  {{ client_error }}
+</div>
+{% endif %}
+{% if project_success %}
+<div style="background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--green);">
+  {{ project_success }}
+</div>
+{% endif %}
+{% if project_error %}
+<div style="background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem; color: var(--red);">
+  {{ project_error }}
+</div>
+{% endif %}
+
+<!-- Clients grid -->
+{% for client_tag, client in config.clients.items() %}
+<div class="card" style="padding: 1rem; margin-bottom: 0.5rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span class="tag" style="background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3); font-size: 0.8rem;">{{ client_tag }}</span>
+      <span style="font-size: 0.85rem; font-weight: 600;">{{ client.folder }}</span>
+    </div>
+    <span style="font-size: 0.75rem; color: var(--text-dim);">
+      {{ (client.projects or {}) | length }} project{{ 's' if (client.projects or {}) | length != 1 else '' }}
+    </span>
+  </div>
+
+  {% if client.projects %}
+  <div style="display: flex; flex-wrap: wrap; gap: 0.375rem;">
+    {% for proj_tag, proj_folder in client.projects.items() %}
+    <div style="display: flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.5rem; background: var(--bg-raised); border-radius: var(--radius-sm); font-size: 0.8rem;">
+      <span class="tag" style="background: rgba(192,132,252,0.12); color: #c084fc; border-color: rgba(192,132,252,0.3);">{{ proj_tag }}</span>
+      <span style="color: var(--text-dim);">{{ proj_folder }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if client.overrides %}
+  <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-dim);">
+    Overrides: {{ client.overrides | length }}
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+<!-- Add Client form -->
+<div class="card" style="margin-top: 1rem;">
+  <div class="card-header" style="margin-bottom: 0.75rem;">
+    <h3 style="font-size: 0.95rem;">Add Client</h3>
+  </div>
+  <form hx-post="/files/config/add-client" hx-target="#config-clients"
+        style="display: flex; gap: 0.75rem; align-items: end; flex-wrap: wrap;">
+    <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 120px;">
+      <label for="tag">Client tag</label>
+      <input type="text" id="tag" name="tag" placeholder="e.g. NewClient">
+    </div>
+    <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 150px;">
+      <label for="folder">Drive folder name</label>
+      <input type="text" id="folder" name="folder" placeholder="e.g. NEWCLIENT">
+    </div>
+    <div class="form-group" style="margin-bottom: 0;">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-ghost">Add Client</button>
+    </div>
+  </form>
+</div>
+
+<!-- Add Project form -->
+<div class="card">
+  <div class="card-header" style="margin-bottom: 0.75rem;">
+    <h3 style="font-size: 0.95rem;">Add Project</h3>
+  </div>
+  <form hx-post="/files/config/add-project" hx-target="#config-clients"
+        style="display: flex; gap: 0.75rem; align-items: end; flex-wrap: wrap;">
+    <div class="form-group" style="margin-bottom: 0; min-width: 120px;">
+      <label for="client_tag">Client</label>
+      <select id="client_tag" name="client_tag" style="width: 100%;">
+        {% for client_tag in config.clients %}
+        <option value="{{ client_tag }}">{{ client_tag }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 130px;">
+      <label for="project_tag">Project tag</label>
+      <input type="text" id="project_tag" name="project_tag" placeholder="e.g. New-Book">
+    </div>
+    <div class="form-group" style="margin-bottom: 0; flex: 1; min-width: 180px;">
+      <label for="book_folder">Book folder name</label>
+      <input type="text" id="book_folder" name="book_folder" placeholder="e.g. Book - New Book">
+    </div>
+    <div class="form-group" style="margin-bottom: 0;">
+      <label>&nbsp;</label>
+      <button type="submit" class="btn btn-ghost">Add Project</button>
+    </div>
+  </form>
+</div>

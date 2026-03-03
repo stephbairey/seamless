@@ -1,0 +1,43 @@
+{% if error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 0.75rem 1rem;">
+  <div style="color: var(--red); font-weight: 600; font-size: 0.85rem;">{{ error }}</div>
+</div>
+{% elif report %}
+<div class="card" style="border-left: 3px solid var(--accent); padding: 1rem;">
+  <div style="font-weight: 600; color: var(--accent); margin-bottom: 0.75rem; font-size: 0.9rem;">
+    Preview: {{ report.routed_count }} file{{ 's' if report.routed_count != 1 else '' }} will be sorted
+    {% if report.unroutable_count > 0 %}
+    <span style="color: var(--yellow); font-weight: 400;"> &middot; {{ report.unroutable_count }} unroutable</span>
+    {% endif %}
+  </div>
+
+  {% if report.results %}
+  <div style="margin-bottom: 0.75rem;">
+    {% for r in report.results %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.375rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
+      <div>
+        <span style="color: var(--text);">{{ r.file.clean_name }}</span>
+        {% if r.file.tags and r.file.tags.client_tag %}
+        <span class="tag" style="background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3); margin-left: 0.25rem;">{{ r.file.tags.client_tag }}</span>
+        {% endif %}
+      </div>
+      <div style="color: var(--text-muted); font-size: 0.8rem; text-align: right;">
+        {{ r.client_folder }}/{{ r.subfolder }}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if report.unroutable %}
+  <div style="margin-top: 0.5rem;">
+    <div style="font-size: 0.8rem; font-weight: 600; color: var(--yellow); margin-bottom: 0.375rem;">Unroutable:</div>
+    {% for r in report.unroutable %}
+    <div style="font-size: 0.8rem; color: var(--text-muted); padding: 0.25rem 0;">
+      {{ r.file.filename }} <span style="color: var(--text-dim);">{{ r.reason }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}

@@ -63,6 +63,19 @@
       </nav>
 
       <nav class="nav-section">
+        <div class="nav-section-label">Files</div>
+        <a href="/files/intake" class="nav-link {% if active_module == 'files' and active_tab == 'intake' %}active{% endif %}">
+          <span class="icon">&#128193;</span> Intake
+        </a>
+        <a href="/files/history" class="nav-link {% if active_module == 'files' and active_tab == 'history' %}active{% endif %}">
+          <span class="icon">&#128203;</span> History
+        </a>
+        <a href="/files/config" class="nav-link {% if active_module == 'files' and active_tab == 'config' %}active{% endif %}">
+          <span class="icon">&#9881;</span> Config
+        </a>
+      </nav>
+
+      <nav class="nav-section">
         <div class="nav-section-label">Brand</div>
         <a href="/brand/identity" class="nav-link {% if active_module == 'brand' and active_tab == 'identity' %}active{% endif %}">
           <span class="icon">&#9879;</span> Identity Router

@@ -1,0 +1,102 @@
+# File Routing Rules — Seamless File Management
+# Replaces n8n 22x22 tag-pair matrices with rules-based routing.
+# Tag format: filename[Client Project Content].ext
+# Tags are space-separated, hyphens for multi-word.
+
+intake_path: "/intake"
+gdrive_path: "/gdrive"
+
+client_tags:
+  - Lynn
+  - Maya
+  - Sulima
+  - Daniela
+  - Carolyn
+  - Devon
+  - Nicole
+  - TDA
+  - PRG
+
+# Default content tag -> subfolder mapping (all clients inherit these)
+default_content_routes:
+  Admin: "Admin"
+  PSD: "PSDs"
+  OLD: "~old"
+  Backup: "SHARED"
+  Headshot: "Marketing/Headshots"
+  Video: "Marketing/Video"
+  Featured-image: "Marketing/Featured images"
+  Social-image: "Marketing/Social images"
+  Newsletter: "Marketing/Newsletter"
+  B-Roll: "Marketing/Video"
+  Asset: "Website/Assets"
+  Copy: "Website/Copy"
+  Design: "Website/Design"
+  Source: "Source files"
+  Inspo: "Source files"
+  Marketing: "Marketing"
+
+# Content tags that route to the book folder (need project tag)
+default_book_content_tags:
+  - Cover
+  - Interior
+  - Info
+
+clients:
+  Maya:
+    folder: "MAYA"
+    projects:
+      Painting-Celia: "Book - Painting Celia"
+      "Sailor's-Code": "Book - Sailor's Code"
+      Untitled-Kelsey: "Book - Untitled Kelsey"
+    overrides: {}
+    unsorted: "Unsorted"
+  Lynn:
+    folder: "LYNN"
+    projects:
+      Hallway-of-Doorknobs: "Book - Hallway of Doorknobs"
+      Untitled-Libby: "Book - Untitled Libby"
+      Workbook: "Book - Workbook"
+    overrides: {}
+    unsorted: "Unsorted"
+  Sulima:
+    folder: "SULIMA"
+    projects:
+      All-in-the-Soup: "BOOK - All in the Soup Together"
+      Arms-Filled-with-Bittersweet: "BOOK - Arms Filled with Bittersweet"
+      Tributaries: "BOOK - Tributaries"
+      Words-That-Dance: "BOOK - Words That Dance"
+    overrides: {}
+    unsorted: "Unsorted"
+  Daniela:
+    folder: "DANIELA"
+    projects:
+      Bits-and-Pieces: "Book - Bits and Pieces (Cat Daddy 1)"
+    overrides: {}
+    unsorted: "Unsorted"
+  Carolyn:
+    folder: "CAROLYN"
+    projects:
+      Metrophobia: "Book - Metrophobia"
+    overrides: {}
+    unsorted: "Unsorted"
+  Devon:
+    folder: "DEVON"
+    projects: {}
+    overrides: {}
+    unsorted: "Unsorted"
+  Nicole:
+    folder: "NICOLE"
+    projects: {}
+    overrides: {}
+    unsorted: "Unsorted"
+  TDA:
+    folder: "TDA"
+    projects: {}
+    overrides: {}
+    unsorted: "Unsorted"
+  PRG:
+    folder: "PRG"
+    projects: {}
+    overrides: {}
+    unsorted: "Unsorted"
