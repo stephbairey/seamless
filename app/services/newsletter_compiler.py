@@ -238,6 +238,12 @@ class NewsletterCompiler:
         text = text.replace("\n", "\n<br/>")
         # Clean up triple+ <br/>
         text = re.sub(r'(<br/>\s*){3,}', '<br/>\n<br/>', text)
+        # Wrap bare email addresses in mailto links
+        text = re.sub(
+            r'\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b',
+            r'<a href="mailto:\1">\1</a>',
+            text,
+        )
         return text.strip()
 
     def _run_qc_checks(self, toc_headlines: list[str], full_html: str) -> list[dict]:

@@ -527,6 +527,12 @@ class NewsletterService:
         text = re.sub(r'<br\s*/?>', '<br/>', text)
         # Fix raquo outside links: "&raquo; <a href=...>text</a>" -> "<a href=...>&raquo; text</a>"
         text = re.sub(r'&raquo;\s*<a\s+href="([^"]+)">', r'<a href="\1">&raquo; ', text)
+        # Wrap bare email addresses in mailto links (skip ones already inside an <a> tag)
+        text = re.sub(
+            r'(?<!href="mailto:)(?<!">)\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b(?!</a>)',
+            r'<a href="mailto:\1">\1</a>',
+            text,
+        )
         # Strip leading/trailing <br/>
         text = re.sub(r'^(<br/>\s*)+', '', text)
         text = re.sub(r'(<br/>\s*)+$', '', text)
