@@ -1,0 +1,65 @@
+{% if error %}
+<div class="card" style="border-left: 3px solid var(--red); margin-bottom: 1rem;">
+  <div style="color: var(--red); font-size: 0.85rem;">{{ error }}</div>
+</div>
+{% endif %}
+
+{% if compilation %}
+<div class="check-summary" style="margin-bottom: 1rem;">
+  <div class="stat">
+    <div class="stat-number {% if compilation.item_count > 0 %}clean{% endif %}">{{ compilation.item_count }}</div>
+    <div class="stat-label">Items</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number {% if compilation.toc_headlines|length > 0 %}clean{% endif %}">{{ compilation.toc_headlines|length }}</div>
+    <div class="stat-label">Headlines</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number {% if compilation.violations|length == 0 %}clean{% else %}issues{% endif %}">{{ compilation.violations|length }}</div>
+    <div class="stat-label">Violations</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 320px; gap: 1rem;">
+  <!-- Preview -->
+  <div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+      <h3 style="font-size: 0.95rem;">Preview</h3>
+      <button id="copy-btn" class="btn btn-primary" onclick="copyHtml()" style="font-size: 0.8rem;">Copy HTML</button>
+    </div>
+
+    <div class="card" style="padding: 1.5rem; background: #fff; color: #333; border-radius: var(--radius); max-height: 600px; overflow-y: auto;">
+      {{ compilation.html | safe }}
+    </div>
+
+    <!-- Hidden raw HTML for copy -->
+    <pre id="compiled-html-source" style="display: none;">{{ compilation.html }}</pre>
+  </div>
+
+  <!-- Violations sidebar -->
+  <div>
+    <h3 style="font-size: 0.95rem; margin-bottom: 0.75rem;">Text Check</h3>
+    {% if compilation.violations %}
+    {% for v in compilation.violations %}
+    <div class="violation severity-{{ v.severity }}">
+      <div class="violation-header">
+        <span class="violation-label">{{ v.label }}</span>
+        <span class="violation-severity {{ v.severity }}">{{ v.severity }}</span>
+      </div>
+      <div class="violation-description">{{ v.description }}</div>
+      {% if v.matched_text %}
+      <div class="violation-match">{{ v.matched_text }}</div>
+      {% endif %}
+      {% if v.suggestion %}
+      <div class="violation-suggestion">{{ v.suggestion }}</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="card" style="padding: 1rem; text-align: center; color: var(--green); font-size: 0.85rem;">
+      Clean. No violations found.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

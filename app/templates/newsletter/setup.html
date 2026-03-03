@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Newsletter — Setup{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>PRG Newsletter</h2>
+  <p class="description">Gmail is not configured. Add GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, and GMAIL_REFRESH_TOKEN to secrets.env.</p>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <p>The newsletter module needs Gmail access to fetch emails labeled PRG/Newsletter.</p>
+    <p style="margin-top: 0.75rem; color: var(--text-dim); font-size: 0.85rem;">
+      After adding credentials, restart the container: <code>docker compose down && docker compose up -d</code>
+    </p>
+  </div>
+</div>
+{% endblock %}

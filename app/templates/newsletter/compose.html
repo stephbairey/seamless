@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Newsletter — Compose{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>PRG Newsletter — Compose</h2>
+  <p class="description">{{ issue.week_key }} — Edit headlines, reorder items, change categories.</p>
+</div>
+
+<div class="tabs">
+  <a href="/newsletter/collect" class="tab">Collect</a>
+  <a href="/newsletter/compose" class="tab active">Compose</a>
+  <a href="/newsletter/export" class="tab">Export</a>
+  <a href="/newsletter/history" class="tab">History</a>
+</div>
+
+<div id="compose-list">
+  {% include "newsletter/_compose_partial.html" %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function moveItem(itemId, direction) {
+  const list = document.getElementById('sortable-items');
+  const items = [...list.querySelectorAll('.compose-item')];
+  const idx = items.findIndex(el => el.dataset.id === itemId);
+  if (idx < 0) return;
+
+  const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+  if (targetIdx < 0 || targetIdx >= items.length) return;
+
+  if (direction === 'up') {
+    list.insertBefore(items[idx], items[targetIdx]);
+  } else {
+    list.insertBefore(items[targetIdx], items[idx]);
+  }
+
+  // Submit new order
+  const ids = [...list.querySelectorAll('.compose-item')].map(el => el.dataset.id);
+  const form = document.getElementById('reorder-form');
+  form.innerHTML = '';
+  ids.forEach(id => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'item_ids';
+    input.value = id;
+    form.appendChild(input);
+  });
+  htmx.trigger(form, 'submit');
+}
+</script>
+{% endblock %}

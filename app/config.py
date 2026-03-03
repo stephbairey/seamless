@@ -36,3 +36,6 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 INTAKE_DIR = Path(os.environ.get("INTAKE_DIR", "/intake"))
 GDRIVE_DIR = Path(os.environ.get("GDRIVE_DIR", "/gdrive"))
 SORT_LOG_FILE = DATA_DIR / "sort-history.json"
+
+# Newsletter
+NEWSLETTER_FILE = DATA_DIR / "newsletter-items.json"

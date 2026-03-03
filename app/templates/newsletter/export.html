@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Newsletter — Export{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>PRG Newsletter — Export</h2>
+  <p class="description">{{ issue.week_key }} — Compile HTML and copy for sending.</p>
+</div>
+
+<div class="tabs">
+  <a href="/newsletter/collect" class="tab">Collect</a>
+  <a href="/newsletter/compose" class="tab">Compose</a>
+  <a href="/newsletter/export" class="tab active">Export</a>
+  <a href="/newsletter/history" class="tab">History</a>
+</div>
+
+<div class="context-info" style="margin-bottom: 1.5rem;">
+  <div class="info-item">
+    <span class="info-label">Send as:</span>
+    <span class="info-value">Steph Bairey</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">From:</span>
+    <span class="info-value">grannynewsletter@gmail.com</span>
+  </div>
+  <div class="info-item">
+    <span class="info-label">To:</span>
+    <span class="info-value">granny-newsletter@gaggle.email</span>
+  </div>
+</div>
+
+<div style="margin-bottom: 1rem;">
+  <form hx-post="/newsletter/export/compile" hx-target="#export-content" hx-indicator="#compile-spinner">
+    <button type="submit" class="btn btn-primary">
+      Compile Newsletter
+      <span id="compile-spinner" class="htmx-indicator"><span class="spinner"></span></span>
+    </button>
+  </form>
+</div>
+
+<div id="export-content">
+  {% if compilation %}
+  {% include "newsletter/_export_partial.html" %}
+  {% elif issue.compiled_html %}
+  <div class="card" style="padding: 1rem; margin-bottom: 1rem;">
+    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+      Previously compiled HTML available. Click "Compile Newsletter" to regenerate.
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">&#128220;</div>
+    <p>Click "Compile Newsletter" to generate the HTML output.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyHtml() {
+  const el = document.getElementById('compiled-html-source');
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy HTML'; }, 2000);
+  });
+}
+</script>
+{% endblock %}

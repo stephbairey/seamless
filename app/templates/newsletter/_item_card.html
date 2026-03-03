@@ -1,0 +1,28 @@
+<div class="card nl-item nl-cat-{{ item.category }}" style="border-left: 3px solid; margin-bottom: 0.5rem; padding: 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+    <div style="flex: 1; min-width: 0;">
+      {% if item.headline %}
+      <div style="font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem;">{{ item.headline }}</div>
+      {% endif %}
+      <div style="font-size: 0.9rem; {% if item.headline %}color: var(--text-muted);{% else %}font-weight: 600;{% endif %}">{{ item.subject }}</div>
+      <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.25rem;">
+        From {{ item.sender_name or 'Unknown' }}
+        {% if item.email_date %} &middot; {{ item.email_date.strftime('%b %d') if item.email_date is not string else item.email_date[:10] }}{% endif %}
+        {% if item.source == 'manual' %} &middot; <span style="color: var(--accent);">manual</span>{% endif %}
+      </div>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0;">
+      {% if item.event_date %}<span class="tag" style="font-family: var(--font-mono); font-size: 0.65rem;">{{ item.event_date }}</span>{% endif %}
+      <span class="tag nl-cat-tag-{{ item.category }}">{{ item.category.replace('_', ' ') }}</span>
+      <span class="tag">{{ item.status }}</span>
+    </div>
+  </div>
+  {% if item.body_text %}
+  <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); max-height: 60px; overflow: hidden; text-overflow: ellipsis;">
+    {{ item.body_text[:200] }}{% if item.body_text|length > 200 %}...{% endif %}
+  </div>
+  {% endif %}
+  {% if item.is_multipart_related %}
+  <div style="margin-top: 0.25rem; font-size: 0.75rem; color: var(--yellow);">Contains embedded images (body may be empty)</div>
+  {% endif %}
+</div>

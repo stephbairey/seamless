@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Newsletter — Collect{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>PRG Newsletter — Collect</h2>
+  <p class="description">{{ issue.week_key }} — Fetch items from Gmail and add manual entries.</p>
+</div>
+
+<div class="tabs">
+  <a href="/newsletter/collect" class="tab active">Collect</a>
+  <a href="/newsletter/compose" class="tab">Compose</a>
+  <a href="/newsletter/export" class="tab">Export</a>
+  <a href="/newsletter/history" class="tab">History</a>
+</div>
+
+<!-- Fetch from Gmail -->
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div style="display: flex; gap: 0.75rem; align-items: end; flex-wrap: wrap;">
+    <form hx-post="/newsletter/collect/fetch" hx-target="#items-list" hx-indicator="#fetch-spinner"
+          style="display: flex; gap: 0.75rem; align-items: end;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label>Days back</label>
+        <input type="text" name="days_back" value="7" style="width: 80px;">
+      </div>
+      <button type="submit" class="btn btn-primary">
+        Fetch from Gmail
+        <span id="fetch-spinner" class="htmx-indicator"><span class="spinner"></span></span>
+      </button>
+    </form>
+
+    <form hx-post="/newsletter/collect/classify-all" hx-target="#items-list" hx-indicator="#classify-spinner">
+      <button type="submit" class="btn btn-ghost">
+        Classify All
+        <span id="classify-spinner" class="htmx-indicator"><span class="spinner"></span></span>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Manual add form -->
+<details class="card" style="margin-bottom: 1.5rem;">
+  <summary style="cursor: pointer; font-weight: 600; font-size: 0.95rem;">Add Manual Item</summary>
+  <form hx-post="/newsletter/collect/manual" hx-target="#items-list" style="margin-top: 1rem;">
+    <div class="form-group">
+      <label>Sender name</label>
+      <input type="text" name="sender_name" placeholder="Who submitted this?">
+    </div>
+    <div class="form-group">
+      <label>Subject / title</label>
+      <input type="text" name="subject" placeholder="Brief description" required>
+    </div>
+    <div class="form-group">
+      <label>Body text</label>
+      <textarea name="body_text" style="min-height: 100px;" placeholder="Paste the content here..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select name="category">
+        <option value="uncategorized">Uncategorized</option>
+        <option value="action_item">Action Item</option>
+        <option value="team_note">Team Note</option>
+        <option value="article">Article</option>
+        <option value="joana_rollup">Joana Rollup</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Item</button>
+  </form>
+</details>
+
+<!-- Items list -->
+<div id="items-list">
+  {% include "newsletter/_collect_partial.html" %}
+</div>
+{% endblock %}

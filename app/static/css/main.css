@@ -813,6 +813,25 @@ textarea {
   text-overflow: ellipsis;
 }
 
+/* Newsletter item category colors (left border) */
+.nl-cat-action_item { border-left-color: var(--red) !important; }
+.nl-cat-team_note { border-left-color: var(--accent) !important; }
+.nl-cat-article { border-left-color: var(--green) !important; }
+.nl-cat-joana_rollup { border-left-color: #c084fc !important; }
+.nl-cat-uncategorized { border-left-color: var(--text-dim) !important; }
+
+/* Newsletter category tag colors */
+.nl-cat-tag-action_item { background: rgba(248,113,113,0.15); color: var(--red); border-color: var(--red); }
+.nl-cat-tag-team_note { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+.nl-cat-tag-article { background: rgba(74,222,128,0.15); color: var(--green); border-color: var(--green); }
+.nl-cat-tag-joana_rollup { background: rgba(192,132,252,0.15); color: #c084fc; border-color: #c084fc; }
+.nl-cat-tag-uncategorized { background: rgba(94,98,114,0.15); color: var(--text-dim); border-color: var(--text-dim); }
+
+/* Compose item transitions */
+.compose-item {
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {

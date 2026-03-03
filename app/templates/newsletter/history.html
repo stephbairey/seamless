@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Newsletter — History{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>PRG Newsletter — History</h2>
+  <p class="description">Past newsletter issues.</p>
+</div>
+
+<div class="tabs">
+  <a href="/newsletter/collect" class="tab">Collect</a>
+  <a href="/newsletter/compose" class="tab">Compose</a>
+  <a href="/newsletter/export" class="tab">Export</a>
+  <a href="/newsletter/history" class="tab active">History</a>
+</div>
+
+{% if issues %}
+{% for issue in issues %}
+<div class="card" style="margin-bottom: 0.5rem; padding: 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <span style="font-weight: 600; font-size: 0.95rem;">{{ issue.week_key }}</span>
+      <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.75rem;">
+        {{ issue.item_count }} item{{ 's' if issue.item_count != 1 else '' }},
+        {{ issue.included_count }} included
+      </span>
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center;">
+      <span class="tag">{{ issue.status }}</span>
+      {% if issue.updated_at %}
+      <span style="font-size: 0.75rem; color: var(--text-dim);">
+        {{ issue.updated_at[:10] if issue.updated_at is string else issue.updated_at.strftime('%Y-%m-%d') if issue.updated_at else '' }}
+      </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <div class="icon">&#128203;</div>
+  <p>No newsletter issues yet.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -76,6 +76,22 @@
       </nav>
 
       <nav class="nav-section">
+        <div class="nav-section-label">Newsletter</div>
+        <a href="/newsletter/collect" class="nav-link {% if active_module == 'newsletter' and active_tab == 'collect' %}active{% endif %}">
+          <span class="icon">&#128240;</span> Collect
+        </a>
+        <a href="/newsletter/compose" class="nav-link {% if active_module == 'newsletter' and active_tab == 'compose' %}active{% endif %}">
+          <span class="icon">&#9997;</span> Compose
+        </a>
+        <a href="/newsletter/export" class="nav-link {% if active_module == 'newsletter' and active_tab == 'export' %}active{% endif %}">
+          <span class="icon">&#128220;</span> Export
+        </a>
+        <a href="/newsletter/history" class="nav-link {% if active_module == 'newsletter' and active_tab == 'history' %}active{% endif %}">
+          <span class="icon">&#128203;</span> History
+        </a>
+      </nav>
+
+      <nav class="nav-section">
         <div class="nav-section-label">Brand</div>
         <a href="/brand/identity" class="nav-link {% if active_module == 'brand' and active_tab == 'identity' %}active{% endif %}">
           <span class="icon">&#9879;</span> Identity Router

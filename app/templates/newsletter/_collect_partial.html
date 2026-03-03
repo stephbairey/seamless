@@ -1,0 +1,32 @@
+{% if error %}
+<div class="card" style="border-left: 3px solid var(--red); margin-bottom: 1rem;">
+  <div style="color: var(--red); font-size: 0.85rem;">{{ error }}</div>
+</div>
+{% endif %}
+
+{% if new_count is defined and new_count > 0 %}
+<div class="card" style="border-left: 3px solid var(--green); margin-bottom: 1rem;">
+  <div style="color: var(--green); font-size: 0.85rem;">{{ new_count }} new item{{ 's' if new_count != 1 else '' }} added.</div>
+</div>
+{% endif %}
+
+{% if classified_count is defined and classified_count > 0 %}
+<div class="card" style="border-left: 3px solid var(--green); margin-bottom: 1rem;">
+  <div style="color: var(--green); font-size: 0.85rem;">{{ classified_count }} item{{ 's' if classified_count != 1 else '' }} classified and headlined.</div>
+</div>
+{% endif %}
+
+{% if items %}
+<div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+  {{ items | length }} item{{ 's' if items | length != 1 else '' }} in {{ issue.week_key }}
+</div>
+
+{% for item in items %}
+{% include "newsletter/_item_card.html" %}
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <div class="icon">&#128240;</div>
+  <p>No items yet. Fetch from Gmail or add manually.</p>
+</div>
+{% endif %}
