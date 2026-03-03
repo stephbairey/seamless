@@ -106,6 +106,7 @@ async def week_page(request: Request):
     ctx = _base_ctx(request, "week")
     today = date.today()
     ctx["week_start"] = today - timedelta(days=(today.weekday() + 1) % 7)  # Sunday
+    ctx["today_iso"] = today.isoformat()
     ctx["week_data"] = None
     return templates.TemplateResponse("calendar/week.html", ctx)
 
