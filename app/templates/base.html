@@ -37,6 +37,19 @@
       </nav>
 
       <nav class="nav-section">
+        <div class="nav-section-label">Calendar</div>
+        <a href="/calendar/today" class="nav-link {% if active_module == 'calendar' and active_tab == 'today' %}active{% endif %}">
+          <span class="icon">&#128197;</span> Today
+        </a>
+        <a href="/calendar/week" class="nav-link {% if active_module == 'calendar' and active_tab == 'week' %}active{% endif %}">
+          <span class="icon">&#128198;</span> Week
+        </a>
+        <a href="/calendar/create" class="nav-link {% if active_module == 'calendar' and active_tab == 'create' %}active{% endif %}">
+          <span class="icon">&#10010;</span> Create Event
+        </a>
+      </nav>
+
+      <nav class="nav-section">
         <div class="nav-section-label">Email</div>
         <a href="/email/inbox" class="nav-link {% if active_module == 'email' and active_tab == 'inbox' %}active{% endif %}">
           <span class="icon">&#9993;</span> Inbox

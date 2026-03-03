@@ -24,5 +24,10 @@ GMAIL_CLIENT_SECRET = os.environ.get("GMAIL_CLIENT_SECRET", "")
 GMAIL_REFRESH_TOKEN = os.environ.get("GMAIL_REFRESH_TOKEN", "")
 GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1/users"
 
+# Google Calendar (separate refresh token per calendar, same OAuth app)
+GCAL_LINGUAINKMEDIA_TOKEN = os.environ.get("GCAL_LINGUAINKMEDIA_TOKEN", "")
+GCAL_MJBAIREY_TOKEN = os.environ.get("GCAL_MJBAIREY_TOKEN", "")
+GCAL_STEPHBAIREY_TOKEN = os.environ.get("GCAL_STEPHBAIREY_TOKEN", "")
+
 # Anthropic API (for reply drafting)
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")

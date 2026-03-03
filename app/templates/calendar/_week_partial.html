@@ -1,0 +1,84 @@
+{% if error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 1rem;">
+  <div style="color: var(--red); font-size: 0.85rem;">{{ error }}</div>
+</div>
+{% elif week_data %}
+
+{# Conflicts banner #}
+{% if week_data.conflicts %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="font-weight: 600; color: var(--red); font-size: 0.85rem; margin-bottom: 0.25rem;">{{ week_data.conflicts|length }} conflict{{ "s" if week_data.conflicts|length != 1 else "" }}</div>
+  {% for c in week_data.conflicts %}
+  <div style="font-size: 0.8rem; color: var(--text-muted);">
+    {{ c.event_a.summary }} / {{ c.event_b.summary }} ({{ c.overlap_minutes }}min overlap)
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# Peterday warnings #}
+{% if week_data.peterday_warnings %}
+<div class="card" style="border-left: 3px solid var(--yellow); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="font-weight: 600; color: var(--yellow); font-size: 0.85rem;">Peterday: work events on Saturday</div>
+  {% for w in week_data.peterday_warnings %}
+  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ w.summary }}</div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# Week grid #}
+<div class="week-grid">
+  {% set day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] %}
+
+  {% for day_iso, day_events in week_data.by_day.items() %}
+    {% set day_idx = loop.index0 %}
+    {% set is_saturday = day_idx == 5 %}
+    <div class="week-day{% if is_saturday %} week-day-peterday{% endif %}">
+      <div class="week-day-header{% if is_saturday %} peterday{% endif %}">
+        <span class="week-day-name">{{ day_names[day_idx] if day_idx < 7 else "" }}</span>
+        <span class="week-day-date">{{ day_iso[5:] }}</span>
+        {% if is_saturday %}
+        <span style="font-size: 0.6rem; color: var(--green); margin-left: 0.25rem;">PETERDAY</span>
+        {% endif %}
+      </div>
+      <div class="week-day-events">
+        {% if day_events %}
+          {% for event in day_events %}
+          <div class="week-event week-event-{{ event.calendar_label|lower }}"
+               title="{{ event.summary }}&#10;{{ event.start.strftime('%H:%M') if event.start and not event.all_day else 'All day' }} — {{ event.calendar_label }}">
+            <div class="week-event-time">
+              {% if event.all_day %}all day{% elif event.start %}{{ event.start.strftime("%H:%M") }}{% endif %}
+            </div>
+            <div class="week-event-title">{{ event.summary }}</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="font-size: 0.75rem; color: var(--text-dim); padding: 0.5rem 0; text-align: center;">—</div>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{# Cadences #}
+{% if week_data.cadences %}
+<div style="margin-top: 1.5rem;">
+  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.75rem;">Cadences This Week</div>
+  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+    {% for item in week_data.cadences %}
+    <div style="display: flex; gap: 0.375rem; align-items: center; padding: 0.375rem 0.75rem; background: var(--bg-surface); border-radius: var(--radius-sm); font-size: 0.8rem;">
+      <div style="width: 6px; height: 6px; border-radius: 50%; background: {{ 'var(--green)' if item.status == 'upcoming' else ('var(--accent)' if item.status == 'today' else 'var(--red)') }};"></div>
+      <span>{{ item.label }}</span>
+      <span style="color: var(--text-dim);">{{ item.next_due }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <div class="icon">&#128198;</div>
+  <p>No week data.</p>
+</div>
+{% endif %}

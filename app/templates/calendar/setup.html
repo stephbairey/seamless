@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Calendar — Setup Required{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Calendar Sync</h2>
+  <p class="description">Unified calendar view, conflict detection, meeting prep, and cadence tracking</p>
+</div>
+
+<div class="card" style="max-width: 600px;">
+  <div class="card-header">
+    <h3>Google Calendar OAuth Credentials Required</h3>
+    <span class="badge" style="background: rgba(248,113,113,0.15); color: var(--red);">Not Configured</span>
+  </div>
+  <div class="card-body">
+    <p style="margin-bottom: 1rem;">The calendar module needs Google OAuth2 refresh tokens for each calendar account.</p>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Setup steps:</p>
+      <ol style="font-size: 0.85rem; color: var(--text-muted); padding-left: 1.25rem;">
+        <li style="margin-bottom: 0.5rem;">Use the same Google Cloud project as Gmail (same Client ID / Secret)</li>
+        <li style="margin-bottom: 0.5rem;">Enable the Google Calendar API in your project</li>
+        <li style="margin-bottom: 0.5rem;">Run the OAuth token script 3 times, once per calendar account, with scope:
+          <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px; display: block; margin-top: 0.375rem; font-size: 0.8rem;">https://www.googleapis.com/auth/calendar</code>
+        </li>
+        <li style="margin-bottom: 0.5rem;">Add the 3 refresh tokens to <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code>:</li>
+      </ol>
+      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem; overflow-x: auto;">GCAL_LINGUAINKMEDIA_TOKEN=refresh_token_for_linguainkmedia
+GCAL_MJBAIREY_TOKEN=refresh_token_for_mjbairey
+GCAL_STEPHBAIREY_TOKEN=refresh_token_for_stephbairey</pre>
+    </div>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Calendars:</p>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        <div style="margin-bottom: 0.375rem;"><span style="color: var(--accent);">linguainkmedia@gmail.com</span> — Business/operational</div>
+        <div style="margin-bottom: 0.375rem;"><span style="color: #c084fc;">mjbairey@gmail.com</span> — Creative/writing</div>
+        <div style="margin-bottom: 0.375rem;"><span style="color: var(--green);">stephbairey@gmail.com</span> — Home/personal</div>
+      </div>
+    </div>
+
+    <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">After adding the tokens, run <code>docker-compose down && docker-compose up -d --build</code> to reload.</p>
+  </div>
+</div>
+{% endblock %}

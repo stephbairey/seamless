@@ -700,6 +700,102 @@ textarea {
   to { transform: rotate(360deg); }
 }
 
+/* Calendar — color variables */
+:root {
+  --cal-business: var(--accent);
+  --cal-creative: #c084fc;
+  --cal-personal: var(--green);
+}
+
+/* Week grid */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.week-day {
+  background: var(--bg);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+}
+
+.week-day-peterday {
+  background: rgba(74, 222, 128, 0.03);
+}
+
+.week-day-header {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.5rem 0.375rem;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+}
+
+.week-day-header.peterday {
+  background: rgba(74, 222, 128, 0.08);
+}
+
+.week-day-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.week-day-date {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.week-day-events {
+  padding: 0.375rem;
+  flex: 1;
+}
+
+.week-event {
+  padding: 0.25rem 0.375rem;
+  margin-bottom: 0.25rem;
+  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--border);
+  font-size: 0.75rem;
+  cursor: default;
+}
+
+.week-event-business {
+  border-left-color: var(--cal-business);
+  background: rgba(107, 138, 253, 0.06);
+}
+
+.week-event-creative {
+  border-left-color: var(--cal-creative);
+  background: rgba(192, 132, 252, 0.06);
+}
+
+.week-event-personal {
+  border-left-color: var(--cal-personal);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.week-event-time {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+.week-event-title {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {
@@ -735,6 +831,10 @@ textarea {
   }
 
   .identity-result .details {
+    grid-template-columns: 1fr;
+  }
+
+  .week-grid {
     grid-template-columns: 1fr;
   }
 }

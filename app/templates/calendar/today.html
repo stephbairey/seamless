@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Today — Calendar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Daily Briefing</h2>
+  <p class="description">Schedule, conflicts, cadences, and meeting prep for the day.</p>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
+  <form hx-post="/calendar/today/fetch" hx-target="#day-results" hx-indicator="#fetch-spinner"
+        style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end;">
+    <div class="form-group" style="margin-bottom: 0;">
+      <label for="target_date">Date</label>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.6rem;"
+                onclick="shiftDate(-1)">&#9664;</button>
+        <input type="text" id="target_date" name="target_date"
+               value="{{ target_date.isoformat() }}"
+               style="width: 140px; text-align: center;"
+               placeholder="YYYY-MM-DD">
+        <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.6rem;"
+                onclick="shiftDate(1)">&#9654;</button>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom: 0;">
+      <label>&nbsp;</label>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary">Load Day</button>
+        <button type="button" class="btn btn-ghost" onclick="goToday()">Today</button>
+        <span id="fetch-spinner" class="htmx-indicator" style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+          <span class="spinner"></span> Loading...
+        </span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div id="day-results">
+  {% if briefing %}
+    {% include "calendar/_today_partial.html" %}
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">&#128197;</div>
+      <p>Select a date and click Load Day to see your schedule.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function shiftDate(offset) {
+  const input = document.getElementById('target_date');
+  const d = new Date(input.value + 'T12:00:00');
+  d.setDate(d.getDate() + offset);
+  input.value = d.toISOString().slice(0, 10);
+}
+
+function goToday() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  document.getElementById('target_date').value = `${yyyy}-${mm}-${dd}`;
+}
+</script>
+{% endblock %}

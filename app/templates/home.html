@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <h2>Seamless Dashboard</h2>
-  <p class="description">Brand codification, identity routing, text quality, task management, and email triage.</p>
+  <p class="description">Brand codification, identity routing, text quality, task management, email triage, and calendar sync.</p>
 </div>
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
@@ -35,6 +35,36 @@
     </div>
     <div class="card-body">
       Completed/overdue counts, approach distribution, revenue visibility, project breakdown.
+    </div>
+  </a>
+
+  <a href="/calendar/today" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Daily Briefing</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Today's schedule across all 3 calendars. Conflicts, meeting prep, cadence tracking.
+    </div>
+  </a>
+
+  <a href="/calendar/week" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Week View</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      7-day grid with color-coded events. Peterday column, conflict highlights, cadence markers.
+    </div>
+  </a>
+
+  <a href="/calendar/create" class="card" style="text-decoration: none; color: inherit;">
+    <div class="card-header">
+      <h3>Create Event</h3>
+      <span class="badge">Active</span>
+    </div>
+    <div class="card-body">
+      Create events on the correct calendar with identity routing. Preview before saving.
     </div>
   </a>
 

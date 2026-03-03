@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Create Event — Calendar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Create Event</h2>
+  <p class="description">Create a calendar event on the correct calendar with identity routing.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 360px; gap: 1rem;">
+  <div>
+    <div class="card">
+      <form id="create-form" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="summary">Event name</label>
+          <input type="text" id="summary" name="summary" placeholder="e.g. Devon Ervin and Steph @ Lingua Ink">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="calendar_id">Calendar</label>
+          <select id="calendar_id" name="calendar_id">
+            {% for acct in accounts %}
+            <option value="{{ acct.calendar_id }}">{{ acct.label }} ({{ acct.calendar_id }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <div class="form-group" style="flex: 1; margin-bottom: 0;">
+            <label for="event_date">Date</label>
+            <input type="text" id="event_date" name="event_date" value="{{ today_str }}" placeholder="YYYY-MM-DD">
+          </div>
+          <div class="form-group" style="width: 100px; margin-bottom: 0;">
+            <label for="start_time">Start</label>
+            <input type="text" id="start_time" name="start_time" value="09:00" placeholder="HH:MM">
+          </div>
+          <div class="form-group" style="width: 100px; margin-bottom: 0;">
+            <label for="end_time">End</label>
+            <input type="text" id="end_time" name="end_time" value="10:00" placeholder="HH:MM">
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="all_day" name="all_day" style="width: auto;">
+          <label for="all_day" style="margin-bottom: 0; cursor: pointer;">All day</label>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="description">Description (optional)</label>
+          <textarea id="description" name="description" style="min-height: 80px;" placeholder="Meeting notes, agenda, etc."></textarea>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="location">Location (optional)</label>
+          <input type="text" id="location" name="location" placeholder="e.g. Zoom, Office, Broadway Books">
+        </div>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-primary" id="preview-btn"
+                  hx-post="/calendar/create/preview"
+                  hx-target="#preview-panel"
+                  hx-include="#create-form"
+                  hx-indicator="#preview-spinner">
+            Preview
+          </button>
+          <span id="preview-spinner" class="htmx-indicator" style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+            <span class="spinner"></span>
+          </span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div>
+    <div id="preview-panel">
+      <div class="card" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+        <p style="font-size: 0.85rem;">Fill out the form and click Preview to see what will be created.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% if preview %}
+<div class="card">
+  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.75rem;">Preview</div>
+
+  {% if preview.is_peterday %}
+  <div style="background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); border-radius: var(--radius-sm); padding: 0.75rem; margin-bottom: 1rem;">
+    <div style="font-size: 0.85rem; color: var(--yellow); font-weight: 600;">Peterday Warning</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Saturday is Peterday. No work events.</div>
+  </div>
+  {% endif %}
+
+  <div style="margin-bottom: 0.75rem;">
+    <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Event</div>
+    <div style="font-size: 1rem; font-weight: 600;">{{ preview.summary or "(no title)" }}</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+    <div>
+      <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Calendar</div>
+      <div style="font-size: 0.85rem;">{{ preview.calendar_label }}</div>
+    </div>
+    <div>
+      <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Date</div>
+      <div style="font-size: 0.85rem;">{{ preview.event_date }}</div>
+    </div>
+    {% if not preview.all_day %}
+    <div>
+      <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Time</div>
+      <div style="font-size: 0.85rem;">{{ preview.start_time }} — {{ preview.end_time }}</div>
+    </div>
+    {% else %}
+    <div>
+      <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Time</div>
+      <div style="font-size: 0.85rem;">All day</div>
+    </div>
+    {% endif %}
+    <div>
+      <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Identity</div>
+      <div style="font-size: 0.85rem;">{{ preview.identity }}</div>
+    </div>
+  </div>
+
+  {% if preview.description %}
+  <div style="margin-bottom: 0.75rem;">
+    <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Description</div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">{{ preview.description }}</div>
+  </div>
+  {% endif %}
+
+  {% if preview.location %}
+  <div style="margin-bottom: 0.75rem;">
+    <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Location</div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">{{ preview.location }}</div>
+  </div>
+  {% endif %}
+
+  <div style="border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.75rem;">
+    <button type="button" class="btn btn-primary"
+            hx-post="/calendar/create/save"
+            hx-target="#preview-panel"
+            hx-include="#create-form"
+            hx-indicator="#save-spinner">
+      Create Event
+    </button>
+    <span id="save-spinner" class="htmx-indicator" style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem; margin-left: 0.5rem;">
+      <span class="spinner"></span> Saving...
+    </span>
+  </div>
+</div>
+{% endif %}

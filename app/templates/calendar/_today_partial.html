@@ -1,0 +1,165 @@
+{% if error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 1rem;">
+  <div style="color: var(--red); font-size: 0.85rem;">{{ error }}</div>
+</div>
+{% elif briefing %}
+
+<div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+  {{ briefing.date.strftime("%A, %B %d, %Y") }}
+  {% if briefing.date.strftime("%A") == "Saturday" %}
+    <span style="color: var(--green); font-weight: 600; margin-left: 0.5rem;">PETERDAY</span>
+  {% endif %}
+  <span style="margin-left: 0.5rem;">&middot; {{ briefing.events|length }} event{{ "s" if briefing.events|length != 1 else "" }}</span>
+</div>
+
+{# Peterday warnings #}
+{% if briefing.peterday_warnings %}
+<div class="card" style="border-left: 3px solid var(--yellow); padding: 1rem; margin-bottom: 1rem;">
+  <div style="font-weight: 600; color: var(--yellow); margin-bottom: 0.5rem;">Peterday Warning</div>
+  <div style="font-size: 0.85rem; color: var(--text-muted);">
+    Work events found on Saturday:
+    {% for w in briefing.peterday_warnings %}
+    <div style="margin-top: 0.375rem;">
+      &bull; {{ w.summary }} ({{ w.calendar_label }})
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# Conflicts #}
+{% if briefing.conflicts %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 1rem; margin-bottom: 1rem;">
+  <div style="font-weight: 600; color: var(--red); margin-bottom: 0.5rem;">Conflicts</div>
+  {% for c in briefing.conflicts %}
+  <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.375rem;">
+    <span style="color: var(--text);">{{ c.event_a.summary }}</span>
+    overlaps
+    <span style="color: var(--text);">{{ c.event_b.summary }}</span>
+    <span style="color: var(--red);">({{ c.overlap_minutes }} min)</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# Schedule #}
+<div style="margin-bottom: 1.5rem;">
+  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.75rem;">Schedule</div>
+  {% if briefing.events %}
+    {% for event in briefing.events %}
+    <div class="cal-event cal-{{ event.calendar_label|lower }}" style="display: flex; gap: 0.75rem; align-items: start; padding: 0.625rem 0.75rem; margin-bottom: 0.375rem; background: var(--bg-surface); border-radius: var(--radius-sm); border-left: 3px solid {{ 'var(--accent)' if event.calendar_label == 'Business' else ('#c084fc' if event.calendar_label == 'Creative' else 'var(--green)') }};">
+      <div style="width: 50px; flex-shrink: 0; font-size: 0.85rem; color: var(--text-muted); font-family: var(--font-mono);">
+        {% if event.all_day %}
+          <span style="font-size: 0.75rem;">all day</span>
+        {% elif event.start %}
+          {{ event.start.strftime("%H:%M") }}
+        {% endif %}
+      </div>
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-size: 0.9rem; font-weight: 500;">{{ event.summary }}</div>
+        {% if event.location %}
+        <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.125rem;">{{ event.location }}</div>
+        {% endif %}
+      </div>
+      <div style="flex-shrink: 0; display: flex; gap: 0.375rem; align-items: center;">
+        <span class="tag" style="font-size: 0.65rem;">{{ event.calendar_label }}</span>
+        {% for prep in briefing.meeting_prep_items %}
+          {% if prep.event.id == event.id %}
+          <span class="tag matched" style="font-size: 0.65rem; cursor: pointer;" onclick="this.closest('.cal-event').querySelector('.prep-panel').classList.toggle('show')">Prep</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {# Inline meeting prep panel #}
+    {% for prep in briefing.meeting_prep_items %}
+      {% if prep.event.id == event.id %}
+      <div class="prep-panel" style="display: none; background: var(--bg-raised); border-radius: 0 0 var(--radius-sm) var(--radius-sm); padding: 1rem; margin-top: -0.375rem; margin-bottom: 0.375rem; border-left: 3px solid var(--accent);">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.5rem;">Meeting Prep: {{ prep.client_name }}</div>
+
+        {% if prep.client_profile %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.5rem; margin-bottom: 0.75rem;">
+          {% if prep.client_profile.get('relationship') %}
+          <div>
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Relationship</div>
+            <div style="font-size: 0.85rem;">{{ prep.client_profile.get('relationship', '') }}</div>
+          </div>
+          {% endif %}
+          {% if prep.client_profile.get('service_type') %}
+          <div>
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Service</div>
+            <div style="font-size: 0.85rem;">{{ prep.client_profile.get('service_type', '') }}</div>
+          </div>
+          {% endif %}
+          {% if prep.client_profile.get('brand') %}
+          <div>
+            <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim);">Brand</div>
+            <div style="font-size: 0.85rem;">{{ prep.client_profile.get('brand', '') }}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        {% if prep.identity_info %}
+        <div style="margin-bottom: 0.75rem;">
+          <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.25rem;">Identity</div>
+          <div style="font-size: 0.85rem;">
+            {{ prep.identity_info.get('name', '') }}
+            {% if prep.identity_info.get('title') %}, {{ prep.identity_info.get('title') }}{% endif %}
+            {% if prep.identity_info.get('email') %} &middot; {{ prep.identity_info.get('email') }}{% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if prep.recent_context %}
+        <div>
+          <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.25rem;">Context</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">{{ prep.recent_context }}</div>
+        </div>
+        {% endif %}
+
+        {% if prep.client_profile.get('books') %}
+        <div style="margin-top: 0.5rem;">
+          <div style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 0.25rem;">Books</div>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">
+            {% for book in prep.client_profile.get('books', []) %}
+              <em>{{ book }}</em>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    {% endfor %}
+    {% endfor %}
+  {% else %}
+    <div class="empty-state" style="padding: 1.5rem;">
+      <p>No events scheduled.</p>
+    </div>
+  {% endif %}
+</div>
+
+{# Cadences #}
+{% if briefing.cadence_items %}
+<div>
+  <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); margin-bottom: 0.75rem;">Cadences</div>
+  {% for item in briefing.cadence_items %}
+  <div style="display: flex; gap: 0.75rem; align-items: center; padding: 0.5rem 0.75rem; margin-bottom: 0.25rem; background: var(--bg-surface); border-radius: var(--radius-sm);">
+    <div style="width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: {{ 'var(--green)' if item.status == 'upcoming' else ('var(--accent)' if item.status == 'today' else 'var(--red)') }};"></div>
+    <div style="flex: 1; font-size: 0.85rem;">{{ item.label }}</div>
+    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ item.next_due }}</div>
+    <span class="tag" style="font-size: 0.65rem; background: {{ 'rgba(74,222,128,0.15)' if item.status == 'upcoming' else ('rgba(107,138,253,0.15)' if item.status == 'today' else 'rgba(248,113,113,0.15)') }}; color: {{ 'var(--green)' if item.status == 'upcoming' else ('var(--accent)' if item.status == 'today' else 'var(--red)') }}; border-color: transparent;">{{ item.status }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+  <div class="icon">&#128197;</div>
+  <p>No briefing data.</p>
+</div>
+{% endif %}
+
+<style>
+.prep-panel.show { display: block !important; }
+</style>

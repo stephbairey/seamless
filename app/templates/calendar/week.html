@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Week View — Calendar{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Week View</h2>
+  <p class="description">All calendars at a glance. Color-coded by calendar, conflicts highlighted.</p>
+</div>
+
+<div class="card" style="margin-bottom: 1rem;">
+  <form hx-post="/calendar/week/fetch" hx-target="#week-results" hx-indicator="#fetch-spinner"
+        style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end;">
+    <div class="form-group" style="margin-bottom: 0;">
+      <label for="week_start">Week of (Monday)</label>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.6rem;"
+                onclick="shiftWeek(-7)">&#9664;</button>
+        <input type="text" id="week_start" name="week_start"
+               value="{{ week_start.isoformat() }}"
+               style="width: 140px; text-align: center;"
+               placeholder="YYYY-MM-DD">
+        <button type="button" class="btn btn-ghost" style="padding: 0.4rem 0.6rem;"
+                onclick="shiftWeek(7)">&#9654;</button>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom: 0;">
+      <label>&nbsp;</label>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="submit" class="btn btn-primary">Load Week</button>
+        <button type="button" class="btn btn-ghost" onclick="goThisWeek()">This Week</button>
+        <span id="fetch-spinner" class="htmx-indicator" style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+          <span class="spinner"></span> Loading...
+        </span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div id="week-results">
+  {% if week_data %}
+    {% include "calendar/_week_partial.html" %}
+  {% else %}
+    <div class="empty-state">
+      <div class="icon">&#128198;</div>
+      <p>Select a week and click Load Week to see the schedule.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function shiftWeek(days) {
+  const input = document.getElementById('week_start');
+  const d = new Date(input.value + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  input.value = d.toISOString().slice(0, 10);
+}
+
+function goThisWeek() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  document.getElementById('week_start').value = `${yyyy}-${mm}-${dd}`;
+}
+</script>
+{% endblock %}
