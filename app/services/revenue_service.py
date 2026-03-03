@@ -23,27 +23,40 @@ from app.services.revenue_store import revenue_store
 
 logger = logging.getLogger(__name__)
 
-# Column name normalization — KDP CSV headers vary slightly
+# Column name normalization — KDP CSV headers vary across report types.
+# "Prior Month Royalties" format has: Title, Author, ASIN/ISBN, Marketplace,
+# Units Sold, Units Refunded, Net Units Sold or Combined KENP, Royalty Type,
+# Payout Plan, Currency, Avg. List Price without tax, ..., Earnings.
+# Row 1 is metadata: "Sales Period,January 2025,,,,..."
+# Row 2 is actual column headers.
 KDP_COLUMN_MAP = {
+    # Combined Sales report columns
     "royalty date": "royalty_date",
     "title": "title",
     "author name": "author_name",
+    "author": "author_name",
     "asin/isbn": "asin_isbn",
     "asin": "asin_isbn",
     "isbn": "asin_isbn",
     "marketplace": "marketplace",
     "royalty type": "royalty_type",
+    "payout plan": "royalty_type",
     "transaction type": "transaction_type",
     "units sold": "units_sold",
     "units refunded": "units_refunded",
     "net units sold": "net_units",
+    "net units sold or combined kenp": "net_units",
     "currency": "currency",
     "royalty": "royalty_amount",
+    "earnings": "royalty_amount",
 }
 
 
 def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[KdpRecord]]:
-    """Parse a KDP Combined Sales CSV. Returns (import metadata, records)."""
+    """Parse a KDP royalty CSV. Handles two formats:
+    - "Prior Month Royalties": metadata row 1 (Sales Period), headers row 2, data row 3+
+    - "Combined Sales": headers row 1, data row 2+
+    """
     # Try UTF-8 first, fall back to Latin-1
     for encoding in ("utf-8-sig", "utf-8", "latin-1"):
         try:
@@ -57,8 +70,24 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
     import_id = str(uuid.uuid4())[:8]
     now = datetime.now(timezone.utc).isoformat()
 
-    reader = csv.DictReader(io.StringIO(text))
-    # Normalize headers
+    lines = text.splitlines()
+    if not lines:
+        return KdpImport(id=import_id, filename=filename, uploaded_at=now), []
+
+    # Detect "Prior Month Royalties" format: row 1 starts with "Sales Period"
+    metadata_date = ""
+    header_line_idx = 0
+    first_cell = lines[0].split(",")[0].strip().strip('"').lower()
+    if first_cell == "sales period" and len(lines) > 1:
+        # Extract date from metadata row: "Sales Period,January 2025,,,"
+        parts = lines[0].split(",")
+        if len(parts) > 1:
+            metadata_date = parts[1].strip().strip('"')
+        header_line_idx = 1
+
+    # Parse from the header line onward
+    csv_text = "\n".join(lines[header_line_idx:])
+    reader = csv.DictReader(io.StringIO(csv_text))
     if reader.fieldnames:
         reader.fieldnames = [h.strip() for h in reader.fieldnames]
 
@@ -71,7 +100,14 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
         if not mapped.get("title"):
             continue
 
-        royalty_date = _normalize_date(mapped.get("royalty_date", ""))
+        # Royalty date: use row value if present, else metadata row date
+        raw_date = mapped.get("royalty_date", "").strip()
+        if raw_date:
+            royalty_date = _normalize_date(raw_date)
+        elif metadata_date:
+            royalty_date = _normalize_date(metadata_date)
+        else:
+            royalty_date = ""
         dates_seen.add(royalty_date)
 
         net_units = _parse_int(mapped.get("net_units", "0"))
@@ -411,15 +447,17 @@ def _parse_int(raw: str) -> int:
 
 
 def _infer_format(mapped: dict) -> str:
-    """Infer book format from royalty_type or transaction_type."""
+    """Infer book format from royalty_type, transaction_type, or payout plan."""
     rt = mapped.get("royalty_type", "").lower()
-    if "kindle" in rt or "ebook" in rt:
+    if "kindle" in rt or "ebook" in rt or "kenp" in rt:
         return "Kindle"
     if "paperback" in rt:
         return "Paperback"
     if "hardcover" in rt:
         return "Hardcover"
-    return mapped.get("royalty_type", "").strip()
+    if rt:
+        return mapped.get("royalty_type", "").strip()
+    return ""
 
 
 def _load_client_registry() -> dict:
