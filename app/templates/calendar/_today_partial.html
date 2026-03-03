@@ -52,7 +52,7 @@
         {% if event.all_day %}
           <span style="font-size: 0.75rem;">all day</span>
         {% elif event.start %}
-          {{ event.start.strftime("%H:%M") }}
+          {{ event.start.strftime("%-I:%M%p").lower() }}
         {% endif %}
       </div>
       <div style="flex: 1; min-width: 0;">

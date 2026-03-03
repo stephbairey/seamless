@@ -45,9 +45,9 @@
         {% if day_events %}
           {% for event in day_events %}
           <div class="week-event week-event-{{ event.calendar_label|lower }}"
-               title="{{ event.summary }}&#10;{{ event.start.strftime('%H:%M') if event.start and not event.all_day else 'All day' }} — {{ event.calendar_label }}">
+               title="{{ event.summary }}&#10;{{ event.start.strftime('%-I:%M%p').lower() if event.start and not event.all_day else 'All day' }} — {{ event.calendar_label }}">
             <div class="week-event-time">
-              {% if event.all_day %}all day{% elif event.start %}{{ event.start.strftime("%H:%M") }}{% endif %}
+              {% if event.all_day %}all day{% elif event.start %}{{ event.start.strftime("%-I:%M%p").lower() }}{% endif %}
             </div>
             <div class="week-event-title">{{ event.summary }}</div>
           </div>
