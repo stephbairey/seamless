@@ -75,6 +75,27 @@ class ClickUpClient:
     async def update_task_status(self, task_id: str, status: str) -> dict:
         return await self.update_task(task_id, status=status)
 
+    async def get_time_entries(self, start_date: str = "", end_date: str = "") -> dict:
+        """Get time entries for the workspace. Dates are YYYY-MM-DD strings,
+        converted to epoch milliseconds for the API."""
+        from app.config import CLICKUP_WORKSPACE_ID
+        params: dict[str, Any] = {}
+        if start_date:
+            params["start_date"] = str(int(
+                datetime.strptime(start_date, "%Y-%m-%d").timestamp() * 1000
+            ))
+        if end_date:
+            params["end_date"] = str(int(
+                datetime.strptime(end_date + " 23:59:59", "%Y-%m-%d %H:%M:%S").timestamp() * 1000
+            ))
+        return await self._request(
+            "GET", f"/team/{CLICKUP_WORKSPACE_ID}/time_entries", params=params
+        )
+
+    async def get_task_time_tracked(self, task_id: str) -> dict:
+        """Get time tracked on a specific task."""
+        return await self._request("GET", f"/task/{task_id}/time")
+
 
 class ClickUpAuthError(Exception):
     pass

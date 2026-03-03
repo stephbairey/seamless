@@ -1,0 +1,57 @@
+{% if error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 0.75rem 1rem;">
+  <div style="color: var(--red); font-weight: 500;">{{ error }}</div>
+</div>
+{% endif %}
+
+{% if warning %}
+<div class="card" style="border-left: 3px solid var(--yellow); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="color: var(--yellow); font-weight: 500;">{{ warning }}</div>
+  {% if dupes %}
+  <ul style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted); list-style: none; padding: 0;">
+    {% for d in dupes %}
+    <li style="padding: 0.1rem 0;">{{ d }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if import_result %}
+<div class="card" style="border-left: 3px solid var(--green); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="color: var(--green); font-weight: 500;">Import successful</div>
+  <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+    {{ import_result.record_count }} records &middot; {{ import_result.date_range }} &middot; ${{ "%.2f"|format(import_result.total_royalty) }} total royalty
+  </div>
+</div>
+{% endif %}
+
+{% if records %}
+<h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Imported Records</h3>
+<div style="overflow-x: auto;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+    <thead>
+      <tr style="border-bottom: 1px solid var(--border);">
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Date</th>
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Title</th>
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Author</th>
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Format</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Units</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Royalty</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr style="border-bottom: 1px solid var(--border);">
+        <td style="padding: 0.4rem 0.5rem; font-family: var(--font-mono); color: var(--text-dim);">{{ r.royalty_date }}</td>
+        <td style="padding: 0.4rem 0.5rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.title }}</td>
+        <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">{{ r.author_name }}</td>
+        <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">{{ r.format }}</td>
+        <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono);">{{ r.net_units }}</td>
+        <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(r.royalty_amount) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}

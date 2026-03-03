@@ -1,0 +1,104 @@
+{% if seeded %}
+<div class="card" style="border-left: 3px solid var(--green); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="color: var(--green); font-weight: 500;">Seeded {{ entries|length }} consignment entries from client registry.</div>
+</div>
+{% endif %}
+
+{% if entries %}
+<!-- Venue summary cards -->
+{% set venues = entries|map(attribute='venue')|unique|list %}
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+  {% for venue in venues %}
+  {% set venue_entries = entries|selectattr('venue', 'equalto', venue)|list %}
+  <div class="card" style="padding: 0.75rem 1rem;">
+    <div style="font-weight: 500; font-size: 0.9rem; margin-bottom: 0.375rem;">{{ venue }}</div>
+    <div style="display: flex; gap: 1rem; font-size: 0.8rem;">
+      <div>
+        <div style="color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase;">Titles</div>
+        <div style="font-family: var(--font-mono);">{{ venue_entries|length }}</div>
+      </div>
+      <div>
+        <div style="color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase;">Placed</div>
+        <div style="font-family: var(--font-mono);">{{ venue_entries|sum(attribute='qty_placed') }}</div>
+      </div>
+      <div>
+        <div style="color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase;">Sold</div>
+        <div style="font-family: var(--font-mono); color: var(--green);">{{ venue_entries|sum(attribute='qty_sold') }}</div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Full table -->
+<div class="card">
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border);">
+          <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Venue</th>
+          <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Title</th>
+          <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Author</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Placed</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Sold</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Stock</th>
+          <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Last Checked</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Revenue</th>
+          <th style="text-align: center; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 0.5rem;">{{ e.venue }}</td>
+          <td style="padding: 0.5rem;">{{ e.title }}</td>
+          <td style="padding: 0.5rem; color: var(--text-muted);">{{ e.author_name }}</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ e.qty_placed }}</td>
+          <td style="padding: 0.5rem; text-align: right;">
+            <form hx-post="/revenue/consignment/update/{{ e.id }}"
+                  hx-target="#consignment-area"
+                  style="display: inline;">
+              <input type="number" name="qty_sold" value="{{ e.qty_sold }}" min="0"
+                     style="width: 50px; text-align: right; padding: 0.2rem 0.375rem; font-size: 0.8rem; font-family: var(--font-mono);">
+              <input type="hidden" name="last_checked" value="{{ e.last_checked }}">
+              <input type="hidden" name="revenue" value="{{ e.revenue }}">
+              <input type="hidden" name="notes" value="{{ e.notes }}">
+          </td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--text-muted);">
+            {{ e.qty_placed - e.qty_sold }}
+          </td>
+          <td style="padding: 0.5rem;">
+              <input type="date" name="last_checked" value="{{ e.last_checked }}"
+                     style="padding: 0.2rem 0.375rem; font-size: 0.8rem;">
+          </td>
+          <td style="padding: 0.5rem; text-align: right;">
+              <input type="number" name="revenue" value="{{ e.revenue }}" step="0.01" min="0"
+                     style="width: 70px; text-align: right; padding: 0.2rem 0.375rem; font-size: 0.8rem; font-family: var(--font-mono);">
+          </td>
+          <td style="padding: 0.5rem; text-align: center;">
+              <button type="submit" class="btn btn-ghost" style="font-size: 0.7rem; padding: 0.2rem 0.5rem;">Save</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="icon">&#128218;</div>
+  <p>No consignment entries yet.</p>
+  <div style="margin-top: 1rem;">
+    <button class="btn btn-primary"
+            hx-post="/revenue/consignment/seed"
+            hx-target="#consignment-area"
+            hx-indicator="#seed-spinner">
+      Seed from Client Registry
+    </button>
+    <span id="seed-spinner" class="htmx-indicator" style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem; margin-left: 0.5rem;">
+      <span class="spinner"></span> Seeding...
+    </span>
+  </div>
+</div>
+{% endif %}

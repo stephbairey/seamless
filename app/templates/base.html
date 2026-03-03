@@ -92,6 +92,22 @@
       </nav>
 
       <nav class="nav-section">
+        <div class="nav-section-label">Revenue</div>
+        <a href="/revenue/dashboard" class="nav-link {% if active_module == 'revenue' and active_tab == 'dashboard' %}active{% endif %}">
+          <span class="icon">&#128176;</span> Dashboard
+        </a>
+        <a href="/revenue/kdp" class="nav-link {% if active_module == 'revenue' and active_tab == 'kdp' %}active{% endif %}">
+          <span class="icon">&#128202;</span> KDP Import
+        </a>
+        <a href="/revenue/royalties" class="nav-link {% if active_module == 'revenue' and active_tab == 'royalties' %}active{% endif %}">
+          <span class="icon">&#128203;</span> Royalties
+        </a>
+        <a href="/revenue/consignment" class="nav-link {% if active_module == 'revenue' and active_tab == 'consignment' %}active{% endif %}">
+          <span class="icon">&#128218;</span> Consignment
+        </a>
+      </nav>
+
+      <nav class="nav-section">
         <div class="nav-section-label">Brand</div>
         <a href="/brand/identity" class="nav-link {% if active_module == 'brand' and active_tab == 'identity' %}active{% endif %}">
           <span class="icon">&#9879;</span> Identity Router

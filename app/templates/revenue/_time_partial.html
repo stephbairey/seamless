@@ -1,0 +1,89 @@
+{% if time_error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 0.75rem 1rem;">
+  <div style="color: var(--red); font-weight: 500;">{{ time_error }}</div>
+</div>
+{% endif %}
+
+{% if time_entries %}
+<div style="overflow-x: auto;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+    <thead>
+      <tr style="border-bottom: 2px solid var(--border);">
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Client</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Hours</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Rate</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Amount</th>
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for client, data in time_entries.items() %}
+      <tr style="border-bottom: 1px solid var(--border);">
+        <td style="padding: 0.5rem; font-weight: 500;">{{ client }}</td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ "%.2f"|format(data.hours) }}</td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">
+          {% if data.rate %}${{ "%.2f"|format(data.rate) }}/hr{% else %}<span style="color: var(--text-dim);">N/A</span>{% endif %}
+        </td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">
+          {% if data.rate %}${{ "%.2f"|format(data.amount) }}{% else %}<span style="color: var(--text-dim);">$0.00</span>{% endif %}
+        </td>
+        <td style="padding: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+          {% if data.retainer %}
+            <span class="tag" style="background: var(--accent-dim); color: var(--accent); font-size: 0.7rem;">
+              Retainer: ${{ "%.0f"|format(data.retainer) }}
+            </span>
+            {% set remaining = data.retainer - data.amount %}
+            {% if remaining < 1000 %}
+              <span class="tag budget-warning" style="font-size: 0.7rem;">
+                ${{ "%.0f"|format(remaining) }} left
+              </span>
+            {% endif %}
+          {% endif %}
+          {% if data.ceiling %}
+            <span class="tag" style="background: rgba(192,132,252,0.12); color: #c084fc; font-size: 0.7rem;">
+              Ceiling: ${{ "%.0f"|format(data.ceiling) }}
+            </span>
+            {% if data.amount > data.ceiling * 0.8 %}
+              <span class="tag budget-danger" style="font-size: 0.7rem;">
+                {{ "%.0f"|format(data.amount / data.ceiling * 100) }}% of ceiling
+              </span>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% if data.tasks %}
+      <tr>
+        <td colspan="5" style="padding: 0.25rem 0.5rem 0.5rem 1.5rem;">
+          <div style="font-size: 0.75rem; color: var(--text-dim);">
+            {% for task in data.tasks %}
+              {{ task.name }} ({{ "%.2f"|format(task.hours) }}h){% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div style="margin-top: 0.75rem;">
+  <form hx-post="/revenue/entry/add" hx-target="#dashboard-content">
+    {% for client, data in time_entries.items() %}
+    {% if data.rate and data.amount > 0 %}
+    <input type="hidden" name="client" value="{{ client }}">
+    <input type="hidden" name="stream" value="consulting">
+    <input type="hidden" name="hours" value="{{ data.hours }}">
+    <input type="hidden" name="rate" value="{{ data.rate }}">
+    <input type="hidden" name="amount" value="{{ data.amount }}">
+    <input type="hidden" name="description" value="ClickUp time entries ({{ time_start }} to {{ time_end }})">
+    {% endif %}
+    {% endfor %}
+  </form>
+</div>
+
+{% elif not time_error %}
+<div style="font-size: 0.85rem; color: var(--text-dim); padding: 0.5rem 0;">
+  No time entries found for the selected period.
+</div>
+{% endif %}

@@ -39,3 +39,6 @@ SORT_LOG_FILE = DATA_DIR / "sort-history.json"
 
 # Newsletter
 NEWSLETTER_FILE = DATA_DIR / "newsletter-items.json"
+
+# Revenue
+REVENUE_FILE = DATA_DIR / "revenue.json"

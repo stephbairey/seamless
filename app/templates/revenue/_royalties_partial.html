@@ -1,0 +1,75 @@
+{% if error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 0.75rem 1rem;">
+  <div style="color: var(--red); font-weight: 500;">{{ error }}</div>
+</div>
+{% endif %}
+
+{% if warning %}
+<div class="card" style="border-left: 3px solid var(--yellow); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="color: var(--yellow); font-weight: 500;">{{ warning }}</div>
+</div>
+{% endif %}
+
+{% if generated %}
+<div class="card" style="border-left: 3px solid var(--green); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="color: var(--green); font-weight: 500;">Generated {{ generated|length }} report{{ 's' if generated|length != 1 else '' }} for {{ quarter }}</div>
+</div>
+
+{% for report in generated %}
+<div class="card" style="margin-bottom: 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+    <div>
+      <h3 style="font-size: 1rem;">{{ report.author_name }}</h3>
+      <div style="font-size: 0.75rem; color: var(--text-dim);">{{ report.quarter }}</div>
+    </div>
+    <a href="/revenue/royalties/{{ report.id }}" class="btn btn-ghost" style="font-size: 0.8rem;">View Details</a>
+  </div>
+
+  <div class="check-summary" style="margin-bottom: 0.75rem;">
+    <div class="stat">
+      <div class="stat-number" style="color: var(--text); font-size: 1.2rem;">${{ "%.2f"|format(report.total_gross) }}</div>
+      <div class="stat-label">Gross</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" style="color: var(--yellow); font-size: 1.2rem;">${{ "%.2f"|format(report.total_author) }}</div>
+      <div class="stat-label">Owed to Author</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number" style="color: var(--green); font-size: 1.2rem;">${{ "%.2f"|format(report.total_publisher) }}</div>
+      <div class="stat-label">Publisher Keeps</div>
+    </div>
+  </div>
+
+  {% if report.splits %}
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <th style="text-align: left; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Title</th>
+          <th style="text-align: left; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Format</th>
+          <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Units</th>
+          <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Gross</th>
+          <th style="text-align: center; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Split</th>
+          <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Author</th>
+          <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Publisher</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in report.splits %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 0.4rem 0.5rem;">{{ s.title }}</td>
+          <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">{{ s.format }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono);">{{ s.net_units }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono);">${{ "%.2f"|format(s.gross_royalty) }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: center; font-size: 0.75rem; color: var(--text-dim);">{{ (s.author_pct * 100)|int }}/{{ (s.publisher_pct * 100)|int }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--yellow);">${{ "%.2f"|format(s.author_amount) }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(s.publisher_amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}

@@ -1,0 +1,95 @@
+<!-- Period label -->
+<div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+  {{ summary.period_label }}
+</div>
+
+<!-- Key metrics -->
+<div class="check-summary" style="margin-bottom: 1.5rem;">
+  <div class="stat">
+    <div class="stat-number" style="color: var(--text); font-size: 1.4rem;">${{ "%.0f"|format(summary.gross) }}</div>
+    <div class="stat-label">Gross</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: var(--accent); font-size: 1.4rem;">${{ "%.0f"|format(summary.consulting) }}</div>
+    <div class="stat-label">Consulting</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: var(--green); font-size: 1.4rem;">${{ "%.0f"|format(summary.publishing) }}</div>
+    <div class="stat-label">Publishing</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: #c084fc; font-size: 1.4rem;">${{ "%.0f"|format(summary.products) }}</div>
+    <div class="stat-label">Products</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: {% if summary.net >= 0 %}var(--green){% else %}var(--red){% endif %}; font-size: 1.4rem;">${{ "%.0f"|format(summary.net) }}</div>
+    <div class="stat-label">Net</div>
+  </div>
+</div>
+
+<!-- Consulting goal -->
+{% if summary.goal > 0 %}
+<div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
+    <span style="font-size: 0.85rem; font-weight: 500;">Consulting Goal</span>
+    <span style="font-size: 0.85rem; font-family: var(--font-mono);
+      {% if summary.goal_pct >= 100 %}color: var(--green);
+      {% elif summary.goal_pct >= 75 %}color: var(--text);
+      {% elif summary.goal_pct >= 50 %}color: var(--yellow);
+      {% else %}color: var(--red);{% endif %}">
+      {{ summary.goal_pct }}% (${{ "%.0f"|format(summary.consulting) }} / ${{ "%.0f"|format(summary.goal) }})
+    </span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-bar-fill" style="width: {{ [summary.goal_pct, 100]|min }}%;
+      {% if summary.goal_pct >= 100 %}background: var(--green);
+      {% elif summary.goal_pct >= 75 %}background: var(--accent);
+      {% elif summary.goal_pct >= 50 %}background: var(--yellow);
+      {% else %}background: var(--red);{% endif %}">
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- By client breakdown -->
+{% if summary.by_client %}
+<div class="card" style="margin-bottom: 1rem;">
+  <h3 style="font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-muted);">By Client</h3>
+  {% set max_client = summary.by_client.values()|max if summary.by_client.values()|list else 1 %}
+  {% for client, amount in summary.by_client.items() %}
+  <div style="margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+      <span>{{ client }}</span>
+      <span style="font-family: var(--font-mono);">${{ "%.2f"|format(amount) }}</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-bar-fill" style="width: {{ (amount / max_client * 100) if max_client else 0 }}%; background: var(--accent);"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- By month breakdown -->
+{% if summary.by_month %}
+<div class="card" style="margin-bottom: 1rem;">
+  <h3 style="font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-muted);">By Month</h3>
+  {% set max_month = summary.by_month.values()|max if summary.by_month.values()|list else 1 %}
+  {% for month, amount in summary.by_month|dictsort %}
+  <div style="margin-bottom: 0.5rem;">
+    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+      <span style="font-family: var(--font-mono);">{{ month }}</span>
+      <span style="font-family: var(--font-mono);">${{ "%.2f"|format(amount) }}</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-bar-fill" style="width: {{ (amount / max_month * 100) if max_month else 0 }}%; background: var(--green);"></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Monthly costs summary -->
+<div style="font-size: 0.8rem; color: var(--text-dim); padding: 0.5rem 0;">
+  Recurring monthly costs: ${{ "%.2f"|format(summary.recurring_monthly) }}/mo
+</div>

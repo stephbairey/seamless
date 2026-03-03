@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ report.author_name }} — {{ report.quarter }} — Royalty Report{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>{{ report.author_name }} — {{ report.quarter }}</h2>
+  <p class="description">Generated {{ report.generated_at[:10] }}</p>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <a href="/revenue/dashboard" class="tab">Dashboard</a>
+  <a href="/revenue/kdp" class="tab">KDP Import</a>
+  <a href="/revenue/royalties" class="tab active">Royalty Reports</a>
+  <a href="/revenue/consignment" class="tab">Consignment</a>
+</div>
+
+<!-- Back link -->
+<a href="/revenue/royalties" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+  &larr; Back to Reports
+</a>
+
+<!-- Status + totals -->
+<div class="check-summary" style="margin-bottom: 1.5rem;">
+  <div class="stat">
+    <div class="stat-number" style="color: var(--text); font-size: 1.3rem;">${{ "%.2f"|format(report.total_gross) }}</div>
+    <div class="stat-label">Gross Royalty</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: var(--yellow); font-size: 1.3rem;">${{ "%.2f"|format(report.total_author) }}</div>
+    <div class="stat-label">Owed to Author</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: var(--green); font-size: 1.3rem;">${{ "%.2f"|format(report.total_publisher) }}</div>
+    <div class="stat-label">Publisher Keeps</div>
+  </div>
+  <div class="stat">
+    <div>
+      <span class="tag {% if report.status == 'sent' %}matched{% endif %}" style="font-size: 0.8rem; {% if report.status == 'reviewed' %}background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3);{% elif report.status == 'draft' %}background: rgba(251,191,36,0.12); color: var(--yellow); border-color: rgba(251,191,36,0.3);{% endif %}">
+        {{ report.status }}
+      </span>
+    </div>
+    <div class="stat-label">Status</div>
+  </div>
+</div>
+
+<!-- Status controls -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+  {% if report.status == 'draft' %}
+  <form action="/revenue/royalties/update/{{ report.id }}" method="post" style="display: inline;">
+    <input type="hidden" name="status" value="reviewed">
+    <button type="submit" class="btn btn-ghost" style="font-size: 0.8rem;">Mark Reviewed</button>
+  </form>
+  {% endif %}
+  {% if report.status == 'reviewed' %}
+  <form action="/revenue/royalties/update/{{ report.id }}" method="post" style="display: inline;">
+    <input type="hidden" name="status" value="sent">
+    <button type="submit" class="btn btn-primary" style="font-size: 0.8rem;">Mark Sent</button>
+  </form>
+  {% endif %}
+  {% if report.status != 'draft' %}
+  <form action="/revenue/royalties/update/{{ report.id }}" method="post" style="display: inline;">
+    <input type="hidden" name="status" value="draft">
+    <button type="submit" class="btn btn-ghost" style="font-size: 0.8rem;">Reset to Draft</button>
+  </form>
+  {% endif %}
+</div>
+
+<!-- Splits table -->
+{% if report.splits %}
+<div class="card">
+  <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Royalty Splits</h3>
+  <div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border);">
+          <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Title</th>
+          <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Format</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Units</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Gross</th>
+          <th style="text-align: center; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Author %</th>
+          <th style="text-align: center; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Publisher %</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Author Owed</th>
+          <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Publisher Keeps</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in report.splits %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 0.5rem;">{{ s.title }}</td>
+          <td style="padding: 0.5rem; color: var(--text-muted);">{{ s.format }}</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ s.net_units }}</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">${{ "%.2f"|format(s.gross_royalty) }}</td>
+          <td style="padding: 0.5rem; text-align: center; color: var(--text-muted);">{{ (s.author_pct * 100)|int }}%</td>
+          <td style="padding: 0.5rem; text-align: center; color: var(--text-muted);">{{ (s.publisher_pct * 100)|int }}%</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--yellow);">${{ "%.2f"|format(s.author_amount) }}</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(s.publisher_amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+          <td colspan="3" style="padding: 0.5rem;">Totals</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">${{ "%.2f"|format(report.total_gross) }}</td>
+          <td colspan="2"></td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--yellow);">${{ "%.2f"|format(report.total_author) }}</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(report.total_publisher) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Royalty Reports — Revenue{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Royalty Reports</h2>
+  <p class="description">Generate quarterly royalty reports per author from KDP sales data.</p>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <a href="/revenue/dashboard" class="tab">Dashboard</a>
+  <a href="/revenue/kdp" class="tab">KDP Import</a>
+  <a href="/revenue/royalties" class="tab active">Royalty Reports</a>
+  <a href="/revenue/consignment" class="tab">Consignment</a>
+</div>
+
+<!-- Generate form -->
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Generate Reports</h3>
+  <form hx-post="/revenue/royalties/generate"
+        hx-target="#royalty-results"
+        hx-indicator="#gen-spinner"
+        style="display: flex; gap: 0.75rem; align-items: flex-end;">
+    <div class="form-group" style="margin-bottom: 0;">
+      <label for="quarter">Quarter</label>
+      <select name="quarter" id="quarter" style="width: auto; min-width: 140px;">
+        <option value="2026-Q1">2026-Q1</option>
+        <option value="2025-Q4">2025-Q4</option>
+        <option value="2025-Q3">2025-Q3</option>
+        <option value="2025-Q2">2025-Q2</option>
+        <option value="2025-Q1">2025-Q1</option>
+        <option value="2024-Q4">2024-Q4</option>
+        <option value="2024-Q3">2024-Q3</option>
+        <option value="2024-Q2">2024-Q2</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Generate</button>
+    <span id="gen-spinner" class="htmx-indicator" style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+      <span class="spinner"></span> Calculating splits...
+    </span>
+  </form>
+</div>
+
+<!-- Results area -->
+<div id="royalty-results"></div>
+
+<!-- Existing reports -->
+{% if reports %}
+<h3 style="font-size: 1rem; margin-bottom: 0.75rem; margin-top: 1.5rem;">Saved Reports</h3>
+{% for report in reports %}
+<a href="/revenue/royalties/{{ report.id }}" style="text-decoration: none; color: inherit;">
+  <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 0.5rem; cursor: pointer; transition: border-color 0.15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <div style="font-weight: 500; font-size: 0.9rem;">{{ report.author_name }}</div>
+        <div style="font-size: 0.75rem; color: var(--text-dim);">
+          {{ report.quarter }} &middot; ${{ "%.2f"|format(report.total_gross) }} gross &middot; ${{ "%.2f"|format(report.total_author) }} owed to author
+        </div>
+      </div>
+      <div>
+        <span class="tag {% if report.status == 'sent' %}matched{% endif %}" style="{% if report.status == 'reviewed' %}background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3);{% elif report.status == 'draft' %}background: rgba(251,191,36,0.12); color: var(--yellow); border-color: rgba(251,191,36,0.3);{% endif %}">
+          {{ report.status }}
+        </span>
+      </div>
+    </div>
+  </div>
+</a>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+  <div class="icon">&#128203;</div>
+  <p>No royalty reports yet. Upload KDP data and generate a quarterly report.</p>
+</div>
+{% endif %}
+
+{% endblock %}
