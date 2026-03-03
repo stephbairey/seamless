@@ -729,6 +729,10 @@ textarea {
   background: rgba(74, 222, 128, 0.03);
 }
 
+.week-day-today {
+  background: rgba(107, 138, 253, 0.04);
+}
+
 .week-day-header {
   display: flex;
   align-items: center;
@@ -741,6 +745,19 @@ textarea {
 
 .week-day-header.peterday {
   background: rgba(74, 222, 128, 0.08);
+}
+
+.week-day-header.today {
+  background: rgba(107, 138, 253, 0.12);
+  border-bottom-color: var(--accent);
+}
+
+.week-day-header.today .week-day-name {
+  color: var(--accent);
+}
+
+.week-day-header.today .week-day-date {
+  color: var(--accent);
 }
 
 .week-day-name {

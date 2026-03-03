@@ -122,6 +122,7 @@ async def week_fetch(request: Request, week_start: str = Form("")):
 
     ctx = _base_ctx(request, "week")
     ctx["week_start"] = ws
+    ctx["today_iso"] = date.today().isoformat()
 
     try:
         week_data = await calendar_service.get_week_events(ws)

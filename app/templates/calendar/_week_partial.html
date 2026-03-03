@@ -33,8 +33,9 @@
   {% for day_iso, day_events in week_data.by_day.items() %}
     {% set day_idx = loop.index0 %}
     {% set is_saturday = day_idx == 6 %}
-    <div class="week-day{% if is_saturday %} week-day-peterday{% endif %}">
-      <div class="week-day-header{% if is_saturday %} peterday{% endif %}">
+    {% set is_today = day_iso == today_iso %}
+    <div class="week-day{% if is_saturday %} week-day-peterday{% endif %}{% if is_today %} week-day-today{% endif %}">
+      <div class="week-day-header{% if is_saturday %} peterday{% endif %}{% if is_today %} today{% endif %}">
         <span class="week-day-name">{{ day_names[day_idx] if day_idx < 7 else "" }}</span>
         <span class="week-day-date">{{ day_iso[5:] }}</span>
         {% if is_saturday %}
