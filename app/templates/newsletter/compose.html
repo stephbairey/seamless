@@ -58,21 +58,16 @@ document.addEventListener('change', function(e) {
 
 function moveItem(itemId, direction) {
   const list = document.getElementById('sortable-items');
-  const items = [...list.querySelectorAll('.compose-item')];
-  const idx = items.findIndex(el => el.dataset.id === itemId);
+  const ids = [...list.querySelectorAll('.compose-item')].map(el => el.dataset.id);
+  const idx = ids.indexOf(itemId);
   if (idx < 0) return;
 
   const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
-  if (targetIdx < 0 || targetIdx >= items.length) return;
+  if (targetIdx < 0 || targetIdx >= ids.length) return;
 
-  if (direction === 'up') {
-    list.insertBefore(items[idx], items[targetIdx]);
-  } else {
-    list.insertBefore(items[targetIdx], items[idx]);
-  }
+  // Swap in the array, let the server response render the new order
+  [ids[idx], ids[targetIdx]] = [ids[targetIdx], ids[idx]];
 
-  // Submit new order
-  const ids = [...list.querySelectorAll('.compose-item')].map(el => el.dataset.id);
   const form = document.getElementById('reorder-form');
   form.innerHTML = '';
   ids.forEach(id => {
