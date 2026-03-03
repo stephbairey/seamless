@@ -7,22 +7,6 @@
   <p class="description">Brand codification, identity routing, text quality, task management, email triage, calendar sync, and file routing.</p>
 </div>
 
-{% if not gdrive_mounted %}
-<div class="card" style="border-left: 3px solid var(--yellow); padding: 0.75rem 1rem; margin-bottom: 1rem;">
-  <div style="font-weight: 600; color: var(--yellow); font-size: 0.85rem; margin-bottom: 0.25rem;">Google Drive not mounted</div>
-  <div style="font-size: 0.8rem; color: var(--text-muted);">
-    File sorting requires G: drive. In PowerShell, run these two commands:
-    <div style="margin-top: 0.375rem; font-family: monospace; background: var(--bg-surface); padding: 0.375rem 0.5rem; border-radius: var(--radius-sm); line-height: 1.6;">
-      wsl sudo mkdir -p /mnt/g<br>
-      wsl sudo mount -t drvfs G: /mnt/g
-    </div>
-    <div style="margin-top: 0.375rem;">Then restart the Docker container:
-      <span style="font-family: monospace; background: var(--bg-surface); padding: 0.125rem 0.375rem; border-radius: var(--radius-sm);">docker restart seamless-dashboard</span>
-    </div>
-  </div>
-</div>
-{% endif %}
-
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
   <a href="/tasks/create" class="card" style="text-decoration: none; color: inherit;">
     <div class="card-header">
