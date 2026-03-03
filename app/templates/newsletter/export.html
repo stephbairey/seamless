@@ -31,6 +31,26 @@
 
 <div style="margin-bottom: 1rem;">
   <form hx-post="/newsletter/export/compile" hx-target="#export-content" hx-indicator="#compile-spinner">
+    <div class="card" style="padding: 1rem; margin-bottom: 1rem;">
+      <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">Newsletter Header Info</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Newsletter Date</label>
+          <input type="text" name="newsletter_date" value="{{ issue.newsletter_date }}"
+                 placeholder="MARCH 5, 2026" style="font-size: 0.85rem; width: 100%;">
+        </div>
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Next Meeting Date/Time</label>
+          <input type="text" name="next_meeting_day" value="{{ issue.next_meeting_day }}"
+                 placeholder="Saturday, March 8, 2026, 10:00 AM" style="font-size: 0.85rem; width: 100%;">
+        </div>
+      </div>
+      <div style="margin-top: 0.75rem;">
+        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Meeting Location</label>
+        <input type="text" name="next_meeting_location" value="{{ issue.next_meeting_location }}"
+               placeholder="First Unitarian Church, 1011 SW 12th Ave" style="font-size: 0.85rem; width: 100%;">
+      </div>
+    </div>
     <button type="submit" class="btn btn-primary">
       Compile Newsletter
       <span id="compile-spinner" class="htmx-indicator"><span class="spinner"></span></span>

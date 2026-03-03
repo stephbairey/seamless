@@ -4,7 +4,7 @@
 {% block content %}
 <div class="page-header">
   <h2>PRG Newsletter — Compose</h2>
-  <p class="description">{{ issue.week_key }} — Edit headlines, reorder items, change categories.</p>
+  <p class="description">{{ issue.week_key }} — Edit headlines, reorder items, rewrite content.</p>
 </div>
 
 <div class="tabs">
@@ -13,6 +13,20 @@
   <a href="/newsletter/export" class="tab">Export</a>
   <a href="/newsletter/history" class="tab">History</a>
 </div>
+
+{% if items %}
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+  <button class="btn btn-primary"
+          hx-post="/newsletter/compose/rewrite-all"
+          hx-target="#compose-list"
+          hx-swap="innerHTML"
+          hx-indicator="#rewrite-all-spinner"
+          hx-confirm="Rewrite all pending items? This will call the AI for each one.">
+    Rewrite All Pending
+    <span id="rewrite-all-spinner" class="htmx-indicator"><span class="spinner"></span></span>
+  </button>
+</div>
+{% endif %}
 
 <div id="compose-list">
   {% include "newsletter/_compose_partial.html" %}

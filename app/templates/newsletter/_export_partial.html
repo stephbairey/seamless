@@ -28,9 +28,8 @@
       <button id="copy-btn" class="btn btn-primary" onclick="copyHtml()" style="font-size: 0.8rem;">Copy HTML</button>
     </div>
 
-    <div class="card" style="padding: 1.5rem; background: #fff; color: #333; border-radius: var(--radius); max-height: 600px; overflow-y: auto;">
-      {{ compilation.html | safe }}
-    </div>
+    <iframe id="preview-frame" style="width: 100%; min-height: 600px; border: 1px solid var(--border); border-radius: var(--radius); background: #fff;"
+            srcdoc="{{ compilation.html | e }}"></iframe>
 
     <!-- Hidden raw HTML for copy -->
     <pre id="compiled-html-source" style="display: none;">{{ compilation.html }}</pre>

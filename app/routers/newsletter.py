@@ -198,6 +198,10 @@ async def compose_update(
     status: str = Form(None),
     body_text: str = Form(None),
     event_date: str = Form(None),
+    rewritten_body: str = Form(None),
+    rewrite_type: str = Form(None),
+    source_url: str = Form(None),
+    extra_context: str = Form(None),
 ):
     updates = {}
     if headline is not None:
@@ -210,6 +214,15 @@ async def compose_update(
         updates["body_text"] = body_text
     if event_date is not None:
         updates["event_date"] = event_date.strip()
+    if rewritten_body is not None:
+        updates["rewritten_body"] = rewritten_body
+        updates["rewrite_status"] = "edited"
+    if rewrite_type is not None:
+        updates["rewrite_type"] = rewrite_type
+    if source_url is not None:
+        updates["source_url"] = source_url.strip()
+    if extra_context is not None:
+        updates["extra_context"] = extra_context
 
     newsletter_store.update_item(item_id, updates)
 
@@ -244,6 +257,82 @@ async def compose_reorder(request: Request):
     return templates.TemplateResponse("newsletter/compose.html", ctx)
 
 
+# --- Rewrite ---
+
+@router.post("/compose/rewrite/{item_id}")
+async def compose_rewrite_item(request: Request, item_id: str):
+    """Rewrite a single item and return its updated card via HTMX."""
+    ctx = _base_ctx(request, "compose")
+
+    try:
+        issue = newsletter_store.get_current_issue()
+        item = next((i for i in issue.items if i.id == item_id), None)
+        if not item:
+            ctx["error"] = f"Item {item_id} not found."
+            issue = newsletter_store.get_current_issue()
+            items = [i for i in issue.items if i.status == "included"]
+            _sort_items(items)
+            ctx["issue"] = issue
+            ctx["items"] = items
+            return templates.TemplateResponse("newsletter/_compose_partial.html", ctx)
+
+        result = await newsletter_service.rewrite_item(item)
+        newsletter_store.update_item(item_id, result)
+
+        # Reload the item for single-item partial
+        issue = newsletter_store.get_current_issue()
+        updated_item = next((i for i in issue.items if i.id == item_id), None)
+
+        if request.headers.get("HX-Request"):
+            ctx["item"] = updated_item
+            return templates.TemplateResponse("newsletter/_compose_item.html", ctx)
+
+        items = [i for i in issue.items if i.status == "included"]
+        _sort_items(items)
+        ctx["issue"] = issue
+        ctx["items"] = items
+        return templates.TemplateResponse("newsletter/compose.html", ctx)
+    except Exception as e:
+        logger.exception("Rewrite failed for item %s", item_id)
+        issue = newsletter_store.get_current_issue()
+        items = [i for i in issue.items if i.status == "included"]
+        _sort_items(items)
+        ctx["issue"] = issue
+        ctx["items"] = items
+        ctx["error"] = f"Rewrite failed: {e}"
+        return templates.TemplateResponse("newsletter/_compose_partial.html", ctx)
+
+
+@router.post("/compose/rewrite-all")
+async def compose_rewrite_all(request: Request):
+    """Rewrite all pending items and return the full compose partial."""
+    ctx = _base_ctx(request, "compose")
+
+    try:
+        issue = newsletter_store.get_current_issue()
+        items = [i for i in issue.items if i.status == "included"]
+        await newsletter_service.rewrite_all(items)
+
+        issue = newsletter_store.get_current_issue()
+        items = [i for i in issue.items if i.status == "included"]
+        _sort_items(items)
+        ctx["issue"] = issue
+        ctx["items"] = items
+        ctx["rewrite_count"] = len([i for i in items if i.rewrite_status in ("done", "skipped")])
+    except Exception as e:
+        logger.exception("Rewrite-all failed")
+        issue = newsletter_store.get_current_issue()
+        items = [i for i in issue.items if i.status == "included"]
+        _sort_items(items)
+        ctx["issue"] = issue
+        ctx["items"] = items
+        ctx["error"] = f"Rewrite failed: {e}"
+
+    if request.headers.get("HX-Request"):
+        return templates.TemplateResponse("newsletter/_compose_partial.html", ctx)
+    return templates.TemplateResponse("newsletter/compose.html", ctx)
+
+
 # --- Export ---
 
 @router.get("/export")
@@ -256,11 +345,30 @@ async def export_page(request: Request):
 
 
 @router.post("/export/compile")
-async def export_compile(request: Request):
+async def export_compile(
+    request: Request,
+    newsletter_date: str = Form(""),
+    next_meeting_day: str = Form(""),
+    next_meeting_location: str = Form(""),
+):
     ctx = _base_ctx(request, "export")
 
     try:
         issue = newsletter_store.get_current_issue()
+
+        # Save metadata to issue before compiling
+        meta_updates = {}
+        if newsletter_date.strip():
+            meta_updates["newsletter_date"] = newsletter_date.strip()
+        if next_meeting_day.strip():
+            meta_updates["next_meeting_day"] = next_meeting_day.strip()
+        if next_meeting_location.strip():
+            meta_updates["next_meeting_location"] = next_meeting_location.strip()
+        if meta_updates:
+            for k, v in meta_updates.items():
+                setattr(issue, k, v)
+            newsletter_store.save_issue(issue)
+
         compilation = newsletter_compiler.compile(issue)
         newsletter_store.save_issue(compilation.issue)
         ctx["issue"] = compilation.issue

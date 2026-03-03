@@ -22,6 +22,14 @@ class NewsletterItem(BaseModel):
     status: str = "collected"  # collected, included, excluded
     collected_at: datetime | None = None
     email_date: datetime | None = None
+    # Rewrite fields
+    rewrite_type: str = ""  # action_item, meeting_notes_inline, meeting_notes_attachment, article_share, personal_share, joana_rollup
+    rewritten_body: str = ""  # LLM output (HTML fragment: text + <br/> + <strong> + <a>, no <p> tags)
+    rewrite_status: str = "pending"  # pending, done, skipped, edited
+    source_url: str = ""  # URL for external content (article link, hosted PDF, event page)
+    extra_context: str = ""  # free text Maya can paste (flyer text, PDF content, details)
+    is_stale: bool = False  # event_date before newsletter send date
+    stale_reason: str = ""  # human-readable explanation
 
 
 class NewsletterIssue(BaseModel):
@@ -31,6 +39,9 @@ class NewsletterIssue(BaseModel):
     updated_at: datetime | None = None
     compiled_html: str = ""
     status: str = "draft"  # draft, review, exported
+    newsletter_date: str = ""  # display string for header, e.g. "MARCH 5, 2026"
+    next_meeting_day: str = ""  # e.g. "Saturday, March 8, 2026, 10:00 AM"
+    next_meeting_location: str = ""  # e.g. "First Unitarian Church, 1011 SW 12th Ave"
 
 
 class NewsletterCompilation(BaseModel):

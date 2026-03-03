@@ -1,9 +1,9 @@
-"""Newsletter collection, classification, and headline generation for PRG newsletter."""
+"""Newsletter collection, classification, headline generation, and editorial rewriting for PRG newsletter."""
 
 import logging
 import re
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
@@ -239,6 +239,288 @@ class NewsletterService:
                     parts.append(f"\nAVOID: {', '.join(avoids)}")
 
         return "\n".join(parts)
+
+    # --- Rewrite ---
+
+    async def rewrite_item(self, item: NewsletterItem) -> dict:
+        """Editorially rewrite a single newsletter item. Returns updates dict."""
+        # Infer rewrite_type from category if not set
+        rewrite_type = item.rewrite_type or self._infer_rewrite_type(item)
+
+        # Check staleness
+        is_stale, stale_reason = self._check_stale(item)
+
+        # Personal share: skip LLM, preserve raw text
+        if rewrite_type == "personal_share":
+            body = self._format_as_html_fragment(item.body_text)
+            return {
+                "rewritten_body": body,
+                "rewrite_type": rewrite_type,
+                "rewrite_status": "skipped",
+                "is_stale": is_stale,
+                "stale_reason": stale_reason,
+            }
+
+        # Fetch external content for article_share
+        fetched_content = ""
+        if rewrite_type == "article_share" and item.source_url:
+            fetched_content = await self._fetch_url_text(item.source_url)
+
+        # Build prompts
+        system_prompt = self._build_rewrite_prompt(rewrite_type)
+        user_msg = self._build_rewrite_user_message(
+            item, rewrite_type, fetched_content,
+        )
+
+        # Call LLM
+        raw = await self._call_anthropic(system_prompt, user_msg, max_tokens=1500)
+
+        # Post-process
+        rewritten = self._postprocess_rewrite(raw)
+
+        # Run text checker
+        violations = self._text_checker.check_tier1(rewritten, "prg")
+        if violations:
+            logger.warning(
+                "Rewrite has %d violations for item %s, retrying",
+                len(violations), item.id,
+            )
+            violation_feedback = ", ".join(v.description for v in violations)
+            retry_msg = (
+                f"{user_msg}\n\n"
+                f"Previous rewrite was rejected. Issues: {violation_feedback}\n"
+                f"Rewrite again, fixing those issues."
+            )
+            raw = await self._call_anthropic(system_prompt, retry_msg, max_tokens=1500)
+            rewritten = self._postprocess_rewrite(raw)
+
+        return {
+            "rewritten_body": rewritten,
+            "rewrite_type": rewrite_type,
+            "rewrite_status": "done",
+            "is_stale": is_stale,
+            "stale_reason": stale_reason,
+        }
+
+    async def rewrite_all(self, items: list[NewsletterItem]) -> list[NewsletterItem]:
+        """Rewrite all included items with pending rewrite status."""
+        updated = []
+        for item in items:
+            if item.status != "included":
+                continue
+            if item.rewrite_status not in ("pending", ""):
+                continue
+            result = await self.rewrite_item(item)
+            newsletter_store.update_item(item.id, result)
+            for k, v in result.items():
+                if hasattr(item, k):
+                    setattr(item, k, v)
+            updated.append(item)
+        return updated
+
+    def _infer_rewrite_type(self, item: NewsletterItem) -> str:
+        """Map category to default rewrite_type."""
+        mapping = {
+            "action_item": "action_item",
+            "team_note": "meeting_notes_attachment" if item.source_url else "meeting_notes_inline",
+            "article": "article_share",
+            "joana_rollup": "joana_rollup",
+        }
+        return mapping.get(item.category, "action_item")
+
+    def _check_stale(self, item: NewsletterItem) -> tuple[bool, str]:
+        """Check if item event_date is before the next Thursday (send date)."""
+        if not item.event_date:
+            return False, ""
+        try:
+            event = datetime.strptime(item.event_date, "%Y-%m-%d").date()
+        except ValueError:
+            return False, ""
+
+        # Find next Thursday
+        today = datetime.now(timezone.utc).date()
+        days_until_thursday = (3 - today.weekday()) % 7
+        if days_until_thursday == 0 and datetime.now(timezone.utc).hour >= 12:
+            days_until_thursday = 7
+        next_thursday = today + timedelta(days=days_until_thursday if days_until_thursday else 7)
+
+        if event < next_thursday:
+            return True, f"Event date {item.event_date} is before send date {next_thursday.isoformat()}"
+        return False, ""
+
+    def _format_as_html_fragment(self, text: str) -> str:
+        """Convert plain text to HTML fragment with <br/> breaks (for personal_share)."""
+        if not text.strip():
+            return ""
+        import html as html_mod
+        text = html_mod.escape(text, quote=False)
+        # Double newlines -> paragraph breaks
+        text = re.sub(r'\n\s*\n', '\n<br/>\n<br/>', text)
+        # Single newlines -> line breaks
+        text = text.replace("\n", "\n<br/>")
+        # Clean up any triple+ <br/>
+        text = re.sub(r'(<br/>\s*){3,}', '<br/>\n<br/>', text)
+        return text.strip()
+
+    async def _fetch_url_text(self, url: str) -> str:
+        """Fetch a URL and extract text content for article summaries."""
+        try:
+            async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+                resp = await client.get(url)
+                if resp.status_code != 200:
+                    logger.warning("URL fetch failed (%s): %s", resp.status_code, url)
+                    return ""
+                html_content = resp.text
+                # Strip HTML tags for readable text
+                text = re.sub(r'<script[^>]*>.*?</script>', '', html_content, flags=re.DOTALL)
+                text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
+                text = re.sub(r'<[^>]+>', ' ', text)
+                text = re.sub(r'\s+', ' ', text).strip()
+                return text[:4000]
+        except Exception as e:
+            logger.warning("URL fetch error for %s: %s", url, e)
+            return ""
+
+    def _build_rewrite_user_message(
+        self, item: NewsletterItem, rewrite_type: str, fetched_content: str,
+    ) -> str:
+        """Build the user message for the rewrite LLM call."""
+        parts = [
+            f"Rewrite this newsletter item (type: {rewrite_type}):",
+            f"\nFrom: {item.sender_name}",
+            f"Subject: {item.subject}",
+        ]
+        if item.event_date:
+            parts.append(f"Event date: {item.event_date}")
+        if item.source_url:
+            parts.append(f"Source URL: {item.source_url}")
+
+        parts.append(f"\nEmail body:\n{item.body_text[:3000]}")
+
+        if fetched_content:
+            parts.append(f"\nFetched article content:\n{fetched_content}")
+
+        if item.extra_context:
+            parts.append(f"\nAdditional context from editor:\n{item.extra_context}")
+
+        if item.source_url:
+            parts.append(
+                f"\nUse this URL for the &raquo; link at the end: {item.source_url}"
+            )
+
+        return "\n".join(parts)
+
+    def _build_rewrite_prompt(self, rewrite_type: str) -> str:
+        """Build the system prompt for editorial rewriting, specific to item type."""
+        voice = self._voice_profiles.get_profile("prg")
+
+        parts = [
+            "You are rewriting email content for the Portland Raging Grannies weekly newsletter.",
+            "Your output is an HTML fragment that goes inside a <p class=\"body\"> tag.",
+            "",
+            "OUTPUT FORMAT RULES:",
+            "- Use <br/> on its own line for line breaks. Use <br/> then <br/> for paragraph breaks.",
+            "- Use <strong> for bold (never <b>).",
+            "- Use &raquo; for >> link markers.",
+            "- Use &amp; for ampersands, &hellip; for ellipsis.",
+            "- NO <p> tags (your output goes inside an existing <p>).",
+            "- NO em dashes. Zero. Replace with commas, periods, colons, or restructure.",
+            "- NO double hyphens (--). Use single hyphen surrounded by spaces ( - ) if needed.",
+            "- Do NOT include the 'From: Name' attribution line. The system adds that separately.",
+            "- Do NOT include a headline/title. The system handles that separately.",
+            "- Output ONLY the body content fragment.",
+            "",
+        ]
+
+        # Type-specific instructions
+        type_instructions = {
+            "action_item": [
+                "TYPE: ACTION ITEM / EVENT ANNOUNCEMENT",
+                "Lead with what the event is and when it is.",
+                "Second line: Location with full street address (grannies need GPS-ready addresses).",
+                "Follow with: what to bring, what to wear, how to RSVP, contact info.",
+                "Use separate lines with <br/> for scannable details.",
+                "Strip email scaffolding ('Hi Steph', 'wanted to make sure', etc.).",
+                "If not an official PRG action, end with: 'This is not an official PRG action, but grannies are welcome to attend individually.'",
+                "If there are multiple dates in one email, keep them all clearly labeled.",
+                "Spell out acronyms on first use (except ICE, PRG).",
+            ],
+            "meeting_notes_inline": [
+                "TYPE: MEETING NOTES (INLINE)",
+                "Minimal rewrite. Preserve the original voice and informal tone.",
+                "Format structure: meeting date/time/platform, attendance list, then agenda topics.",
+                "Add <strong> tags to agenda topic headers to make them scannable.",
+                "Do NOT clean up language. Do NOT make it sound more formal. Reproduce, don't summarize.",
+                "Fix obvious typos only.",
+            ],
+            "meeting_notes_attachment": [
+                "TYPE: MEETING NOTES (ATTACHMENT/PDF)",
+                "Write ONE teaser sentence + a link. That's all.",
+                "Example: 'Catch up with what the [Team Name] team discussed at their latest meeting.'",
+                "End with a &raquo; link: '&raquo; Read the meeting notes'",
+                "Spell out team abbreviations: RIJ = Racial and Immigration Justice, GAGH = Grannies Against Gun Harm.",
+            ],
+            "article_share": [
+                "TYPE: ARTICLE / VIDEO SHARE",
+                "Write a 2-3 paragraph summary:",
+                "Paragraph 1: Who made this, what it is, why it exists. Be specific with names, events, dates.",
+                "Paragraph 2: Core content. Pull 1-2 specific, visceral quotes. Not 'this is important' but the actual argument.",
+                "Paragraph 3 (optional): Brief connection to grannies' work. One sentence.",
+                "End with a contextual &raquo; link (e.g., '&raquo; Read on Substack', '&raquo; Watch the video').",
+                "Attribution goes to whoever submitted it, not the article author (article author goes in body copy).",
+                "If fetched article content is provided, summarize from that. If not, work with the email body.",
+            ],
+            "joana_rollup": [
+                "TYPE: JOANA ROLLUP SUB-ITEM",
+                "Produce ONLY one sub-item fragment. Do NOT build the full rollup card.",
+                "Format: <strong>Title - Date</strong> on one line,",
+                "then <br/> and one descriptive sentence about what this is and why a granny might care,",
+                "then <br/> and one <a href=\"URL\">&raquo; contextual link text</a>.",
+                "Use the source_url if provided for the link. If no URL is available, omit the link line.",
+                "The compiler will assemble multiple sub-items into the full rollup card.",
+            ],
+        }
+
+        instructions = type_instructions.get(rewrite_type, type_instructions["action_item"])
+        parts.extend(instructions)
+
+        # Voice profile
+        if voice:
+            parts.append("")
+            if voice.get("register"):
+                parts.append(f"VOICE: {voice['register']}")
+            if voice.get("avoids"):
+                avoids = voice["avoids"]
+                if isinstance(avoids, list):
+                    parts.append(f"AVOID: {', '.join(avoids)}")
+
+        # AI tells blacklist
+        ai_tells = yaml_store.read("ai-tells.yaml")
+        banned_words = [entry["word"] for entry in ai_tells.get("banned_vocabulary", [])]
+        if banned_words:
+            parts.append(f"\nBANNED WORDS (never use): {', '.join(banned_words)}")
+
+        banned_patterns = [
+            entry.get("label", "")
+            for entry in ai_tells.get("banned_patterns", [])
+            if entry.get("label")
+        ]
+        if banned_patterns:
+            parts.append(f"BANNED PATTERNS: {', '.join(banned_patterns)}")
+
+        return "\n".join(parts)
+
+    def _postprocess_rewrite(self, raw: str) -> str:
+        """Clean up LLM rewrite output."""
+        text = raw.strip()
+        # Strip stray <p> tags
+        text = re.sub(r'</?p[^>]*>', '', text)
+        # Normalize <br> variants to <br/>
+        text = re.sub(r'<br\s*/?>', '<br/>', text)
+        # Strip leading/trailing <br/>
+        text = re.sub(r'^(<br/>\s*)+', '', text)
+        text = re.sub(r'(<br/>\s*)+$', '', text)
+        return text.strip()
 
     async def _call_anthropic(self, system_prompt: str, user_message: str, max_tokens: int = 1024) -> str:
         """Call Anthropic Messages API."""
