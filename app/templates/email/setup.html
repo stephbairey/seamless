@@ -7,7 +7,7 @@
   <p class="description">Gmail classification, labeling, and identity-aware reply drafting</p>
 </div>
 
-<div class="card" style="max-width: 600px;">
+<div class="card" style="max-width: 640px;">
   <div class="card-header">
     <h3>Gmail OAuth Credentials Required</h3>
     <span class="badge" style="background: rgba(248,113,113,0.15); color: var(--red);">Not Configured</span>
@@ -16,22 +16,52 @@
     <p style="margin-bottom: 1rem;">The email triage module needs Google OAuth2 credentials to access your Gmail account.</p>
 
     <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
-      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Setup steps:</p>
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">Step 1: Set up a Google Cloud OAuth client (one-time)</p>
       <ol style="font-size: 0.85rem; color: var(--text-muted); padding-left: 1.25rem;">
-        <li style="margin-bottom: 0.5rem;">Go to Google Cloud Console → APIs & Services → Credentials</li>
-        <li style="margin-bottom: 0.5rem;">Create or select your OAuth2 client (Desktop type)</li>
-        <li style="margin-bottom: 0.5rem;">Enable the Gmail API in your project</li>
-        <li style="margin-bottom: 0.5rem;">Use the OAuth playground or a token script to get a refresh token with scopes:
-          <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px; display: block; margin-top: 0.375rem; font-size: 0.8rem;">gmail.readonly gmail.modify gmail.compose</code>
-        </li>
-        <li style="margin-bottom: 0.5rem;">Add credentials to <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code>:</li>
+        <li style="margin-bottom: 0.5rem;">Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: var(--accent);">Google Cloud Console &gt; Credentials</a></li>
+        <li style="margin-bottom: 0.5rem;">Click <strong>Create Credentials</strong> &gt; <strong>OAuth client ID</strong> &gt; Application type: <strong>Desktop app</strong></li>
+        <li style="margin-bottom: 0.5rem;">Copy the <strong>Client ID</strong> and <strong>Client Secret</strong> into <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code></li>
       </ol>
       <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem; overflow-x: auto;">GMAIL_CLIENT_ID=your_client_id.apps.googleusercontent.com
-GMAIL_CLIENT_SECRET=your_client_secret
-GMAIL_REFRESH_TOKEN=your_refresh_token</pre>
+GMAIL_CLIENT_SECRET=your_client_secret</pre>
     </div>
 
-    <p style="font-size: 0.8rem; color: var(--text-dim);">After adding the credentials, restart the dashboard container.</p>
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">Step 2: Enable the Gmail API</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        Go to <a href="https://console.cloud.google.com/apis/library/gmail.googleapis.com" target="_blank" style="color: var(--accent);">Gmail API</a>
+        in your Cloud Console and click <strong>Enable</strong>.
+      </p>
+    </div>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">Step 3: Get a refresh token</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        Run this on your local machine (not inside Docker), where you have a browser.
+        The script reads your Client ID/Secret from <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code> automatically.
+      </p>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">
+        One-time setup (if you haven't already):
+      </p>
+      <pre style="background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto; margin-bottom: 0.75rem;">pip install google-auth-oauthlib</pre>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">
+        Then run:
+      </p>
+      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto;">python scripts/get_oauth_token.py --scope gmail</pre>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+        A browser opens. Log in as <strong>stephbairey@gmail.com</strong> (the hub account) and click Allow.
+        Copy the printed refresh token into <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code>:
+      </p>
+      <pre style="background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem; overflow-x: auto;">GMAIL_REFRESH_TOKEN=1//0abc...</pre>
+    </div>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Step 4: Restart the container</p>
+      <pre style="background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto;">cd docker && docker-compose down && docker-compose up -d --build</pre>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+        Note: <code style="font-size: 0.75rem;">docker-compose restart</code> does NOT reload secrets.env. Must do <code style="font-size: 0.75rem;">down</code> then <code style="font-size: 0.75rem;">up</code>.
+      </p>
+    </div>
   </div>
 </div>
 {% endblock %}

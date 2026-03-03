@@ -7,39 +7,75 @@
   <p class="description">Unified calendar view, conflict detection, meeting prep, and cadence tracking</p>
 </div>
 
-<div class="card" style="max-width: 600px;">
+<div class="card" style="max-width: 640px;">
   <div class="card-header">
-    <h3>Google Calendar OAuth Credentials Required</h3>
+    <h3>Google Calendar OAuth Tokens Required</h3>
     <span class="badge" style="background: rgba(248,113,113,0.15); color: var(--red);">Not Configured</span>
   </div>
   <div class="card-body">
-    <p style="margin-bottom: 1rem;">The calendar module needs Google OAuth2 refresh tokens for each calendar account.</p>
+    <p style="margin-bottom: 1rem;">The calendar module needs a refresh token for each of the 3 calendar accounts. It reuses the same Client ID and Secret from your Gmail setup.</p>
 
     <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
-      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Setup steps:</p>
-      <ol style="font-size: 0.85rem; color: var(--text-muted); padding-left: 1.25rem;">
-        <li style="margin-bottom: 0.5rem;">Use the same Google Cloud project as Gmail (same Client ID / Secret)</li>
-        <li style="margin-bottom: 0.5rem;">Enable the Google Calendar API in your project</li>
-        <li style="margin-bottom: 0.5rem;">Run the OAuth token script 3 times, once per calendar account, with scope:
-          <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px; display: block; margin-top: 0.375rem; font-size: 0.8rem;">https://www.googleapis.com/auth/calendar</code>
-        </li>
-        <li style="margin-bottom: 0.5rem;">Add the 3 refresh tokens to <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code>:</li>
-      </ol>
-      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; margin-top: 0.5rem; overflow-x: auto;">GCAL_LINGUAINKMEDIA_TOKEN=refresh_token_for_linguainkmedia
-GCAL_MJBAIREY_TOKEN=refresh_token_for_mjbairey
-GCAL_STEPHBAIREY_TOKEN=refresh_token_for_stephbairey</pre>
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">Step 1: Enable the Calendar API</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">
+        Go to <a href="https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" target="_blank" style="color: var(--accent);">Google Calendar API</a>
+        in your Cloud Console and click <strong>Enable</strong>. Same project as Gmail (office-automation).
+      </p>
     </div>
 
-    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem;">
-      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Calendars:</p>
-      <div style="font-size: 0.85rem; color: var(--text-muted);">
-        <div style="margin-bottom: 0.375rem;"><span style="color: var(--accent);">linguainkmedia@gmail.com</span> — Business/operational</div>
-        <div style="margin-bottom: 0.375rem;"><span style="color: #c084fc;">mjbairey@gmail.com</span> — Creative/writing</div>
-        <div style="margin-bottom: 0.375rem;"><span style="color: var(--green);">stephbairey@gmail.com</span> — Home/personal</div>
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">Step 2: Run the token script (3 times)</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        Run this on your local machine (not inside Docker), where you have a browser.
+        The script reads your Client ID/Secret from <code style="background: var(--bg); padding: 0.1rem 0.375rem; border-radius: 3px;">secrets.env</code> automatically.
+      </p>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">
+        One-time setup (if you haven't already):
+      </p>
+      <pre style="background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto; margin-bottom: 0.75rem;">pip install google-auth-oauthlib</pre>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 0.5rem;">
+        Then run 3 times, logging in as a different account each time:
+      </p>
+      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto; line-height: 1.8;">python scripts/get_oauth_token.py --scope calendar</pre>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+        A browser opens each time. Log in as:
+      </p>
+      <div style="margin-top: 0.5rem; font-size: 0.85rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0;"></span>
+          <strong style="color: var(--accent);">linguainkmedia@gmail.com</strong>
+          <span style="color: var(--text-dim);">→</span>
+          <code style="font-size: 0.8rem; color: var(--text-muted);">GCAL_LINGUAINKMEDIA_TOKEN</code>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.375rem;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: #c084fc; flex-shrink: 0;"></span>
+          <strong style="color: #c084fc;">mjbairey@gmail.com</strong>
+          <span style="color: var(--text-dim);">→</span>
+          <code style="font-size: 0.8rem; color: var(--text-muted);">GCAL_MJBAIREY_TOKEN</code>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0;"></span>
+          <strong style="color: var(--green);">stephbairey@gmail.com</strong>
+          <span style="color: var(--text-dim);">→</span>
+          <code style="font-size: 0.8rem; color: var(--text-muted);">GCAL_STEPHBAIREY_TOKEN</code>
+        </div>
       </div>
     </div>
 
-    <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 1rem;">After adding the tokens, run <code>docker-compose down && docker-compose up -d --build</code> to reload.</p>
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem; margin-bottom: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.75rem;">Step 3: Paste tokens into secrets.env</p>
+      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto;">GCAL_LINGUAINKMEDIA_TOKEN=1//0abc...
+GCAL_MJBAIREY_TOKEN=1//0def...
+GCAL_STEPHBAIREY_TOKEN=1//0ghi...</pre>
+    </div>
+
+    <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem;">
+      <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Step 4: Restart the container</p>
+      <pre style="background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto;">cd docker && docker-compose down && docker-compose up -d --build</pre>
+      <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
+        Note: <code style="font-size: 0.75rem;">docker-compose restart</code> does NOT reload secrets.env. Must do <code style="font-size: 0.75rem;">down</code> then <code style="font-size: 0.75rem;">up</code>.
+      </p>
+    </div>
   </div>
 </div>
 {% endblock %}
