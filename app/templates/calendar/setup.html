@@ -71,9 +71,11 @@ GCAL_STEPHBAIREY_TOKEN=1//0ghi...</pre>
 
     <div style="background: var(--bg-raised); border-radius: var(--radius-sm); padding: 1rem;">
       <p style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem;">Step 4: Restart the container</p>
-      <pre style="background: var(--bg); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto;">cd docker && docker-compose down && docker-compose up -d --build</pre>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">From the repo root, run these two commands:</p>
+      <pre style="background: var(--bg); padding: 0.75rem; border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto; line-height: 1.8;">docker-compose -f docker/docker-compose.yaml down
+docker-compose -f docker/docker-compose.yaml up -d --build</pre>
       <p style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem;">
-        Note: <code style="font-size: 0.75rem;">docker-compose restart</code> does NOT reload secrets.env. Must do <code style="font-size: 0.75rem;">down</code> then <code style="font-size: 0.75rem;">up</code>.
+        <code style="font-size: 0.75rem;">restart</code> does NOT reload secrets.env. Must do <code style="font-size: 0.75rem;">down</code> then <code style="font-size: 0.75rem;">up</code>.
       </p>
     </div>
   </div>

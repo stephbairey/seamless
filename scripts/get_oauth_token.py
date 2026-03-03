@@ -165,8 +165,9 @@ def main():
     print(f"Add it to secrets.env as:")
     print(f"  {ENV_VAR_HINTS[args.scope]}")
     print()
-    print("Then restart: docker-compose down && docker-compose up -d --build")
-    print("(from the docker/ directory)")
+    print("Then restart (two commands, from repo root):")
+    print("  docker-compose -f docker/docker-compose.yaml down")
+    print("  docker-compose -f docker/docker-compose.yaml up -d --build")
 
 
 if __name__ == "__main__":
