@@ -421,7 +421,7 @@ class NewsletterService:
             "OUTPUT FORMAT RULES:",
             "- Use <br/> on its own line for line breaks. Use <br/> then <br/> for paragraph breaks.",
             "- Use <strong> for bold (never <b>, never markdown **bold**).",
-            "- Use &raquo; for >> link markers.",
+            "- Use &raquo; INSIDE link tags: <a href=\"URL\">&raquo; Link text</a>. The &raquo; must be inside the <a>, not before it.",
             "- Use &amp; for ampersands, &hellip; for ellipsis.",
             "- When an email address appears, wrap it in a mailto link: <a href=\"mailto:user@example.com\">user@example.com</a>",
             "- NO <p> tags (your output goes inside an existing <p>).",
@@ -525,6 +525,8 @@ class NewsletterService:
         text = re.sub(r'(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)', r'<em>\1</em>', text)
         # Normalize <br> variants to <br/>
         text = re.sub(r'<br\s*/?>', '<br/>', text)
+        # Fix raquo outside links: "&raquo; <a href=...>text</a>" -> "<a href=...>&raquo; text</a>"
+        text = re.sub(r'&raquo;\s*<a\s+href="([^"]+)">', r'<a href="\1">&raquo; ', text)
         # Strip leading/trailing <br/>
         text = re.sub(r'^(<br/>\s*)+', '', text)
         text = re.sub(r'(<br/>\s*)+$', '', text)
