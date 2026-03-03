@@ -411,8 +411,8 @@ class CalendarService:
 
         conflicts = self.detect_conflicts(filtered)
 
-        # Look at a wider window for cadence context (this week)
-        week_start = start - timedelta(days=start.weekday())
+        # Look at a wider window for cadence context (this week, Sunday-start)
+        week_start = start - timedelta(days=(start.weekday() + 1) % 7)
         week_end = week_start + timedelta(days=7)
         week_events = await gcal_client.list_all_events(week_start, week_end)
         week_filtered = self.filter_events(week_events)

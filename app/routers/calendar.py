@@ -105,7 +105,7 @@ async def week_page(request: Request):
         return _setup_response(request)
     ctx = _base_ctx(request, "week")
     today = date.today()
-    ctx["week_start"] = today - timedelta(days=today.weekday())  # Monday
+    ctx["week_start"] = today - timedelta(days=(today.weekday() + 1) % 7)  # Sunday
     ctx["week_data"] = None
     return templates.TemplateResponse("calendar/week.html", ctx)
 
@@ -118,7 +118,7 @@ async def week_fetch(request: Request, week_start: str = Form("")):
     ws = _parse_date(week_start)
     if not ws:
         today = date.today()
-        ws = today - timedelta(days=today.weekday())
+        ws = today - timedelta(days=(today.weekday() + 1) % 7)
 
     ctx = _base_ctx(request, "week")
     ctx["week_start"] = ws
