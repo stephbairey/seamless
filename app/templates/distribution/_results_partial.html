@@ -3,6 +3,71 @@
 {% endif %}
 
 {% if batch and batch.posts %}
+
+{# --- Marketing Extras --- #}
+{% if batch.seo_description or batch.midjourney_prompt %}
+<div style="display: grid; gap: 1rem; margin-bottom: 1.5rem;">
+
+  {% if batch.seo_description %}
+  <div class="card" id="card-seo">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+      <strong style="font-size: 1rem;">&#128269; SEO Meta Description</strong>
+      {% set seo_len = batch.seo_description | length %}
+      <span style="font-size: 0.75rem; {% if seo_len < 150 or seo_len > 160 %}color: var(--danger);{% else %}color: var(--success, #28a745);{% endif %}">
+        {{ seo_len }}/150-160
+      </span>
+    </div>
+    <textarea id="copy-seo" readonly
+              style="width: 100%; min-height: 60px; font-size: 0.9rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem; resize: vertical; color: var(--text); font-family: inherit;"
+    >{{ batch.seo_description }}</textarea>
+    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+      <button class="btn btn-ghost" onclick="copyToClipboard(this, 'seo')">Copy</button>
+      <form style="margin: 0;">
+        <input type="hidden" name="content" value="{{ content|default('', true) }}">
+        <input type="hidden" name="brand" value="{{ brand|default('', true) }}">
+        <button type="submit" class="btn btn-ghost"
+                hx-post="/distribution/regenerate/seo"
+                hx-target="#card-seo"
+                hx-indicator="#regen-spinner-seo"
+                hx-include="closest form">
+          Regenerate
+          <span id="regen-spinner-seo" class="htmx-indicator"><span class="spinner"></span></span>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if batch.midjourney_prompt %}
+  <div class="card" id="card-midjourney">
+    <div style="margin-bottom: 0.5rem;">
+      <strong style="font-size: 1rem;">&#127912; Midjourney Prompt</strong>
+    </div>
+    <textarea id="copy-midjourney" readonly
+              style="width: 100%; min-height: 60px; font-size: 0.9rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem; resize: vertical; color: var(--text); font-family: inherit;"
+    >{{ batch.midjourney_prompt }}</textarea>
+    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+      <button class="btn btn-ghost" onclick="copyToClipboard(this, 'midjourney')">Copy</button>
+      <form style="margin: 0;">
+        <input type="hidden" name="content" value="{{ content|default('', true) }}">
+        <input type="hidden" name="brand" value="{{ brand|default('', true) }}">
+        <button type="submit" class="btn btn-ghost"
+                hx-post="/distribution/regenerate/midjourney"
+                hx-target="#card-midjourney"
+                hx-indicator="#regen-spinner-midjourney"
+                hx-include="closest form">
+          Regenerate
+          <span id="regen-spinner-midjourney" class="htmx-indicator"><span class="spinner"></span></span>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endif %}
+
+{# --- Platform Cards --- #}
 <div style="display: grid; gap: 1rem;">
   {% for post in batch.posts %}
   <div class="card" id="card-{{ post.platform }}">
@@ -10,6 +75,7 @@
   </div>
   {% endfor %}
 </div>
+
 {% elif batch and not batch.posts %}
   <div class="empty-state">
     <div class="icon">&#128225;</div>

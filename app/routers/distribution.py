@@ -97,6 +97,48 @@ async def generate_posts(
     return templates.TemplateResponse("distribution/generate.html", ctx)
 
 
+# --- Regenerate marketing extras (must be before {platform} wildcard) ---
+
+@router.post("/regenerate/seo")
+async def regenerate_seo(
+    request: Request,
+    content: str = Form(""),
+    brand: str = Form(""),
+):
+    ctx = _base_ctx(request, "generate")
+    try:
+        seo = await social_copy_service.regenerate_seo(content.strip(), brand)
+        ctx["seo_description"] = seo
+        ctx["content"] = content
+        ctx["brand"] = brand
+    except Exception as e:
+        logger.exception("SEO regenerate failed")
+        ctx["seo_description"] = f"(Regeneration failed: {e})"
+        ctx["content"] = content
+        ctx["brand"] = brand
+    return templates.TemplateResponse("distribution/_extra_card.html", ctx)
+
+
+@router.post("/regenerate/midjourney")
+async def regenerate_midjourney(
+    request: Request,
+    content: str = Form(""),
+    brand: str = Form(""),
+):
+    ctx = _base_ctx(request, "generate")
+    try:
+        mj = await social_copy_service.regenerate_midjourney(content.strip(), brand)
+        ctx["midjourney_prompt"] = mj
+        ctx["content"] = content
+        ctx["brand"] = brand
+    except Exception as e:
+        logger.exception("Midjourney regenerate failed")
+        ctx["midjourney_prompt"] = f"(Regeneration failed: {e})"
+        ctx["content"] = content
+        ctx["brand"] = brand
+    return templates.TemplateResponse("distribution/_extra_card.html", ctx)
+
+
 # --- Regenerate single platform ---
 
 @router.post("/regenerate/{platform}")

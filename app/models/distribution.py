@@ -29,3 +29,5 @@ class CopyBatch(BaseModel):
     content_preview: str  # First 200 chars of input
     url: str = ""
     posts: list[SocialPost] = []
+    seo_description: str = ""  # 150-160 char meta description
+    midjourney_prompt: str = ""  # Image generation prompt

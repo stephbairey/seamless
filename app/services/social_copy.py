@@ -9,6 +9,7 @@ import httpx
 
 from app.config import ANTHROPIC_API_KEY
 from app.models.distribution import CopyBatch, CopyRequest, SocialPost
+from app.services.brand_tokens import BrandTokenService
 from app.services.text_checker import TextChecker
 from app.services.voice_profiles import VoiceProfileService
 from app.services.yaml_store import yaml_store
@@ -81,6 +82,7 @@ class SocialCopyService:
     def __init__(self):
         self._voice_profiles = VoiceProfileService()
         self._text_checker = TextChecker()
+        self._brand_tokens = BrandTokenService()
 
     @property
     def is_configured(self) -> bool:
@@ -116,6 +118,14 @@ class SocialCopyService:
             )
             posts.append(post)
 
+        # Generate marketing extras
+        seo_description = await self._generate_seo_description(
+            request.content, request.brand,
+        )
+        midjourney_prompt = await self._generate_midjourney_prompt(
+            request.content, request.brand,
+        )
+
         return CopyBatch(
             id=str(uuid.uuid4())[:8],
             created_at=datetime.now(timezone.utc).isoformat(),
@@ -123,6 +133,8 @@ class SocialCopyService:
             content_preview=request.content[:200],
             url=request.url,
             posts=posts,
+            seo_description=seo_description,
+            midjourney_prompt=midjourney_prompt,
         )
 
     async def regenerate_single(
@@ -190,6 +202,62 @@ class SocialCopyService:
             hashtags=hashtags,
             violations=violations,
         )
+
+    async def _generate_seo_description(self, content: str, brand: str) -> str:
+        """Generate a 150-160 character SEO meta description."""
+        system_prompt = (
+            "You are writing an SEO meta description. Rules:\n"
+            "- STRICT 150-160 character limit (including spaces)\n"
+            "- Lead with reader value, not the brand\n"
+            "- Include a natural call to action\n"
+            "- No quotes around the description\n"
+            "- Write ONLY the meta description text, nothing else"
+        )
+        user_message = f"Write an SEO meta description for this content:\n\n{content}"
+        return await self._call_anthropic(system_prompt, user_message)
+
+    async def _generate_midjourney_prompt(self, content: str, brand: str) -> str:
+        """Generate a Midjourney image prompt using brand tokens."""
+        tokens = self._brand_tokens.get_token(brand)
+        imagery = tokens.get("imagery", {}) if tokens else {}
+        template = imagery.get("midjourney_template", "")
+        style = imagery.get("style", "")
+        visual_elements = imagery.get("visual_elements", [])
+
+        system_parts = [
+            "You are generating a Midjourney image prompt. Rules:\n"
+            "- Write ONLY the prompt text, nothing else\n"
+            "- No quotation marks around the prompt\n"
+            "- End with --ar 16:9 unless the template specifies otherwise",
+        ]
+
+        if template:
+            system_parts.append(
+                f"\nUse this brand template, filling in the bracketed placeholders: "
+                f"{template}"
+            )
+        elif style:
+            system_parts.append(f"\nBrand imagery style: {style}")
+
+        if visual_elements:
+            system_parts.append(
+                f"\nBrand visual elements to draw from: {', '.join(visual_elements)}"
+            )
+
+        system_prompt = "\n".join(system_parts)
+        user_message = (
+            f"Generate a Midjourney image prompt for a blog post hero image. "
+            f"Content summary:\n\n{content[:500]}"
+        )
+        return await self._call_anthropic(system_prompt, user_message)
+
+    async def regenerate_seo(self, content: str, brand: str) -> str:
+        """Regenerate just the SEO description."""
+        return await self._generate_seo_description(content, brand)
+
+    async def regenerate_midjourney(self, content: str, brand: str) -> str:
+        """Regenerate just the Midjourney prompt."""
+        return await self._generate_midjourney_prompt(content, brand)
 
     def _build_system_prompt(
         self,

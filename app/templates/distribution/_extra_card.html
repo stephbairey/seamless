@@ -1,0 +1,53 @@
+{# Rendered for SEO or Midjourney regenerate — replaces the card innards #}
+
+{% if seo_description is defined and seo_description %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+  <strong style="font-size: 1rem;">&#128269; SEO Meta Description</strong>
+  {% set seo_len = seo_description | length %}
+  <span style="font-size: 0.75rem; {% if seo_len < 150 or seo_len > 160 %}color: var(--danger);{% else %}color: var(--success, #28a745);{% endif %}">
+    {{ seo_len }}/150-160
+  </span>
+</div>
+<textarea id="copy-seo" readonly
+          style="width: 100%; min-height: 60px; font-size: 0.9rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem; resize: vertical; color: var(--text); font-family: inherit;"
+>{{ seo_description }}</textarea>
+<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+  <button class="btn btn-ghost" onclick="copyToClipboard(this, 'seo')">Copy</button>
+  <form style="margin: 0;">
+    <input type="hidden" name="content" value="{{ content|default('', true) }}">
+    <input type="hidden" name="brand" value="{{ brand|default('', true) }}">
+    <button type="submit" class="btn btn-ghost"
+            hx-post="/distribution/regenerate/seo"
+            hx-target="#card-seo"
+            hx-indicator="#regen-spinner-seo"
+            hx-include="closest form">
+      Regenerate
+      <span id="regen-spinner-seo" class="htmx-indicator"><span class="spinner"></span></span>
+    </button>
+  </form>
+</div>
+{% endif %}
+
+{% if midjourney_prompt is defined and midjourney_prompt %}
+<div style="margin-bottom: 0.5rem;">
+  <strong style="font-size: 1rem;">&#127912; Midjourney Prompt</strong>
+</div>
+<textarea id="copy-midjourney" readonly
+          style="width: 100%; min-height: 60px; font-size: 0.9rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem; resize: vertical; color: var(--text); font-family: inherit;"
+>{{ midjourney_prompt }}</textarea>
+<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+  <button class="btn btn-ghost" onclick="copyToClipboard(this, 'midjourney')">Copy</button>
+  <form style="margin: 0;">
+    <input type="hidden" name="content" value="{{ content|default('', true) }}">
+    <input type="hidden" name="brand" value="{{ brand|default('', true) }}">
+    <button type="submit" class="btn btn-ghost"
+            hx-post="/distribution/regenerate/midjourney"
+            hx-target="#card-midjourney"
+            hx-indicator="#regen-spinner-midjourney"
+            hx-include="closest form">
+      Regenerate
+      <span id="regen-spinner-midjourney" class="htmx-indicator"><span class="spinner"></span></span>
+    </button>
+  </form>
+</div>
+{% endif %}
