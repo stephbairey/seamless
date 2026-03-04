@@ -163,7 +163,7 @@ tokens:
         source: google_fonts
     imagery:
       style: "Calm ocean/beach/coastal"
-    notes: "Em dashes banned in all Devon Ervin materials"
+    copy_style: "Em dashes banned in all Devon Ervin materials"
 
   - context_id: lynn-haller
     label: "Lynn Haller"
@@ -193,7 +193,4 @@ tokens:
         source: google_fonts
     imagery:
       style: null
-    document_format:
-      type: "Word document"
-      max_pages: 1
-      sections: ["Membership", "Completed", "In Progress", "Upcoming", "Support Needed"]
+    copy_style: "Word document, max 1 page. Sections: Membership, Completed, In Progress, Upcoming, Support Needed"

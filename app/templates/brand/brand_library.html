@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% set active_tab = "tokens" %}
+{% block title %}Brand Library — Seamless{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Brand Library</h2>
+  <p class="description">Color palettes, typography, imagery, and copy style for each brand context.</p>
+</div>
+
+{% for token in tokens %}
+  <script id="token-data-{{ token.context_id }}" type="application/json">{{ token | tojson }}</script>
+
+  <div class="card" x-data="brandCard('{{ token.context_id }}')">
+    <div class="card-header">
+      <h3>{{ token.label }}</h3>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        {% if token.website %}
+          <span style="font-size: 0.8rem; color: var(--text-muted);">{{ token.website }}</span>
+        {% endif %}
+        <button class="btn btn-ghost" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;"
+                @click="editing = !editing" x-text="editing ? 'Cancel' : 'Edit'"></button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      {# ── COLORS (view) ── #}
+      {% if token.colors %}
+      <div class="voice-field" x-show="!editing">
+        <div class="voice-field-label">Colors</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.375rem;">
+          {% for color in token.colors %}
+            <div class="color-swatch swatch-clickable" @click="copyHex('{{ color.hex }}')" title="Click to copy {{ color.hex }}">
+              <div class="swatch-circle" style="background-color: {{ color.hex }};"></div>
+              <div class="swatch-info">
+                <div>{{ color.name }}</div>
+                <div class="swatch-hex">{{ color.hex }} &middot; {{ color.role }}</div>
+                <div class="swatch-copied" style="opacity:0" x-ref="copied-{{ color.hex | replace('#','') }}">Copied!</div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {# Colors (edit) #}
+      <div class="voice-field" x-show="editing" x-transition>
+        <div class="voice-field-label">Colors</div>
+        <template x-for="(c, i) in colors" :key="i">
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.375rem;">
+            <input type="color" x-model="c.hex" class="color-picker-input">
+            <input type="text" x-model="c.hex" style="width: 7rem; font-family: var(--font-mono); font-size: 0.8rem;" placeholder="#000000">
+            <input type="text" x-model="c.name" style="width: 8rem;" placeholder="Name">
+            <input type="text" x-model="c.role" style="width: 7rem;" placeholder="Role">
+            <button class="btn btn-ghost" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: var(--red);" @click="removeColor(i)">&times;</button>
+          </div>
+        </template>
+        <button class="btn btn-ghost" style="font-size: 0.75rem; margin-top: 0.25rem;" @click="addColor()">+ Add Color</button>
+      </div>
+
+      {# ── TYPOGRAPHY (view) ── #}
+      {% if token.typography %}
+      <div class="voice-field" x-show="!editing">
+        <div class="voice-field-label">Typography</div>
+        <div style="margin-top: 0.375rem;">
+          {% for font in token.typography %}
+            <div style="margin-bottom: 0.375rem;">
+              <span style="font-size: 1.1rem; font-weight: 600; font-family: '{{ font.font }}', sans-serif;">{{ font.font }}</span>
+              <span style="font-size: 0.75rem; color: var(--text-dim); margin-left: 0.5rem;">{{ font.role }}{% if font.source %} ({{ font.source }}){% endif %}{% if font.size %} {{ font.size }}{% endif %}</span>
+              {% if font.fallbacks %}
+                <span style="font-size: 0.7rem; color: var(--text-dim);"> / {{ font.fallbacks|join(', ') }}</span>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {# Typography (edit) #}
+      <div class="voice-field" x-show="editing" x-transition>
+        <div class="voice-field-label">Typography</div>
+        <template x-for="(f, i) in typography" :key="i">
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.375rem;">
+            <input type="text" x-model="f.font" style="width: 12rem;" placeholder="Font name">
+            <input type="text" x-model="f.role" style="width: 8rem;" placeholder="Role">
+            <select x-model="f.source" style="width: 8rem;">
+              <option value="google_fonts">Google Fonts</option>
+              <option value="custom">Custom</option>
+              <option value="system">System</option>
+            </select>
+            <button class="btn btn-ghost" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; color: var(--red);" @click="removeFont(i)">&times;</button>
+          </div>
+        </template>
+        <button class="btn btn-ghost" style="font-size: 0.75rem; margin-top: 0.25rem;" @click="addFont()">+ Add Font</button>
+      </div>
+
+      {# ── IMAGERY (view) ── #}
+      {% if token.imagery %}
+      <div x-show="!editing">
+        {% if token.imagery.style %}
+        <div class="voice-field">
+          <div class="voice-field-label">Imagery Style</div>
+          <div class="voice-field-value">{{ token.imagery.style }}</div>
+        </div>
+        {% endif %}
+
+        {% if token.imagery.visual_elements %}
+        <div class="voice-field">
+          <div class="voice-field-label">Visual Elements</div>
+          <div class="tags">
+            {% for elem in token.imagery.visual_elements %}
+              <span class="tag">{{ elem }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if token.imagery.midjourney_template %}
+        <div class="voice-field">
+          <div class="voice-field-label">Midjourney Template</div>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; background: var(--bg-raised); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); color: var(--text-muted);">
+            {{ token.imagery.midjourney_template }}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {# Imagery (edit) #}
+      <div x-show="editing" x-transition>
+        <div class="voice-field">
+          <div class="voice-field-label">Imagery Style</div>
+          <input type="text" x-model="imagery_style" placeholder="e.g. Abstract impressionist, impasto">
+        </div>
+        <div class="voice-field">
+          <div class="voice-field-label">Visual Elements (comma-separated)</div>
+          <input type="text" x-model="visual_elements" placeholder="e.g. hands writing, coffee steam, soft lighting">
+        </div>
+        <div class="voice-field">
+          <div class="voice-field-label">Midjourney Template</div>
+          <textarea x-model="midjourney_template" style="min-height: 60px;" placeholder="e.g. an abstract painting of [subject] --ar 16:9"></textarea>
+        </div>
+      </div>
+
+      {# ── COPY STYLE (view) ── #}
+      {% if token.copy_style %}
+      <div class="voice-field" x-show="!editing">
+        <div class="voice-field-label">Copy Style</div>
+        <div class="voice-field-value">{{ token.copy_style }}</div>
+      </div>
+      {% endif %}
+
+      {# Copy Style (edit) #}
+      <div class="voice-field" x-show="editing" x-transition>
+        <div class="voice-field-label">Copy Style</div>
+        <textarea x-model="copy_style" style="min-height: 60px;" placeholder="Notes on copy style, document format, restrictions..."></textarea>
+      </div>
+
+      {# ── SAVE ── #}
+      <div x-show="editing" x-transition style="margin-top: 0.75rem;">
+        <button class="btn btn-primary" @click="save()" :disabled="saving">
+          <span x-show="!saving">Save</span>
+          <span x-show="saving"><span class="spinner"></span></span>
+        </button>
+        <span x-show="saved" style="color: var(--green); font-size: 0.85rem; margin-left: 0.5rem;">Saved</span>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+{# Google Fonts injection #}
+{% if google_fonts %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{% for f in google_fonts %}family={{ f | replace(' ', '+') }}:wght@400;600{% if not loop.last %}&{% endif %}{% endfor %}&display=swap">
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function brandCard(contextId) {
+  const raw = JSON.parse(document.getElementById('token-data-' + contextId).textContent);
+  const imagery = raw.imagery || {};
+  const ve = imagery.visual_elements;
+  return {
+    contextId: contextId,
+    editing: false,
+    saving: false,
+    saved: false,
+    colors: raw.colors || [],
+    typography: raw.typography || [],
+    imagery_style: imagery.style || '',
+    visual_elements: ve ? ve.join(', ') : '',
+    midjourney_template: imagery.midjourney_template || '',
+    copy_style: raw.copy_style || '',
+    copyHex(hex) {
+      navigator.clipboard.writeText(hex);
+      const key = 'copied-' + hex.replace('#', '');
+      const el = this.$refs[key];
+      if (el) {
+        el.style.opacity = '1';
+        setTimeout(function() { el.style.opacity = '0'; }, 1200);
+      }
+    },
+    addColor() { this.colors.push({hex: '#888888', name: '', role: ''}); },
+    removeColor(i) { this.colors.splice(i, 1); },
+    addFont() { this.typography.push({font: '', role: '', source: 'google_fonts'}); },
+    removeFont(i) { this.typography.splice(i, 1); },
+    save() {
+      this.saving = true;
+      const payload = {
+        colors: this.colors,
+        typography: this.typography,
+        imagery: {
+          style: this.imagery_style || null,
+          visual_elements: this.visual_elements ? this.visual_elements.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : null,
+          midjourney_template: this.midjourney_template || null
+        },
+        copy_style: this.copy_style || null
+      };
+      const self = this;
+      fetch('/brand/tokens/' + this.contextId, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      }).then(function(r) { return r.json(); }).then(function() {
+        self.saving = false;
+        self.saved = true;
+        self.editing = false;
+        setTimeout(function() { self.saved = false; }, 2000);
+        document.getElementById('save-indicator').classList.add('visible');
+        setTimeout(function() { document.getElementById('save-indicator').classList.remove('visible'); }, 2000);
+      });
+    }
+  };
+}
+</script>
+{% endblock %}

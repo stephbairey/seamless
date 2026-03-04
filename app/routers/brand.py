@@ -122,17 +122,35 @@ async def update_voice(voice_id: str, request: Request):
     return {"status": "error", "message": "Voice profile not found"}
 
 
-# --- Brand Tokens ---
+# --- Brand Library ---
 
 @router.get("/tokens")
 async def tokens_page(request: Request):
     tokens = brand_token_service.list_tokens()
-    return templates.TemplateResponse("brand/brand_tokens.html", {
+    # Deduplicated Google Fonts list from all tokens
+    google_fonts = []
+    seen = set()
+    for token in tokens:
+        for font in (token.get("typography") or []):
+            if font.get("source") == "google_fonts" and font["font"] not in seen:
+                google_fonts.append(font["font"])
+                seen.add(font["font"])
+    return templates.TemplateResponse("brand/brand_library.html", {
         "request": request,
         "modules": request.state.modules,
         "active_module": "brand",
         "tokens": tokens,
+        "google_fonts": google_fonts,
     })
+
+
+@router.patch("/tokens/{context_id}")
+async def update_token(context_id: str, request: Request):
+    body = await request.json()
+    updated = brand_token_service.update_token(context_id, body)
+    if updated:
+        return {"status": "ok", "context_id": context_id}
+    return {"status": "error", "message": "Token not found"}
 
 
 # --- Drafting Workspace ---

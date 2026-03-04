@@ -454,6 +454,54 @@ textarea {
   color: var(--text-muted);
 }
 
+/* Clickable swatches */
+.swatch-clickable {
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.swatch-clickable:hover {
+  transform: scale(1.05);
+}
+
+.swatch-clickable:hover .swatch-circle {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.swatch-copied {
+  font-size: 0.65rem;
+  color: var(--green);
+  transition: opacity 0.3s;
+}
+
+/* Color picker input */
+.color-picker-input {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.color-picker-input::-webkit-color-swatch-wrapper { padding: 2px; }
+.color-picker-input::-webkit-color-swatch { border: none; border-radius: 2px; }
+
+/* Custom font faces (drop TTFs into /static/fonts/) */
+@font-face {
+  font-family: 'Christmas Shine';
+  src: url('/static/fonts/ChristmasShine.ttf') format('truetype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cosmic Lemonade';
+  src: url('/static/fonts/CosmicLemonade.ttf') format('truetype');
+  font-display: swap;
+}
+
 /* Voice profile cards */
 .voice-card {
   background: var(--bg-surface);
