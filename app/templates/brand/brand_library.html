@@ -12,23 +12,26 @@
   <script id="token-data-{{ token.context_id }}" type="application/json">{{ token | tojson }}</script>
 
   <div class="card" x-data="brandCard('{{ token.context_id }}')">
-    <div class="card-header">
-      <h3 x-show="!editing" x-text="label"></h3>
-      <input x-show="editing" x-model="label" type="text"
-             style="font-size: 1.2rem; font-weight: 600; background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem; color: var(--text); width: 20rem;">
+    <div class="card-header" @click="toggleOpen()" style="user-select: none;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="color: var(--text-dim); font-size: 0.75rem; width: 1rem; text-align: center;" x-text="open ? '&#9660;' : '&#9654;'"></span>
+        <h3 x-show="!editing" x-text="label"></h3>
+        <input x-show="editing" x-model="label" type="text" @click.stop
+               style="font-size: 1.2rem; font-weight: 600; background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem; color: var(--text); width: 20rem;">
+      </div>
       <div style="display: flex; gap: 0.5rem; align-items: center;">
         <template x-if="!editing && website">
-          <a :href="'https://' + website" target="_blank" rel="noopener"
+          <a :href="'https://' + website" target="_blank" rel="noopener" @click.stop
              style="font-size: 0.8rem; color: var(--text-muted); text-decoration: none;"
              @mouseenter="$el.style.color='var(--accent)'" @mouseleave="$el.style.color='var(--text-muted)'"
              x-text="website"></a>
         </template>
         <button class="btn btn-ghost" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;"
-                @click="editing = !editing" x-text="editing ? 'Cancel' : 'Edit'"></button>
+                @click.stop="editing = !editing; if(editing && !open) { open = true; saveOpen(); }" x-text="editing ? 'Cancel' : 'Edit'"></button>
       </div>
     </div>
 
-    <div class="card-body">
+    <div class="card-body" x-show="open" x-transition>
       {# ── COLORS (view) ── #}
       {% if token.colors %}
       <div class="voice-field" x-show="!editing">
@@ -193,6 +196,7 @@ function brandCard(contextId) {
   const ve = imagery.visual_elements;
   return {
     contextId: contextId,
+    open: localStorage.getItem('bl-open-' + contextId) === 'true',
     editing: false,
     saving: false,
     saved: false,
@@ -204,6 +208,8 @@ function brandCard(contextId) {
     midjourney_template: imagery.midjourney_template || '',
     website: raw.website || '',
     copy_style: raw.copy_style || '',
+    toggleOpen() { this.open = !this.open; this.saveOpen(); },
+    saveOpen() { localStorage.setItem('bl-open-' + this.contextId, this.open); },
     copyHex(hex) {
       navigator.clipboard.writeText(hex);
       const key = 'copied-' + hex.replace('#', '');
