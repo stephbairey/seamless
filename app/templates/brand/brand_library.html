@@ -15,9 +15,12 @@
     <div class="card-header">
       <h3>{{ token.label }}</h3>
       <div style="display: flex; gap: 0.5rem; align-items: center;">
-        {% if token.website %}
-          <span style="font-size: 0.8rem; color: var(--text-muted);">{{ token.website }}</span>
-        {% endif %}
+        <template x-if="!editing && website">
+          <a :href="'https://' + website" target="_blank" rel="noopener"
+             style="font-size: 0.8rem; color: var(--text-muted); text-decoration: none;"
+             @mouseenter="$el.style.color='var(--accent)'" @mouseleave="$el.style.color='var(--text-muted)'"
+             x-text="website"></a>
+        </template>
         <button class="btn btn-ghost" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;"
                 @click="editing = !editing" x-text="editing ? 'Cancel' : 'Edit'"></button>
       </div>
@@ -42,6 +45,12 @@
         </div>
       </div>
       {% endif %}
+
+      {# Website (edit) #}
+      <div class="voice-field" x-show="editing" x-transition>
+        <div class="voice-field-label">Website</div>
+        <input type="text" x-model="website" style="width: 20rem;" placeholder="e.g. example.com">
+      </div>
 
       {# Colors (edit) #}
       <div class="voice-field" x-show="editing" x-transition>
@@ -190,6 +199,7 @@ function brandCard(contextId) {
     imagery_style: imagery.style || '',
     visual_elements: ve ? ve.join(', ') : '',
     midjourney_template: imagery.midjourney_template || '',
+    website: raw.website || '',
     copy_style: raw.copy_style || '',
     copyHex(hex) {
       navigator.clipboard.writeText(hex);
@@ -207,6 +217,7 @@ function brandCard(contextId) {
     save() {
       this.saving = true;
       const payload = {
+        website: this.website || null,
         colors: this.colors,
         typography: this.typography,
         imagery: {
