@@ -35,7 +35,7 @@ class BrandTokenService:
 
     def update_token(self, context_id: str, updates: dict[str, Any]) -> bool:
         """Update fields on a brand token and write back to YAML."""
-        self._ensure_loaded()
+        self.reload()
         tokens = self._data.get("tokens", [])
         for i, t in enumerate(tokens):
             if t.get("context_id") == context_id:

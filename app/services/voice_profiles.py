@@ -35,7 +35,7 @@ class VoiceProfileService:
 
     def update_profile(self, voice_id: str, updates: dict[str, Any]) -> bool:
         """Update fields on a voice profile and write back to YAML."""
-        self._ensure_loaded()
+        self.reload()
         profiles = self._data.get("profiles", [])
         for i, p in enumerate(profiles):
             if p.get("voice_id") == voice_id:
