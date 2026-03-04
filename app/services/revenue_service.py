@@ -64,14 +64,15 @@ KENP_COLUMN_MAP = {
     "kenp paid": "kenp_paid",
 }
 
-# Hardcoded KEEP% — what Maya's publishing company retains after author split.
-# Maya=100%, Sulima=0% (labor of love), Carolyn=50/50, Daniela/Wren=60/40 author.
+# Hardcoded KEEP% — what the AUTHOR keeps from earnings.
+# Sulima=100% (labor of love, she keeps all), Maya=0% (Maya is the publisher),
+# Carolyn=50/50, Daniela/Wren=60/40 author/publisher.
 KEEP_PCT = {
-    "maya bairey": 1.0,
-    "sulima malzin": 0.0,
+    "maya bairey": 0.0,
+    "sulima malzin": 1.0,
     "carolyn martin": 0.5,
-    "daniela morescalchi": 0.4,
-    "wren cavanagh": 0.4,
+    "daniela morescalchi": 0.6,
+    "wren cavanagh": 0.6,
 }
 
 
@@ -586,14 +587,14 @@ def _infer_payout(royalty_type: str, payout_plan: str) -> float:
 
 
 def _resolve_keep_pct(author_name: str) -> float:
-    """Look up KEEP% for an author. Unmatched defaults to 1.0 (Maya's own)."""
+    """Look up KEEP% for an author. Unmatched defaults to 0.0 (Maya's own books)."""
     name_lower = author_name.strip().lower()
     if name_lower in KEEP_PCT:
         return KEEP_PCT[name_lower]
     for config_name, pct in KEEP_PCT.items():
         if config_name in name_lower or name_lower in config_name:
             return pct
-    return 1.0
+    return 0.0
 
 
 def transform_to_transactions(records: list[KdpRecord]) -> list[TransactionsRow]:
