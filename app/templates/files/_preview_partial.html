@@ -17,8 +17,16 @@
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.375rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
       <div>
         <span style="color: var(--text);">{{ r.file.clean_name }}</span>
-        {% if r.file.tags and r.file.tags.client_tag %}
-        <span class="tag" style="background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3); margin-left: 0.25rem;">{{ r.file.tags.client_tag }}</span>
+        {% if r.file.tags %}
+          {% if r.file.tags.client_tag %}
+          <span class="tag" style="background: rgba(74,222,128,0.12); color: var(--green); border-color: rgba(74,222,128,0.3); margin-left: 0.25rem;">{{ r.file.tags.client_tag }}</span>
+          {% endif %}
+          {% if r.file.tags.project_tag %}
+          <span class="tag" style="background: rgba(192,132,252,0.12); color: #c084fc; border-color: rgba(192,132,252,0.3); margin-left: 0.25rem;">{{ r.file.tags.project_tag }}</span>
+          {% endif %}
+          {% for ct in r.file.tags.content_tags %}
+          <span class="tag" style="margin-left: 0.25rem;">{{ ct }}</span>
+          {% endfor %}
         {% endif %}
       </div>
       <div style="color: var(--text-muted); font-size: 0.8rem; text-align: right;">
