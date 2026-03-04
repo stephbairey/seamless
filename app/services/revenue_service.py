@@ -18,6 +18,7 @@ from app.models.revenue import (
     RevenueSummary,
     RoyaltyReport,
     RoyaltySplit,
+    TransactionsRow,
 )
 from app.services.revenue_store import revenue_store
 
@@ -40,7 +41,7 @@ KDP_COLUMN_MAP = {
     "isbn": "asin_isbn",
     "marketplace": "marketplace",
     "royalty type": "royalty_type",
-    "payout plan": "royalty_type",
+    "payout plan": "payout_plan",
     "transaction type": "transaction_type",
     "units sold": "units_sold",
     "units refunded": "units_refunded",
@@ -51,11 +52,34 @@ KDP_COLUMN_MAP = {
     "earnings": "royalty_amount",
 }
 
+# KENP daily CSV columns (separate export from KDP)
+KENP_COLUMN_MAP = {
+    "date": "date",
+    "title": "title",
+    "author name": "author_name",
+    "author": "author_name",
+    "asin": "asin_isbn",
+    "marketplace": "marketplace",
+    "kenp read": "kenp_read",
+    "kenp paid": "kenp_paid",
+}
+
+# Hardcoded KEEP% — what Maya's publishing company retains after author split.
+# Maya=100%, Sulima=0% (labor of love), Carolyn=50/50, Daniela/Wren=60/40 author.
+KEEP_PCT = {
+    "maya bairey": 1.0,
+    "sulima malzin": 0.0,
+    "carolyn martin": 0.5,
+    "daniela morescalchi": 0.4,
+    "wren cavanagh": 0.4,
+}
+
 
 def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[KdpRecord]]:
-    """Parse a KDP royalty CSV. Handles two formats:
+    """Parse a KDP royalty CSV. Handles three formats:
     - "Prior Month Royalties": metadata row 1 (Sales Period), headers row 2, data row 3+
     - "Combined Sales": headers row 1, data row 2+
+    - "KENP Daily": Date, Title, Author Name, ASIN, Marketplace, KENP Read, KENP PAID
     """
     # Try UTF-8 first, fall back to Latin-1
     for encoding in ("utf-8-sig", "utf-8", "latin-1"):
@@ -73,6 +97,11 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
     lines = text.splitlines()
     if not lines:
         return KdpImport(id=import_id, filename=filename, uploaded_at=now), []
+
+    # Auto-detect KENP daily CSV by checking headers for "KENP PAID"
+    header_check = lines[0].lower()
+    if "kenp paid" in header_check or "kenp read" in header_check:
+        return _parse_kenp_csv(import_id, now, filename, lines)
 
     # Detect "Prior Month Royalties" format: row 1 starts with "Sales Period"
     metadata_date = ""
@@ -110,8 +139,11 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
             royalty_date = ""
         dates_seen.add(royalty_date)
 
+        units_sold = _parse_int(mapped.get("units_sold", "0"))
+        units_refunded = _parse_int(mapped.get("units_refunded", "0"))
         net_units = _parse_int(mapped.get("net_units", "0"))
         royalty_amount = _parse_float(mapped.get("royalty_amount", "0"))
+        payout_plan = mapped.get("payout_plan", "").strip()
         total_royalty += royalty_amount
 
         record = KdpRecord(
@@ -123,8 +155,11 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
             asin_isbn=mapped.get("asin_isbn", "").strip(),
             marketplace=mapped.get("marketplace", "").strip(),
             royalty_type=mapped.get("royalty_type", "").strip(),
+            payout_plan=payout_plan,
             transaction_type=mapped.get("transaction_type", "").strip(),
-            format=_infer_format(mapped),
+            format=_infer_format(payout_plan),
+            units_sold=units_sold,
+            units_refunded=units_refunded,
             net_units=net_units,
             royalty_amount=royalty_amount,
             currency=mapped.get("currency", "USD").strip(),
@@ -133,6 +168,75 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
         records.append(record)
 
     sorted_dates = sorted(dates_seen)
+    date_range = ""
+    if sorted_dates:
+        date_range = f"{sorted_dates[0]} to {sorted_dates[-1]}" if len(sorted_dates) > 1 else sorted_dates[0]
+
+    imp = KdpImport(
+        id=import_id,
+        filename=filename,
+        uploaded_at=now,
+        record_count=len(records),
+        date_range=date_range,
+        total_royalty=round(total_royalty, 2),
+    )
+    return imp, records
+
+
+def _parse_kenp_csv(
+    import_id: str, now: str, filename: str, lines: list[str]
+) -> tuple[KdpImport, list[KdpRecord]]:
+    """Parse a KENP daily CSV (Date, Title, Author, ASIN, Marketplace, KENP Read, KENP PAID)."""
+    csv_text = "\n".join(lines)
+    reader = csv.DictReader(io.StringIO(csv_text))
+    if reader.fieldnames:
+        reader.fieldnames = [h.strip() for h in reader.fieldnames]
+
+    records: list[KdpRecord] = []
+    dates_seen: set[str] = set()
+    total_royalty = 0.0
+
+    for row in reader:
+        mapped: dict[str, str] = {}
+        for raw_key, value in row.items():
+            normalized = raw_key.strip().lower()
+            if normalized in KENP_COLUMN_MAP:
+                mapped[KENP_COLUMN_MAP[normalized]] = value
+
+        if not mapped.get("title"):
+            continue
+
+        raw_date = mapped.get("date", "").strip()
+        royalty_date = _normalize_date(raw_date) if raw_date else ""
+        dates_seen.add(royalty_date)
+
+        kenp_read = _parse_int(mapped.get("kenp_read", "0"))
+        kenp_paid = _parse_float(mapped.get("kenp_paid", "0"))
+        total_royalty += kenp_paid
+
+        payout_plan = "Kindle Edition Normalized Pages (KENP)"
+        record = KdpRecord(
+            id=str(uuid.uuid4())[:8],
+            import_id=import_id,
+            royalty_date=royalty_date,
+            title=mapped.get("title", "").strip(),
+            author_name=mapped.get("author_name", "").strip(),
+            asin_isbn=mapped.get("asin_isbn", "").strip(),
+            marketplace=mapped.get("marketplace", "").strip(),
+            royalty_type="",
+            payout_plan=payout_plan,
+            transaction_type="",
+            format="Ebook",
+            units_sold=kenp_read,
+            units_refunded=0,
+            net_units=kenp_read,
+            royalty_amount=kenp_paid,
+            currency="USD",
+            raw_row=row,
+        )
+        records.append(record)
+
+    sorted_dates = sorted(d for d in dates_seen if d)
     date_range = ""
     if sorted_dates:
         date_range = f"{sorted_dates[0]} to {sorted_dates[-1]}" if len(sorted_dates) > 1 else sorted_dates[0]
@@ -446,18 +550,96 @@ def _parse_int(raw: str) -> int:
         return 0
 
 
-def _infer_format(mapped: dict) -> str:
-    """Infer book format from royalty_type, transaction_type, or payout plan."""
-    rt = mapped.get("royalty_type", "").lower()
-    if "kindle" in rt or "ebook" in rt or "kenp" in rt:
-        return "Kindle"
-    if "paperback" in rt:
+def _infer_format(payout_plan: str) -> str:
+    """Infer book format from payout_plan column."""
+    pp = payout_plan.lower()
+    if "paperback" in pp:
         return "Paperback"
-    if "hardcover" in rt:
+    if "hardcover" in pp:
         return "Hardcover"
-    if rt:
-        return mapped.get("royalty_type", "").strip()
-    return ""
+    if "kenp" in pp or "standard" in pp or not pp:
+        return "Ebook"
+    return "Ebook"
+
+
+def _infer_type(payout_plan: str, net_units: int, royalty_amount: float) -> str:
+    """Infer transaction type: KENP, Free promo, or Purchase."""
+    if "kenp" in payout_plan.lower():
+        return "KENP"
+    if net_units > 0 and royalty_amount == 0.0:
+        return "Free promo"
+    return "Purchase"
+
+
+def _infer_payout(royalty_type: str, payout_plan: str) -> float:
+    """Infer payout rate from royalty_type string."""
+    if "kenp" in payout_plan.lower():
+        return 0.0
+    rt = royalty_type.lower()
+    if "35%" in rt:
+        return 0.35
+    if "60%" in rt:
+        return 0.60
+    if "70%" in rt:
+        return 0.70
+    return 0.0
+
+
+def _resolve_keep_pct(author_name: str) -> float:
+    """Look up KEEP% for an author. Unmatched defaults to 1.0 (Maya's own)."""
+    name_lower = author_name.strip().lower()
+    if name_lower in KEEP_PCT:
+        return KEEP_PCT[name_lower]
+    for config_name, pct in KEEP_PCT.items():
+        if config_name in name_lower or name_lower in config_name:
+            return pct
+    return 1.0
+
+
+def transform_to_transactions(records: list[KdpRecord]) -> list[TransactionsRow]:
+    """Transform KdpRecords into TransactionsRows matching spreadsheet schema."""
+    rows: list[TransactionsRow] = []
+    for r in records:
+        # Date as YYYY-MM-01
+        date = f"{r.royalty_date}-01" if r.royalty_date else ""
+        rows.append(TransactionsRow(
+            date=date,
+            title=r.title,
+            author=r.author_name,
+            format=r.format,
+            type=_infer_type(r.payout_plan, r.net_units, r.royalty_amount),
+            marketplace=r.marketplace,
+            units_sold=r.units_sold,
+            units_refunded=r.units_refunded,
+            net_units_sold=r.net_units,
+            payout=_infer_payout(r.royalty_type, r.payout_plan),
+            earnings=r.royalty_amount,
+            keep_pct=_resolve_keep_pct(r.author_name),
+        ))
+    return rows
+
+
+def export_transactions_tsv(rows: list[TransactionsRow]) -> str:
+    """Export TransactionsRows as tab-separated text (no header row).
+    Maya pastes directly into existing spreadsheet columns."""
+    lines: list[str] = []
+    for r in rows:
+        line = "\t".join([
+            r.date,
+            r.title,
+            r.author,
+            r.format,
+            r.type,
+            r.marketplace,
+            str(r.units_sold),
+            str(r.units_refunded),
+            str(r.net_units_sold),
+            f"{r.payout:.2f}",
+            f"{r.earnings:.2f}",
+            f"{r.keep_pct:.0%}",
+        ])
+        lines.append(line)
+    return "\n".join(lines)
 
 
 def _load_client_registry() -> dict:

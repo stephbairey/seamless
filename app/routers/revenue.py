@@ -13,11 +13,13 @@ from app.config import TEMPLATES_DIR
 from app.models.revenue import ConsignmentEntry, RecurringCost, RevenueEntry
 from app.services.revenue_service import (
     build_summary,
+    export_transactions_tsv,
     generate_royalty_reports,
     get_client_rates,
     get_consignment_summary,
     init_consignment_from_registry,
     parse_kdp_csv,
+    transform_to_transactions,
 )
 from app.services.revenue_store import revenue_store
 
@@ -148,6 +150,11 @@ async def kdp_upload(request: Request, file: UploadFile = File(...)):
         revenue_store.add_kdp_import(imp, records)
         ctx["import_result"] = imp
         ctx["records"] = records
+
+        # Transform to Transactions format
+        tx_rows = transform_to_transactions(records)
+        ctx["tx_rows"] = tx_rows
+        ctx["tx_tsv"] = export_transactions_tsv(tx_rows)
     except Exception as e:
         logger.exception("KDP upload failed")
         ctx["error"] = f"Upload failed: {e}"
@@ -157,18 +164,46 @@ async def kdp_upload(request: Request, file: UploadFile = File(...)):
     return templates.TemplateResponse("revenue/_kdp_partial.html", ctx)
 
 
-# --- Royalty Reports ---
+@router.post("/kdp/export")
+async def kdp_export(request: Request, import_id: str = Form("")):
+    """Re-export an existing import as Transactions rows."""
+    ctx = _base_ctx(request, "kdp")
+    if not import_id:
+        ctx["error"] = "No import selected."
+        ctx["imports"] = revenue_store.get_kdp_imports()
+        return templates.TemplateResponse("revenue/_kdp_partial.html", ctx)
+
+    records = [r for r in revenue_store.get_kdp_records() if r.import_id == import_id]
+    if not records:
+        ctx["error"] = f"No records found for import {import_id}."
+        ctx["imports"] = revenue_store.get_kdp_imports()
+        return templates.TemplateResponse("revenue/_kdp_partial.html", ctx)
+
+    tx_rows = transform_to_transactions(records)
+    ctx["tx_rows"] = tx_rows
+    ctx["tx_tsv"] = export_transactions_tsv(tx_rows)
+    ctx["records"] = records
+    ctx["imports"] = revenue_store.get_kdp_imports()
+    return templates.TemplateResponse("revenue/_kdp_partial.html", ctx)
+
+
+# --- Book Sales (formerly Royalty Reports) ---
+
+@router.get("/book-sales")
+async def book_sales_page(request: Request):
+    ctx = _base_ctx(request, "book-sales")
+    ctx["reports"] = revenue_store.list_royalty_reports()
+    return templates.TemplateResponse("revenue/book_sales.html", ctx)
+
 
 @router.get("/royalties")
-async def royalties_page(request: Request):
-    ctx = _base_ctx(request, "royalties")
-    ctx["reports"] = revenue_store.list_royalty_reports()
-    return templates.TemplateResponse("revenue/royalties.html", ctx)
+async def royalties_redirect(request: Request):
+    return RedirectResponse(url="/revenue/book-sales", status_code=301)
 
 
-@router.post("/royalties/generate")
+@router.post("/book-sales/generate")
 async def generate_reports(request: Request, quarter: str = Form("")):
-    ctx = _base_ctx(request, "royalties")
+    ctx = _base_ctx(request, "book-sales")
     if not quarter:
         now = datetime.now(timezone.utc)
         q = (now.month - 1) // 3 + 1
@@ -185,26 +220,31 @@ async def generate_reports(request: Request, quarter: str = Form("")):
         ctx["error"] = f"Generation failed: {e}"
 
     ctx["reports"] = revenue_store.list_royalty_reports()
-    return templates.TemplateResponse("revenue/_royalties_partial.html", ctx)
+    return templates.TemplateResponse("revenue/_book_sales_partial.html", ctx)
 
 
-@router.get("/royalties/{report_id}")
-async def royalty_detail(request: Request, report_id: str):
-    ctx = _base_ctx(request, "royalties")
+@router.get("/book-sales/{report_id}")
+async def book_sale_detail(request: Request, report_id: str):
+    ctx = _base_ctx(request, "book-sales")
     report = revenue_store.get_royalty_report(report_id)
     if not report:
         ctx["error"] = "Report not found."
         ctx["reports"] = revenue_store.list_royalty_reports()
-        return templates.TemplateResponse("revenue/royalties.html", ctx)
+        return templates.TemplateResponse("revenue/book_sales.html", ctx)
     ctx["report"] = report
-    return templates.TemplateResponse("revenue/royalty_detail.html", ctx)
+    return templates.TemplateResponse("revenue/book_sale_detail.html", ctx)
 
 
-@router.post("/royalties/update/{report_id}")
+@router.get("/royalties/{report_id}")
+async def royalty_detail_redirect(request: Request, report_id: str):
+    return RedirectResponse(url=f"/revenue/book-sales/{report_id}", status_code=301)
+
+
+@router.post("/book-sales/update/{report_id}")
 async def update_report_status(request: Request, report_id: str, status: str = Form("")):
     if status:
         revenue_store.update_report_status(report_id, status)
-    return RedirectResponse(url=f"/revenue/royalties/{report_id}", status_code=302)
+    return RedirectResponse(url=f"/revenue/book-sales/{report_id}", status_code=302)
 
 
 # --- Consignment ---

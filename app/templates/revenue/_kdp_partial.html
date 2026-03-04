@@ -21,37 +21,64 @@
 <div class="card" style="border-left: 3px solid var(--green); padding: 0.75rem 1rem; margin-bottom: 1rem;">
   <div style="color: var(--green); font-weight: 500;">Import successful</div>
   <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
-    {{ import_result.record_count }} records &middot; {{ import_result.date_range }} &middot; ${{ "%.2f"|format(import_result.total_royalty) }} total royalty
+    {{ import_result.record_count }} records &middot; {{ import_result.date_range }} &middot; ${{ "%.2f"|format(import_result.total_royalty) }} total earnings
   </div>
 </div>
 {% endif %}
 
-{% if records %}
-<h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Imported Records</h3>
+{% if tx_rows %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+  <h3 style="font-size: 1rem; margin: 0;">Transactions ({{ tx_rows|length }} rows)</h3>
+  <button onclick="copyTsv()" class="btn btn-primary" style="font-size: 0.8rem;">Copy for Spreadsheet</button>
+</div>
+<pre id="tsv-data" style="display: none;">{{ tx_tsv }}</pre>
 <div style="overflow-x: auto;">
-  <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 0.75rem;">
     <thead>
       <tr style="border-bottom: 1px solid var(--border);">
-        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Date</th>
-        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Title</th>
-        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Author</th>
-        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Format</th>
-        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Units</th>
-        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Royalty</th>
+        <th style="text-align: left; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Date</th>
+        <th style="text-align: left; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Title</th>
+        <th style="text-align: left; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Author</th>
+        <th style="text-align: left; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Format</th>
+        <th style="text-align: left; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Type</th>
+        <th style="text-align: left; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Marketplace</th>
+        <th style="text-align: right; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Sold</th>
+        <th style="text-align: right; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Refund</th>
+        <th style="text-align: right; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Net</th>
+        <th style="text-align: right; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Payout</th>
+        <th style="text-align: right; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">Earnings</th>
+        <th style="text-align: right; padding: 0.4rem; color: var(--text-dim); font-weight: 500;">KEEP%</th>
       </tr>
     </thead>
     <tbody>
-      {% for r in records %}
+      {% for r in tx_rows %}
       <tr style="border-bottom: 1px solid var(--border);">
-        <td style="padding: 0.4rem 0.5rem; font-family: var(--font-mono); color: var(--text-dim);">{{ r.royalty_date }}</td>
-        <td style="padding: 0.4rem 0.5rem; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.title }}</td>
-        <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">{{ r.author_name }}</td>
-        <td style="padding: 0.4rem 0.5rem; color: var(--text-muted);">{{ r.format }}</td>
-        <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono);">{{ r.net_units }}</td>
-        <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(r.royalty_amount) }}</td>
+        <td style="padding: 0.35rem 0.4rem; font-family: var(--font-mono); color: var(--text-dim); font-size: 0.7rem;">{{ r.date }}</td>
+        <td style="padding: 0.35rem 0.4rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ r.title }}</td>
+        <td style="padding: 0.35rem 0.4rem; color: var(--text-muted);">{{ r.author }}</td>
+        <td style="padding: 0.35rem 0.4rem; color: var(--text-muted);">{{ r.format }}</td>
+        <td style="padding: 0.35rem 0.4rem; color: var(--text-muted);">{{ r.type }}</td>
+        <td style="padding: 0.35rem 0.4rem; color: var(--text-muted);">{{ r.marketplace }}</td>
+        <td style="padding: 0.35rem 0.4rem; text-align: right; font-family: var(--font-mono);">{{ r.units_sold }}</td>
+        <td style="padding: 0.35rem 0.4rem; text-align: right; font-family: var(--font-mono);">{{ r.units_refunded }}</td>
+        <td style="padding: 0.35rem 0.4rem; text-align: right; font-family: var(--font-mono);">{{ r.net_units_sold }}</td>
+        <td style="padding: 0.35rem 0.4rem; text-align: right; font-family: var(--font-mono);">{{ "%.0f"|format(r.payout * 100) }}%</td>
+        <td style="padding: 0.35rem 0.4rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(r.earnings) }}</td>
+        <td style="padding: 0.35rem 0.4rem; text-align: right; font-family: var(--font-mono);">{{ "%.0f"|format(r.keep_pct * 100) }}%</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+<script>
+function copyTsv() {
+  const tsv = document.getElementById('tsv-data').textContent;
+  navigator.clipboard.writeText(tsv).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+</script>
 {% endif %}

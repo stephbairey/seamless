@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}{{ report.author_name }} — {{ report.quarter }} — Royalty Report{% endblock %}
+{% block title %}{{ report.author_name }} — {{ report.quarter }} — Book Sales{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -11,13 +11,13 @@
 <div class="tabs">
   <a href="/revenue/dashboard" class="tab">Dashboard</a>
   <a href="/revenue/kdp" class="tab">KDP Import</a>
-  <a href="/revenue/royalties" class="tab active">Royalty Reports</a>
+  <a href="/revenue/book-sales" class="tab active">Book Sales</a>
   <a href="/revenue/consignment" class="tab">Consignment</a>
 </div>
 
 <!-- Back link -->
-<a href="/revenue/royalties" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; display: inline-block; margin-bottom: 1rem;">
-  &larr; Back to Reports
+<a href="/revenue/book-sales" style="font-size: 0.85rem; color: var(--accent); text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+  &larr; Back to Book Sales
 </a>
 
 <!-- Status + totals -->
@@ -47,19 +47,19 @@
 <!-- Status controls -->
 <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
   {% if report.status == 'draft' %}
-  <form action="/revenue/royalties/update/{{ report.id }}" method="post" style="display: inline;">
+  <form action="/revenue/book-sales/update/{{ report.id }}" method="post" style="display: inline;">
     <input type="hidden" name="status" value="reviewed">
     <button type="submit" class="btn btn-ghost" style="font-size: 0.8rem;">Mark Reviewed</button>
   </form>
   {% endif %}
   {% if report.status == 'reviewed' %}
-  <form action="/revenue/royalties/update/{{ report.id }}" method="post" style="display: inline;">
+  <form action="/revenue/book-sales/update/{{ report.id }}" method="post" style="display: inline;">
     <input type="hidden" name="status" value="sent">
     <button type="submit" class="btn btn-primary" style="font-size: 0.8rem;">Mark Sent</button>
   </form>
   {% endif %}
   {% if report.status != 'draft' %}
-  <form action="/revenue/royalties/update/{{ report.id }}" method="post" style="display: inline;">
+  <form action="/revenue/book-sales/update/{{ report.id }}" method="post" style="display: inline;">
     <input type="hidden" name="status" value="draft">
     <button type="submit" class="btn btn-ghost" style="font-size: 0.8rem;">Reset to Draft</button>
   </form>

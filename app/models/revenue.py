@@ -12,12 +12,30 @@ class KdpRecord(BaseModel):
     asin_isbn: str = ""
     marketplace: str = ""
     royalty_type: str = ""
+    payout_plan: str = ""
     transaction_type: str = ""
     format: str = ""
+    units_sold: int = 0
+    units_refunded: int = 0
     net_units: int = 0
     royalty_amount: float = 0.0
     currency: str = "USD"
     raw_row: dict = {}
+
+
+class TransactionsRow(BaseModel):
+    date: str  # YYYY-MM-01
+    title: str
+    author: str
+    format: str  # Ebook / Paperback / Hardcover
+    type: str  # Purchase / KENP / Free promo
+    marketplace: str
+    units_sold: int = 0
+    units_refunded: int = 0
+    net_units_sold: int = 0
+    payout: float = 0.0  # royalty rate: 0.35, 0.60, 0.70, 0.00
+    earnings: float = 0.0
+    keep_pct: float = 1.0
 
 
 class KdpImport(BaseModel):

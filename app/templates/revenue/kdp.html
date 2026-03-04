@@ -11,7 +11,7 @@
 <div class="tabs">
   <a href="/revenue/dashboard" class="tab">Dashboard</a>
   <a href="/revenue/kdp" class="tab active">KDP Import</a>
-  <a href="/revenue/royalties" class="tab">Royalty Reports</a>
+  <a href="/revenue/book-sales" class="tab">Book Sales</a>
   <a href="/revenue/consignment" class="tab">Consignment</a>
 </div>
 
@@ -24,7 +24,7 @@
         hx-indicator="#upload-spinner"
         style="display: flex; gap: 0.75rem; align-items: flex-end;">
     <div class="form-group" style="flex: 1; margin-bottom: 0;">
-      <label for="file">KDP Combined Sales CSV</label>
+      <label for="file">KDP CSV (Combined Sales, Prior Month, or KENP Daily)</label>
       <input type="file" name="file" id="file" accept=".csv"
              style="background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.4rem 0.75rem; color: var(--text); font-size: 0.85rem; width: 100%;">
     </div>
@@ -38,8 +38,30 @@
 <!-- Results area -->
 <div id="kdp-results"></div>
 
-<!-- Import history -->
+<!-- Export existing import -->
 {% if imports %}
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Export as Transactions</h3>
+  <form hx-post="/revenue/kdp/export"
+        hx-target="#kdp-results"
+        hx-indicator="#export-spinner"
+        style="display: flex; gap: 0.75rem; align-items: flex-end;">
+    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+      <label for="import_id">Select Import</label>
+      <select name="import_id" id="import_id">
+        {% for imp in imports %}
+        <option value="{{ imp.id }}">{{ imp.filename }} ({{ imp.date_range }}, {{ imp.record_count }} records)</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-ghost" style="flex-shrink: 0;">Export</button>
+    <span id="export-spinner" class="htmx-indicator" style="display: flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+      <span class="spinner"></span> Transforming...
+    </span>
+  </form>
+</div>
+
+<!-- Import history -->
 <h3 style="font-size: 1rem; margin-bottom: 0.75rem; margin-top: 1.5rem;">Import History</h3>
 {% for imp in imports %}
 <div class="card" style="padding: 0.75rem 1rem; margin-bottom: 0.5rem;">

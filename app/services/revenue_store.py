@@ -91,19 +91,21 @@ class RevenueStore:
         return records
 
     def has_duplicate_records(self, records: list[KdpRecord]) -> list[str]:
-        """Check for existing records matching (royalty_date, title, asin_isbn,
-        marketplace, transaction_type). Returns list of duplicate descriptions."""
+        """Check for existing records matching (royalty_date, title, author_name,
+        format, marketplace, units_sold, royalty_amount). Returns list of duplicate descriptions."""
         self._ensure_loaded()
         existing = set()
         for d in self._data["kdp_records"]:
             key = (d.get("royalty_date", ""), d.get("title", ""),
-                   d.get("asin_isbn", ""), d.get("marketplace", ""),
-                   d.get("transaction_type", ""))
+                   d.get("author_name", ""), d.get("format", ""),
+                   d.get("marketplace", ""),
+                   d.get("units_sold", 0), d.get("royalty_amount", 0.0))
             existing.add(key)
         dupes = []
         for r in records:
-            key = (r.royalty_date, r.title, r.asin_isbn,
-                   r.marketplace, r.transaction_type)
+            key = (r.royalty_date, r.title, r.author_name,
+                   r.format, r.marketplace,
+                   r.units_sold, r.royalty_amount)
             if key in existing:
                 dupes.append(f"{r.title} ({r.royalty_date}, {r.marketplace})")
         return dupes
