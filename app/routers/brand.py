@@ -144,6 +144,38 @@ async def tokens_page(request: Request):
     })
 
 
+@router.post("/tokens")
+async def create_token(request: Request):
+    body = await request.json()
+    context_id = body.get("context_id", "").strip()
+    label = body.get("label", "").strip()
+    if not context_id:
+        return {"status": "error", "message": "context_id required"}
+    token = {"context_id": context_id, "label": label or "New Token"}
+    created_id = brand_token_service.add_token(token)
+    return {"status": "ok", "context_id": created_id}
+
+
+@router.delete("/tokens/{context_id}")
+async def delete_token_endpoint(context_id: str):
+    deleted = brand_token_service.delete_token(context_id)
+    if deleted:
+        return {"status": "ok"}
+    return {"status": "error", "message": "Token not found"}
+
+
+@router.post("/tokens/reorder")
+async def reorder_tokens(request: Request):
+    body = await request.json()
+    order = body.get("order", [])
+    if not order:
+        return {"status": "error", "message": "order required"}
+    ok = brand_token_service.reorder_tokens(order)
+    if ok:
+        return {"status": "ok"}
+    return {"status": "error", "message": "Order mismatch — IDs don't match existing tokens"}
+
+
 @router.patch("/tokens/{context_id}")
 async def update_token(context_id: str, request: Request):
     body = await request.json()

@@ -8,13 +8,20 @@
   <p class="description">Color palettes, typography, imagery, and copy style for each brand context.</p>
 </div>
 
+{% set token_count = tokens | length %}
 {% for token in tokens %}
   <script id="token-data-{{ token.context_id }}" type="application/json">{{ token | tojson }}</script>
 
-  <div class="card" x-data="brandCard('{{ token.context_id }}')">
+  <div class="card" x-data="brandCard('{{ token.context_id }}', {{ loop.index0 }}, {{ token_count }})">
     <div class="card-header" @click="toggleOpen()" style="user-select: none;">
       <div style="display: flex; align-items: center; gap: 0.5rem;">
         <span style="color: var(--text-dim); font-size: 0.75rem; width: 1rem; text-align: center;" x-text="open ? '&#9660;' : '&#9654;'"></span>
+        {% if not loop.first %}
+        <button class="reorder-btn" @click.stop="moveUp()" title="Move up">&#9650;</button>
+        {% endif %}
+        {% if not loop.last %}
+        <button class="reorder-btn" @click.stop="moveDown()" title="Move down">&#9660;</button>
+        {% endif %}
         <h3 x-show="!editing" x-text="label"></h3>
         <input x-show="editing" x-model="label" type="text" @click.stop
                style="font-size: 1.2rem; font-weight: 600; background: var(--bg-raised); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.25rem 0.5rem; color: var(--text); width: 20rem;">
@@ -170,17 +177,22 @@
         <textarea x-model="copy_style" style="min-height: 60px;" placeholder="Notes on copy style, document format, restrictions..."></textarea>
       </div>
 
-      {# ── SAVE ── #}
-      <div x-show="editing" x-transition style="margin-top: 0.75rem;">
-        <button class="btn btn-primary" @click="save()" :disabled="saving">
-          <span x-show="!saving">Save</span>
-          <span x-show="saving"><span class="spinner"></span></span>
-        </button>
-        <span x-show="saved" style="color: var(--green); font-size: 0.85rem; margin-left: 0.5rem;">Saved</span>
+      {# ── SAVE / DELETE ── #}
+      <div x-show="editing" x-transition style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button class="btn btn-primary" @click="save()" :disabled="saving">
+            <span x-show="!saving">Save</span>
+            <span x-show="saving"><span class="spinner"></span></span>
+          </button>
+          <span x-show="saved" style="color: var(--green); font-size: 0.85rem;">Saved</span>
+        </div>
+        <button class="btn btn-danger" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;" @click="deleteToken()">Delete Token</button>
       </div>
     </div>
   </div>
 {% endfor %}
+
+<button class="btn btn-ghost" style="width: 100%; padding: 0.75rem; font-size: 0.9rem;" onclick="addNewToken()">+ Add Token</button>
 
 {# Google Fonts injection #}
 {% if google_fonts %}
@@ -190,14 +202,22 @@
 
 {% block scripts %}
 <script>
-function brandCard(contextId) {
+// Collect all token IDs in order for reorder operations
+var tokenOrder = [{% for token in tokens %}'{{ token.context_id }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+
+function brandCard(contextId, index, count) {
   const raw = JSON.parse(document.getElementById('token-data-' + contextId).textContent);
   const imagery = raw.imagery || {};
   const ve = imagery.visual_elements;
+  // Auto-open if flagged for edit mode (just added)
+  var autoEdit = localStorage.getItem('bl-edit-' + contextId) === 'true';
+  if (autoEdit) localStorage.removeItem('bl-edit-' + contextId);
   return {
     contextId: contextId,
-    open: localStorage.getItem('bl-open-' + contextId) === 'true',
-    editing: false,
+    index: index,
+    count: count,
+    open: autoEdit || localStorage.getItem('bl-open-' + contextId) === 'true',
+    editing: autoEdit,
     saving: false,
     saved: false,
     label: raw.label || '',
@@ -223,6 +243,36 @@ function brandCard(contextId) {
     removeColor(i) { this.colors.splice(i, 1); },
     addFont() { this.typography.push({font: '', role: '', source: 'google_fonts'}); },
     removeFont(i) { this.typography.splice(i, 1); },
+    moveUp() {
+      if (this.index <= 0) return;
+      var order = tokenOrder.slice();
+      var tmp = order[this.index - 1];
+      order[this.index - 1] = order[this.index];
+      order[this.index] = tmp;
+      fetch('/brand/tokens/reorder', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({order: order})
+      }).then(function() { location.reload(); });
+    },
+    moveDown() {
+      if (this.index >= this.count - 1) return;
+      var order = tokenOrder.slice();
+      var tmp = order[this.index + 1];
+      order[this.index + 1] = order[this.index];
+      order[this.index] = tmp;
+      fetch('/brand/tokens/reorder', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({order: order})
+      }).then(function() { location.reload(); });
+    },
+    deleteToken() {
+      if (!confirm('Delete "' + this.label + '"? This cannot be undone.')) return;
+      fetch('/brand/tokens/' + this.contextId, {
+        method: 'DELETE'
+      }).then(function() { location.reload(); });
+    },
     save() {
       this.saving = true;
       const payload = {
@@ -252,6 +302,20 @@ function brandCard(contextId) {
       });
     }
   };
+}
+
+function addNewToken() {
+  var id = 'new_' + Date.now();
+  fetch('/brand/tokens', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({context_id: id, label: 'New Token'})
+  }).then(function(r) { return r.json(); }).then(function(data) {
+    if (data.status === 'ok') {
+      localStorage.setItem('bl-edit-' + data.context_id, 'true');
+      location.reload();
+    }
+  });
 }
 </script>
 {% endblock %}
