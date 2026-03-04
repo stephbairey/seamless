@@ -1,203 +1,200 @@
-# brand-tokens.yaml
-# Extracted from: knowledge/identities.md, domain-plans/brand-codification.md, data/client-registry.yaml
-# Purpose: Visual brand tokens per context — colors, typography, imagery, Midjourney templates
-
 tokens:
-  - context_id: maya-personal
-    label: "Maya Personal"
-    website: "bairey.com"
-    colors:
-      - hex: "#275988"
-        name: "Dark Blue"
-        role: primary
-      - hex: "#6CC9EA"
-        name: "Accent Blue"
-        role: accent
-      - hex: "#E0CBA4"
-        name: "Beige"
-        role: secondary
-      - hex: "#F2F2EB"
-        name: "Light Beige"
-        role: background
-      - hex: "#031521"
-        name: "Near Black"
-        role: text
-    typography:
-      - font: "Montserrat"
-        role: headers
-        source: google_fonts
-      - font: "Christmas Shine"
-        role: handwriting
-        source: custom
-      - font: "Cosmic Lemonade"
-        role: paint
-        source: custom
-    imagery:
-      style: "Abstract impressionist, impasto, blue and beige"
-      midjourney_template: "an abstract impressionist painting of [subject], impasto, blue and beige, [angles, shot distance, vibe] --ar 16:9"
-
-  - context_id: writing-with-maya
-    label: "Writing with Maya"
-    website: "bairey.com"
-    colors:
-      - hex: "#2B75B9"
-        name: "Blue"
-        role: primary
-      - hex: "#F2F2EB"
-        name: "Beige"
-        role: background
-      - hex: "#EFC469"
-        name: "Gold"
-        role: accent
-      - hex: "#15415F"
-        name: "Dark Blue"
-        role: secondary
-    typography:
-      - font: "Montserrat"
-        role: headers
-        source: google_fonts
-      - font: "Christmas Shine"
-        role: handwriting
-        source: custom
-      - font: "Cosmic Lemonade"
-        role: paint
-        source: custom
-    imagery:
-      style: "Cozy visual vocabulary"
-      visual_elements: ["hands writing in notebooks", "coffee steam", "soft lighting", "rain on windows"]
-    products:
-      - name: "5 PDF templates"
-        price: "$12 each / $39 bundle"
-        platform: "WooCommerce on bairey.com"
-
-  - context_id: lib
-    label: "Lingua Ink Books"
-    colors:
-      - hex: "#484C53"
-        name: "Charcoal"
-        role: primary
-      - hex: "#F3F3F3"
-        name: "Light Gray"
-        role: background
-      - hex: "#CC302B"
-        name: "Brick Red"
-        role: accent
-    typography:
-      - font: "Bitter"
-        role: headers
-        source: google_fonts
-      - font: "Domine"
-        role: body
-        source: google_fonts
-    imagery:
-      style: "Half-tone black and white"
-    website: "linguaink.com"
-
-  - context_id: lim
-    label: "Lingua Ink Media"
-    colors:
-      - hex: "#722F37"
-        name: "Deep Wine"
-        role: primary
-      - hex: "#C5A55A"
-        name: "Warm Gold"
-        role: accent
-    typography:
-      - font: "Bitter"
-        role: headers
-        source: google_fonts
-      - font: "Domine"
-        role: body
-        source: google_fonts
-    imagery:
-      style: "Corporate editorial"
-    website: "linguainkmedia.com"
-    public_email: "connect@linguainkmedia.com"
-
-  - context_id: prg-newsletter
-    label: "PRG Newsletter"
-    website: "raginggrannies.net"
-    colors:
-      - hex: "#d6616c"
-        name: "Coral Red"
-        role: primary
-      - hex: "#bd3435"
-        name: "Darker Red"
-        role: header
-    typography:
-      - font: "Helvetica Neue"
-        role: primary
-        source: system
-        fallbacks: ["Helvetica", "Arial"]
-    imagery:
-      style: null
-
-  - context_id: prg-brand
-    label: "PRG Brand"
-    website: "raginggrannies.net"
-    colors:
-      - hex: "#bf3434"
-        name: "PRG Red"
-        role: primary
-    typography: null
-    imagery:
-      style: null
-
-  - context_id: devon-ervin
-    label: "Devon Ervin"
-    website: "devonervin.com"
-    colors:
-      - hex: "#4c6e90"
-        name: "Deep Blue"
-        role: primary
-      - hex: "#57a8b9"
-        name: "Teal"
-        role: accent
-      - hex: "#d4c2b5"
-        name: "Warm Sand"
-        role: secondary
-      - hex: "#faf8f5"
-        name: "Off White"
-        role: background
-    typography:
-      - font: "Questrial"
-        role: headers
-        source: google_fonts
-      - font: "Work Sans"
-        role: body
-        source: google_fonts
-    imagery:
-      style: "Calm ocean/beach/coastal"
-    copy_style: "Em dashes banned in all Devon Ervin materials"
-
-  - context_id: lynn-haller
-    label: "Lynn Haller"
-    website: "lynnahaller.com"
-    colors:
-      - hex: "#a78fbf"
-        name: "Lavender"
-        role: primary
-    typography:
-      - font: "Merriweather Sans"
-        role: primary
-        source: google_fonts
-    imagery:
-      style: "Dreamy bokeh Hasselblad, shallow depth-of-field"
-    book: "The Hallway of Doorknobs"
-    target_launch: "2026-05-12"
-
-  - context_id: arc-tda
-    label: "ARC/TDA Governance"
-    website: "tomahawkdestiny.com"
-    colors: null
-    typography:
-      - font: "Aptos Display"
-        role: "ARC documents"
-        source: system
-        size: "11pt"
-      - font: "Playfair Display"
-        role: "TDA letterhead"
-        source: google_fonts
-    imagery:
-      style: null
-    copy_style: "Word document, max 1 page. Sections: Membership, Completed, In Progress, Upcoming, Support Needed"
+- context_id: maya-personal
+  label: Maya Personal
+  colors:
+  - hex: '#275988'
+    name: Dark Blue
+    role: primary
+  - hex: '#6CC9EA'
+    name: Accent Blue
+    role: accent
+  - hex: '#E0CBA4'
+    name: Beige
+    role: secondary
+  - hex: '#F2F2EB'
+    name: Light Beige
+    role: background
+  - hex: '#031521'
+    name: Near Black
+    role: text
+  typography:
+  - font: Montserrat
+    role: headers
+    source: google_fonts
+  - font: Christmas Shine
+    role: handwriting
+    source: custom
+  - font: Cosmic Lemonade
+    role: paint
+    source: custom
+  imagery:
+    style: Abstract impressionist, impasto, blue and beige
+    visual_elements: null
+    midjourney_template: an abstract impressionist painting of [subject], impasto,
+      blue and beige, [angles, shot distance, vibe] --ar 16:9
+  website: bairey.com
+  copy_style: null
+- context_id: writing-with-maya
+  label: Writing with Maya
+  colors:
+  - hex: '#2B75B9'
+    name: Blue
+    role: primary
+  - hex: '#F2F2EB'
+    name: Beige
+    role: background
+  - hex: '#EFC469'
+    name: Gold
+    role: accent
+  - hex: '#15415F'
+    name: Dark Blue
+    role: secondary
+  typography:
+  - font: Montserrat
+    role: headers
+    source: google_fonts
+  - font: Cosmic Lemonade
+    role: paint
+    source: custom
+  imagery:
+    style: Cozy visual vocabulary
+    visual_elements:
+    - hands writing in notebooks
+    - coffee steam
+    - soft lighting
+    - rain on windows
+    midjourney_template: null
+  products:
+  - name: 5 PDF templates
+    price: $12 each / $39 bundle
+    platform: WooCommerce on bairey.com
+  website: writingwithmaya.com
+  copy_style: null
+- context_id: lib
+  label: Lingua Ink Books
+  colors:
+  - hex: '#484C53'
+    name: Charcoal
+    role: primary
+  - hex: '#F3F3F3'
+    name: Light Gray
+    role: background
+  - hex: '#CC302B'
+    name: Brick Red
+    role: accent
+  typography:
+  - font: Bitter
+    role: headers
+    source: google_fonts
+  - font: Domine
+    role: body
+    source: google_fonts
+  imagery:
+    style: Half-tone black and white
+  website: linguaink.com
+- context_id: lim
+  label: Lingua Ink Media
+  colors:
+  - hex: '#722F37'
+    name: Deep Wine
+    role: primary
+  - hex: '#C5A55A'
+    name: Warm Gold
+    role: accent
+  typography:
+  - font: Bitter
+    role: headers
+    source: google_fonts
+  - font: Domine
+    role: body
+    source: google_fonts
+  imagery:
+    style: Corporate editorial
+  website: linguainkmedia.com
+  public_email: connect@linguainkmedia.com
+- context_id: prg-newsletter
+  label: PRG Newsletter
+  website: raginggrannies.net
+  colors:
+  - hex: '#d6616c'
+    name: Coral Red
+    role: primary
+  - hex: '#bd3435'
+    name: Darker Red
+    role: header
+  typography:
+  - font: Helvetica Neue
+    role: primary
+    source: system
+    fallbacks:
+    - Helvetica
+    - Arial
+  imagery:
+    style: null
+- context_id: prg-brand
+  label: PRG Brand
+  website: raginggrannies.net
+  colors:
+  - hex: '#bf3434'
+    name: PRG Red
+    role: primary
+  typography: null
+  imagery:
+    style: null
+- context_id: devon-ervin
+  label: Devon Ervin
+  website: devonervin.com
+  colors:
+  - hex: '#4c6e90'
+    name: Deep Blue
+    role: primary
+  - hex: '#57a8b9'
+    name: Teal
+    role: accent
+  - hex: '#d4c2b5'
+    name: Warm Sand
+    role: secondary
+  - hex: '#faf8f5'
+    name: Off White
+    role: background
+  typography:
+  - font: Questrial
+    role: headers
+    source: google_fonts
+  - font: Work Sans
+    role: body
+    source: google_fonts
+  imagery:
+    style: Calm ocean/beach/coastal
+  copy_style: Em dashes banned in all Devon Ervin materials
+- context_id: lynn-haller
+  label: Lynn Haller
+  website: lynnahaller.com
+  colors:
+  - hex: '#a78fbf'
+    name: Lavender
+    role: primary
+  typography:
+  - font: Merriweather Sans
+    role: primary
+    source: google_fonts
+  imagery:
+    style: Dreamy bokeh Hasselblad, shallow depth-of-field
+  book: The Hallway of Doorknobs
+  target_launch: '2026-05-12'
+- context_id: arc-tda
+  label: ARC/TDA Governance
+  website: tomahawkdestiny.com
+  colors: null
+  typography:
+  - font: Aptos Display
+    role: ARC documents
+    source: system
+    size: 11pt
+  - font: Playfair Display
+    role: TDA letterhead
+    source: google_fonts
+  imagery:
+    style: null
+  copy_style: 'Word document, max 1 page. Sections: Membership, Completed, In Progress,
+    Upcoming, Support Needed'
