@@ -1,0 +1,18 @@
+{% if error %}
+  <div class="alert alert-error" style="margin-bottom: 1rem;">{{ error }}</div>
+{% endif %}
+
+{% if batch and batch.posts %}
+<div style="display: grid; gap: 1rem;">
+  {% for post in batch.posts %}
+  <div class="card" id="card-{{ post.platform }}">
+    {% include "distribution/_post_card.html" with context %}
+  </div>
+  {% endfor %}
+</div>
+{% elif batch and not batch.posts %}
+  <div class="empty-state">
+    <div class="icon">&#128225;</div>
+    <p>No platforms configured for this brand.</p>
+  </div>
+{% endif %}

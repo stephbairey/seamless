@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Social Copy — Distribution{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h2>Social Copy Generator</h2>
+  <p class="description">Generate platform-specific posts from a single piece of content. Correct voice, identity, and formatting per brand+platform.</p>
+</div>
+
+{% if not configured %}
+  <div class="empty-state">
+    <div class="icon">&#128225;</div>
+    <p>Anthropic API key not configured. Add <code>ANTHROPIC_API_KEY</code> to <code>secrets.env</code>.</p>
+  </div>
+{% else %}
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <h3 style="font-size: 1rem; margin-bottom: 0.75rem;">Content Input</h3>
+  <form id="generate-form"
+        hx-post="/distribution/generate"
+        hx-target="#results"
+        hx-indicator="#gen-spinner">
+
+    <div class="form-group">
+      <label for="brand">Brand</label>
+      <select name="brand" id="brand" required>
+        <option value="">Select brand...</option>
+        <option value="maya-personal">Maya Personal (bairey.com, author)</option>
+        <option value="lib">Lingua Ink Books (publishing)</option>
+        <option value="lim">Lingua Ink Media (consulting)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="content">Content</label>
+      <textarea name="content" id="content" rows="10"
+                placeholder="Paste blog post, article text, or content to distribute..."
+                required style="font-size: 0.9rem;"></textarea>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="url">URL (optional)</label>
+        <input type="url" name="url" id="url" placeholder="https://...">
+      </div>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label for="notes">Direction (optional)</label>
+        <input type="text" name="notes" id="notes"
+               placeholder="e.g. Focus on the craft advice, skip the backstory">
+      </div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <button type="submit" class="btn btn-primary">
+        Generate All Platforms
+      </button>
+      <span id="gen-spinner" class="htmx-indicator" style="display: inline-flex; align-items: center; gap: 0.375rem; color: var(--text-dim); font-size: 0.8rem;">
+        <span class="spinner"></span> Generating...
+      </span>
+    </div>
+  </form>
+</div>
+
+<div id="results">
+  {% if batch %}
+    {% include "distribution/_results_partial.html" %}
+  {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(btn, platform) {
+  const textarea = document.getElementById('copy-' + platform);
+  if (!textarea) return;
+  navigator.clipboard.writeText(textarea.value).then(function() {
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+  });
+}
+</script>
+{% endblock %}

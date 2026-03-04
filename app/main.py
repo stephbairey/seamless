@@ -3,7 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
-from app.routers import brand, calendar, dashboard, email, files, newsletter, revenue, tasks
+from app.routers import brand, calendar, dashboard, distribution, email, files, newsletter, revenue, tasks
 
 app = FastAPI(title=APP_TITLE)
 
@@ -21,6 +21,7 @@ MODULE_REGISTRY = [
     {"id": "files", "label": "Files", "icon": "folder", "path": "/files/"},
     {"id": "newsletter", "label": "Newsletter", "icon": "newsletter", "path": "/newsletter/"},
     {"id": "revenue", "label": "Revenue", "icon": "revenue", "path": "/revenue/"},
+    {"id": "distribution", "label": "Distribution", "icon": "share", "path": "/distribution/"},
 ]
 
 # Make registry available to all templates
@@ -38,3 +39,4 @@ app.include_router(email.router, prefix="/email", tags=["email"])
 app.include_router(files.router, prefix="/files", tags=["files"])
 app.include_router(newsletter.router, prefix="/newsletter", tags=["newsletter"])
 app.include_router(revenue.router, prefix="/revenue", tags=["revenue"])
+app.include_router(distribution.router, prefix="/distribution", tags=["distribution"])
