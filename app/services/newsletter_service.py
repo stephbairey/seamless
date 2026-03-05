@@ -342,7 +342,7 @@ class NewsletterService:
         days_until_thursday = (3 - today.weekday()) % 7
         if days_until_thursday == 0 and datetime.now(timezone.utc).hour >= 12:
             days_until_thursday = 7
-        next_thursday = today + timedelta(days=days_until_thursday if days_until_thursday else 7)
+        next_thursday = today + timedelta(days=days_until_thursday)
 
         if event < next_thursday:
             return True, f"Event date {item.event_date} is before send date {next_thursday.isoformat()}"
