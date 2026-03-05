@@ -15,8 +15,6 @@
   {{ items | length }} included item{{ 's' if items | length != 1 else '' }}. Use arrows to reorder, edit headlines inline, rewrite content.
 </div>
 
-<form id="reorder-form" hx-post="/newsletter/compose/reorder" hx-target="#compose-list" hx-swap="innerHTML" style="display:none;"></form>
-
 <div id="sortable-items">
 {% for item in items %}
   {% include "newsletter/_compose_item.html" %}

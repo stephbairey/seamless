@@ -52,13 +52,8 @@ class NewsletterCompiler:
                 issue=issue, html="", toc_headlines=[], item_count=0, violations=[],
             )
 
-        # Sort: category priority, event_date, display_order
-        _no_date = "9999-99-99"
-        items.sort(key=lambda i: (
-            CATEGORY_PRIORITY.get(i.category, 4),
-            i.event_date if i.event_date else _no_date,
-            i.display_order,
-        ))
+        # Sort by display_order (set at ingest, updated by manual reorder)
+        items.sort(key=lambda i: i.display_order)
 
         # Merge joana_rollup items into one synthetic card
         items = self._merge_joana_items(items)

@@ -4,6 +4,7 @@ import logging
 import re
 import uuid
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 import httpx
 
@@ -338,11 +339,9 @@ class NewsletterService:
         except ValueError:
             return False, ""
 
-        # Find next Thursday
-        today = datetime.now(timezone.utc).date()
+        # Find next Thursday (or today if it's Thursday)
+        today = datetime.now(ZoneInfo("America/Los_Angeles")).date()
         days_until_thursday = (3 - today.weekday()) % 7
-        if days_until_thursday == 0 and datetime.now(timezone.utc).hour >= 12:
-            days_until_thursday = 7
         next_thursday = today + timedelta(days=days_until_thursday)
 
         if event < next_thursday:

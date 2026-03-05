@@ -112,8 +112,14 @@ class NewsletterStore:
         return None
 
     def remove_item(self, item_id: str) -> NewsletterIssue | None:
-        """Set item status to excluded."""
-        return self.update_item(item_id, {"status": "excluded"})
+        """Delete item from the issue entirely."""
+        issue = self.get_current_issue()
+        original_len = len(issue.items)
+        issue.items = [i for i in issue.items if i.id != item_id]
+        if len(issue.items) < original_len:
+            self.save_issue(issue)
+            return issue
+        return None
 
     def reorder_items(self, item_ids: list[str]) -> NewsletterIssue:
         """Rewrite display_order based on the given ID sequence."""

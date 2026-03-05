@@ -29,12 +29,8 @@ _NO_DATE = "9999-99-99"
 
 
 def _sort_items(items):
-    """Sort by category priority, then event_date (earliest first, no-date last), then display_order."""
-    items.sort(key=lambda i: (
-        CATEGORY_PRIORITY.get(i.category, 4),
-        i.event_date if i.event_date else _NO_DATE,
-        i.display_order,
-    ))
+    """Sort by display_order (set at ingest, updated by manual reorder)."""
+    items.sort(key=lambda i: i.display_order)
 
 
 def _base_ctx(request: Request, active_tab: str = "") -> dict:

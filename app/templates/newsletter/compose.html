@@ -65,19 +65,19 @@ function moveItem(itemId, direction) {
   const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
   if (targetIdx < 0 || targetIdx >= ids.length) return;
 
-  // Swap in the array, let the server response render the new order
   [ids[idx], ids[targetIdx]] = [ids[targetIdx], ids[idx]];
 
-  const form = document.getElementById('reorder-form');
-  form.innerHTML = '';
-  ids.forEach(id => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'item_ids';
-    input.value = id;
-    form.appendChild(input);
+  fetch('/newsletter/compose/reorder', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'HX-Request': 'true'},
+    body: ids.map(id => 'item_ids=' + encodeURIComponent(id)).join('&')
+  })
+  .then(r => r.text())
+  .then(html => {
+    const target = document.getElementById('compose-list');
+    target.innerHTML = html;
+    htmx.process(target);
   });
-  htmx.trigger(form, 'submit');
 }
 </script>
 {% endblock %}
