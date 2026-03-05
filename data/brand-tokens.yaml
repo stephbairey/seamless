@@ -34,42 +34,6 @@ tokens:
       blue and beige, [angles, shot distance, vibe] --ar 16:9
   website: bairey.com
   copy_style: null
-- context_id: writing-with-maya
-  label: Writing with Maya
-  colors:
-  - hex: '#2B75B9'
-    name: Blue
-    role: primary
-  - hex: '#F2F2EB'
-    name: Beige
-    role: background
-  - hex: '#EFC469'
-    name: Gold
-    role: accent
-  - hex: '#15415F'
-    name: Dark Blue
-    role: secondary
-  typography:
-  - font: Montserrat
-    role: headers
-    source: google_fonts
-  - font: Cosmic Lemonade
-    role: paint
-    source: custom
-  imagery:
-    style: Cozy visual vocabulary
-    visual_elements:
-    - hands writing in notebooks
-    - coffee steam
-    - soft lighting
-    - rain on windows
-    midjourney_template: null
-  products:
-  - name: 5 PDF templates
-    price: $12 each / $39 bundle
-    platform: WooCommerce on bairey.com
-  website: writingwithmaya.com
-  copy_style: null
 - context_id: lib
   label: Lingua Ink Books
   colors:
@@ -112,36 +76,72 @@ tokens:
     style: Corporate editorial
   website: linguainkmedia.com
   public_email: connect@linguainkmedia.com
-- context_id: prg-newsletter
-  label: PRG Newsletter
+- context_id: writing-with-maya
+  label: Writing with Maya
   colors:
-  - hex: '#d6616c'
-    name: Coral Red
+  - hex: '#2B75B9'
+    name: Blue
     role: primary
-  - hex: '#bd3435'
-    name: Darker Red
-    role: header
+  - hex: '#F2F2EB'
+    name: Beige
+    role: background
+  - hex: '#EFC469'
+    name: Gold
+    role: accent
+  - hex: '#15415F'
+    name: Dark Blue
+    role: secondary
   typography:
-  - font: Helvetica Neue
-    role: primary
-    source: system
-    fallbacks:
-    - Helvetica
-    - Arial
+  - font: Montserrat
+    role: headers
+    source: google_fonts
+  - font: Cosmic Lemonade
+    role: paint
+    source: custom
   imagery:
-    style: null
-- context_id: prg-brand
-  label: PRG Website
+    style: Cozy visual vocabulary
+    visual_elements:
+    - hands writing in notebooks
+    - coffee steam
+    - soft lighting
+    - rain on windows
+    midjourney_template: null
+  products:
+  - name: 5 PDF templates
+    price: $12 each / $39 bundle
+    platform: WooCommerce on bairey.com
+  website: writingwithmaya.com
+  copy_style: null
+- context_id: new_1772653004190
+  label: Tomahawk Destiny
+  website: tomahawkdestiny.com
   colors:
-  - hex: '#bf3434'
-    name: PRG Red
+  - hex: '#CCD3D9'
+    name: Light Gray
     role: primary
-  typography: []
+  - hex: '#778A9D'
+    name: Dark Gray
+    role: menus
+  - hex: '#8CA2B9'
+    name: Medium Gray
+    role: header bg
+  - hex: '#1E5373'
+    name: Dark Blue
+    role: headers
+  - hex: '#3199D8'
+    name: Light Blue
+    role: accent
+  typography:
+  - font: Playfair Display
+    role: headers
+    source: google_fonts
+  - font: Archivo
+    role: text
+    source: google_fonts
   imagery:
     style: null
     visual_elements: null
     midjourney_template: null
-  website: portland.raginggrannies.org
   copy_style: null
 - context_id: devon-ervin
   label: Devon Ervin
@@ -166,8 +166,11 @@ tokens:
     role: body
     source: google_fonts
   imagery:
-    style: Calm ocean/beach/coastal
+    style: Calm ocean, beach, coastal
+    visual_elements: null
+    midjourney_template: null
   copy_style: Em dashes banned in all Devon Ervin materials
+  website: devonervin.com
 - context_id: lynn-haller
   label: Lynn Haller
   colors:
@@ -201,6 +204,37 @@ tokens:
   target_launch: '2026-05-12'
   website: lynnahaller.com
   copy_style: null
+- context_id: prg-brand
+  label: PRG Website
+  colors:
+  - hex: '#bf3434'
+    name: PRG Red
+    role: primary
+  typography: []
+  imagery:
+    style: null
+    visual_elements: null
+    midjourney_template: null
+  website: portland.raginggrannies.org
+  copy_style: null
+- context_id: prg-newsletter
+  label: PRG Newsletter
+  colors:
+  - hex: '#d6616c'
+    name: Coral Red
+    role: primary
+  - hex: '#bd3435'
+    name: Darker Red
+    role: header
+  typography:
+  - font: Helvetica Neue
+    role: primary
+    source: system
+    fallbacks:
+    - Helvetica
+    - Arial
+  imagery:
+    style: null
 - context_id: arc-tda
   label: ARC Communications
   colors: []
