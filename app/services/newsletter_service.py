@@ -57,6 +57,7 @@ class NewsletterService:
             sender_name = msg.sender
             if "<" in sender_name:
                 sender_name = sender_name.split("<")[0].strip().strip('"')
+            sender_name = re.sub(r'\s+via\s+grannynewsletter$', '', sender_name, flags=re.IGNORECASE)
 
             item = NewsletterItem(
                 id=uuid.uuid4().hex,
@@ -527,10 +528,10 @@ class NewsletterService:
         text = re.sub(r'<br\s*/?>', '<br/>', text)
         # Fix raquo outside links: "&raquo; <a href=...>text</a>" -> "<a href=...>&raquo; text</a>"
         text = re.sub(r'&raquo;\s*<a\s+href="([^"]+)">', r'<a href="\1">&raquo; ', text)
-        # Wrap bare email addresses in mailto links (skip ones already inside an <a> tag)
+        # Wrap bare email addresses in mailto links (skip ones already inside HTML tags)
         text = re.sub(
-            r'(?<!href="mailto:)(?<!">)\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b(?!</a>)',
-            r'<a href="mailto:\1">\1</a>',
+            r'<[^>]+>|([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})',
+            lambda m: f'<a href="mailto:{m.group(1)}">{m.group(1)}</a>' if m.group(1) else m.group(0),
             text,
         )
         # Strip leading/trailing <br/>
