@@ -675,20 +675,21 @@ def _load_royalty_splits() -> dict[str, tuple[float, float]]:
 
 
 def _parse_split_string(raw: str) -> tuple[float, float]:
-    """Parse royalty split strings:
-    - '0%' or '0% — labor of love' -> (0.0, 1.0)
-    - '50/50 Amazon' -> (0.5, 0.5)
+    """Parse royalty split strings into (author_pct, publisher_pct).
+    The standalone % pattern is the publisher's commission:
+    - '0% — labor of love' -> author keeps all -> (1.0, 0.0)
+    - '50/50 Amazon' -> equal split -> (0.5, 0.5)
     - '60/40 author/publisher' -> (0.6, 0.4)
     """
     raw = raw.strip().lower()
 
-    # "0%" pattern
+    # "0%" pattern — publisher's commission percentage
     match = re.match(r"^(\d+)%", raw)
     if match:
-        pct = int(match.group(1)) / 100.0
-        return (pct, 1.0 - pct)
+        publisher_pct = int(match.group(1)) / 100.0
+        return (1.0 - publisher_pct, publisher_pct)
 
-    # "50/50" or "60/40" pattern
+    # "50/50" or "60/40" pattern — author/publisher
     match = re.match(r"(\d+)\s*/\s*(\d+)", raw)
     if match:
         a, b = int(match.group(1)), int(match.group(2))
@@ -701,7 +702,7 @@ def _parse_split_string(raw: str) -> tuple[float, float]:
 
 def _resolve_split(author_name: str, splits_config: dict) -> tuple[float, float]:
     """Look up the royalty split for an author. Unmatched authors are
-    assumed to be Maya's own books (author keeps 100%)."""
+    assumed to be Maya's own books (publisher keeps 100%)."""
     name_lower = author_name.lower()
     if name_lower in splits_config:
         return splits_config[name_lower]
@@ -709,5 +710,5 @@ def _resolve_split(author_name: str, splits_config: dict) -> tuple[float, float]
     for config_name, split in splits_config.items():
         if config_name in name_lower or name_lower in config_name:
             return split
-    # Default: Maya's own books
-    return (1.0, 0.0)
+    # Default: Maya's own books — she is the publisher, keeps all
+    return (0.0, 1.0)
