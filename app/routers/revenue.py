@@ -365,26 +365,31 @@ async def ynab_refresh(
             and t.get("date", "") <= end
         ]
 
-        # Aggregate milliunits per category
-        by_category: dict[str, int] = {}
+        # Aggregate milliunits per category, tracking inflows/outflows separately
+        by_category: dict[str, dict[str, int]] = {}
         for t in filtered:
             cat = cat_id_to_name.get(t.get("category_id", ""), t.get("category_name", "Uncategorized"))
-            by_category[cat] = by_category.get(cat, 0) + t.get("amount", 0)
+            if cat not in by_category:
+                by_category[cat] = {"inflow": 0, "outflow": 0}
+            amt = t.get("amount", 0)
+            if amt >= 0:
+                by_category[cat]["inflow"] += amt
+            else:
+                by_category[cat]["outflow"] += amt
 
-        # Split income (positive) vs expenses (negative), convert to dollars
+        # Split by category name: 💵-prefixed categories are income, rest are expenses
         income_cats = {}
         expense_cats = {}
-        for cat, milliunits in sorted(by_category.items()):
-            dollars = round(milliunits / 1000, 2)
-            if milliunits >= 0:
-                income_cats[cat] = dollars
+        for cat, totals in sorted(by_category.items()):
+            if cat.lstrip().startswith("\U0001f4b5"):  # 💵
+                income_cats[cat] = totals
             else:
-                expense_cats[cat] = dollars
+                expense_cats[cat] = totals
 
         # Group expenses by emoji prefix (first character if emoji, else "Other")
         expense_groups: dict[str, list[tuple[str, float]]] = {}
-        for cat, dollars in expense_cats.items():
-            # Emoji prefix detection: first char is non-ASCII
+        for cat, totals in expense_cats.items():
+            net_dollars = round((totals["inflow"] + totals["outflow"]) / 1000, 2)
             stripped = cat.lstrip()
             if stripped and ord(stripped[0]) > 127:
                 prefix = stripped[0]
@@ -393,23 +398,29 @@ async def ynab_refresh(
                 prefix = ""
                 display_name = stripped
 
-            # Map common emoji prefixes to group names
             group = _emoji_group_name(prefix) if prefix else "Other"
-            expense_groups.setdefault(group, []).append((display_name, dollars))
+            expense_groups.setdefault(group, []).append((display_name, net_dollars))
 
-        # Strip emoji from income category names too
+        # Income categories with inflow/outflow/total breakdown
         clean_income = []
-        for cat, dollars in income_cats.items():
+        for cat, totals in income_cats.items():
+            inflow = round(totals["inflow"] / 1000, 2)
+            outflow = round(totals["outflow"] / 1000, 2)
+            net = round((totals["inflow"] + totals["outflow"]) / 1000, 2)
             stripped = cat.lstrip()
             if stripped and ord(stripped[0]) > 127:
                 display_name = stripped[1:].strip()
             else:
                 display_name = stripped
-            clean_income.append((display_name, dollars))
+            clean_income.append((display_name, inflow, outflow, net))
 
-        income_total = round(sum(income_cats.values()), 2)
-        expense_total = round(sum(expense_cats.values()), 2)
-        net_total = round(income_total + expense_total, 2)
+        income_total = round(sum(row[1] for row in clean_income), 2)
+        income_expenses = round(sum(row[2] for row in clean_income), 2)
+        income_net = round(sum(row[3] for row in clean_income), 2)
+        expense_total = round(sum(
+            (t["inflow"] + t["outflow"]) / 1000 for t in expense_cats.values()
+        ), 2)
+        net_total = round(income_net + expense_total, 2)
 
         # Compute expense group subtotals
         expense_group_data = {}
@@ -422,6 +433,8 @@ async def ynab_refresh(
 
         ctx["income"] = clean_income
         ctx["income_total"] = income_total
+        ctx["income_expenses"] = income_expenses
+        ctx["income_net"] = income_net
         ctx["expense_groups"] = expense_group_data
         ctx["expense_total"] = expense_total
         ctx["net_total"] = net_total

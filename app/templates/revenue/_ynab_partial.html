@@ -31,18 +31,30 @@
     <h3 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--green);">Income</h3>
     {% if income %}
     <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+      <thead>
+        <tr style="border-bottom: 2px solid var(--border);">
+          <th style="text-align: left; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Category</th>
+          <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Income</th>
+          <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Expense</th>
+          <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Total</th>
+        </tr>
+      </thead>
       <tbody>
-        {% for name, amount in income %}
+        {% for name, inflow, outflow, net in income %}
         <tr style="border-bottom: 1px solid var(--border);">
           <td style="padding: 0.4rem 0.5rem;">{{ name }}</td>
-          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(amount) }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(inflow) }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--red);">{% if outflow %}${{ "%.2f"|format(outflow|abs) }}{% else %}—{% endif %}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); font-weight: 500; color: {% if net >= 0 %}var(--green){% else %}var(--red){% endif %};">${{ "%.2f"|format(net) }}</td>
         </tr>
         {% endfor %}
       </tbody>
       <tfoot>
         <tr style="border-top: 2px solid var(--border); font-weight: 600;">
-          <td style="padding: 0.5rem;">Total</td>
+          <td style="padding: 0.5rem;">Totals</td>
           <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(income_total) }}</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--red);">{% if income_expenses %}${{ "%.2f"|format(income_expenses|abs) }}{% else %}—{% endif %}</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: {% if income_net >= 0 %}var(--green){% else %}var(--red){% endif %};">${{ "%.2f"|format(income_net) }}</td>
         </tr>
       </tfoot>
     </table>
