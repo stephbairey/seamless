@@ -1,0 +1,103 @@
+{% if error %}
+<div class="card" style="border-color: var(--red); background: rgba(239,68,68,0.08);">
+  <p style="color: var(--red); margin: 0;">{{ error }}</p>
+</div>
+{% elif income is defined %}
+
+<!-- Summary bar -->
+<div class="check-summary" style="margin-bottom: 1.5rem;">
+  <div class="stat">
+    <div class="stat-number" style="color: var(--green); font-size: 1.3rem;">${{ "%.2f"|format(income_total) }}</div>
+    <div class="stat-label">Income</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: var(--red); font-size: 1.3rem;">${{ "%.2f"|format(expense_total|abs) }}</div>
+    <div class="stat-label">Expenses</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: {% if net_total >= 0 %}var(--green){% else %}var(--red){% endif %}; font-size: 1.3rem;">${{ "%.2f"|format(net_total) }}</div>
+    <div class="stat-label">Net</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color: var(--text); font-size: 1.3rem;">{{ tx_count }}</div>
+    <div class="stat-label">Transactions</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+  <!-- Income card -->
+  <div class="card">
+    <h3 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--green);">Income</h3>
+    {% if income %}
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+      <tbody>
+        {% for name, amount in income %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 0.4rem 0.5rem;">{{ name }}</td>
+          <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(amount) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+          <td style="padding: 0.5rem;">Total</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(income_total) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+    {% else %}
+    <p style="color: var(--text-dim); font-size: 0.85rem;">No income categories in this period.</p>
+    {% endif %}
+  </div>
+
+  <!-- Expenses card -->
+  <div class="card">
+    <h3 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--red);">Expenses</h3>
+    {% if expense_groups %}
+    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+      <tbody>
+        {% for group, data in expense_groups.items() %}
+        <tr>
+          <td colspan="2" style="padding: 0.5rem 0.5rem 0.25rem; font-weight: 600; font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em;">
+            {{ group }}
+          </td>
+        </tr>
+        {% for name, amount in data.items %}
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 0.3rem 0.5rem 0.3rem 1.25rem;">{{ name }}</td>
+          <td style="padding: 0.3rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--red);">${{ "%.2f"|format(amount|abs) }}</td>
+        </tr>
+        {% endfor %}
+        <tr style="border-bottom: 2px solid var(--border);">
+          <td style="padding: 0.3rem 0.5rem 0.3rem 1.25rem; font-weight: 500; font-size: 0.8rem; color: var(--text-muted);">Subtotal</td>
+          <td style="padding: 0.3rem 0.5rem; text-align: right; font-family: var(--font-mono); font-weight: 500; color: var(--red);">${{ "%.2f"|format(data.subtotal|abs) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+          <td style="padding: 0.5rem;">Total Expenses</td>
+          <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--red);">${{ "%.2f"|format(expense_total|abs) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+    {% else %}
+    <p style="color: var(--text-dim); font-size: 0.85rem;">No expense categories in this period.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Net summary -->
+<div class="card" style="margin-top: 1.5rem; text-align: center;">
+  <span style="font-size: 0.9rem; color: var(--text-dim);">Net:</span>
+  <span style="font-size: 1.2rem; font-weight: 600; font-family: var(--font-mono); color: {% if net_total >= 0 %}var(--green){% else %}var(--red){% endif %}; margin-left: 0.5rem;">
+    ${{ "%.2f"|format(net_total) }}
+  </span>
+  <span style="font-size: 0.8rem; color: var(--text-dim); margin-left: 0.75rem;">
+    ({{ start_date }} to {{ end_date }})
+  </span>
+</div>
+
+{% endif %}

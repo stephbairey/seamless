@@ -9,7 +9,7 @@ from fastapi import APIRouter, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.config import TEMPLATES_DIR
+from app.config import TEMPLATES_DIR, YNAB_BUDGET_ID, YNAB_CATEGORY_GROUP
 from app.models.revenue import ConsignmentEntry, RecurringCost, RevenueEntry
 from app.services.revenue_service import (
     build_summary,
@@ -312,6 +312,146 @@ async def update_consignment(
     ctx = _base_ctx(request, "consignment")
     ctx["entries"] = get_consignment_summary()
     return templates.TemplateResponse("revenue/_consignment_partial.html", ctx)
+
+
+# --- YNAB ---
+
+@router.get("/ynab")
+async def ynab_page(request: Request):
+    ctx = _base_ctx(request, "ynab")
+    ctx["start_date"] = "2025-01-01"
+    ctx["end_date"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return templates.TemplateResponse("revenue/ynab.html", ctx)
+
+
+@router.post("/ynab/refresh")
+async def ynab_refresh(
+    request: Request,
+    start: str = Form("2025-01-01"),
+    end: str = Form(""),
+):
+    ctx = _base_ctx(request, "ynab")
+    if not end:
+        end = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    ctx["start_date"] = start
+    ctx["end_date"] = end
+
+    try:
+        from app.services.ynab_client import ynab_client, YnabAuthError, YnabRateLimitError
+
+        if not ynab_client.is_configured:
+            ctx["error"] = "YNAB API token not configured. Add YNAB_API_TOKEN to secrets.env."
+            return templates.TemplateResponse("revenue/_ynab_partial.html", ctx)
+
+        data = await ynab_client.get_transactions(YNAB_BUDGET_ID, since_date=start)
+        transactions = data.get("data", {}).get("transactions", [])
+
+        # Filter to Lingua Ink category group and date range
+        filtered = [
+            t for t in transactions
+            if t.get("category_group_name") == YNAB_CATEGORY_GROUP
+            and t.get("date", "") <= end
+        ]
+
+        # Aggregate milliunits per category
+        by_category: dict[str, int] = {}
+        for t in filtered:
+            cat = t.get("category_name", "Uncategorized")
+            by_category[cat] = by_category.get(cat, 0) + t.get("amount", 0)
+
+        # Split income (positive) vs expenses (negative), convert to dollars
+        income_cats = {}
+        expense_cats = {}
+        for cat, milliunits in sorted(by_category.items()):
+            dollars = round(milliunits / 1000, 2)
+            if milliunits >= 0:
+                income_cats[cat] = dollars
+            else:
+                expense_cats[cat] = dollars
+
+        # Group expenses by emoji prefix (first character if emoji, else "Other")
+        expense_groups: dict[str, list[tuple[str, float]]] = {}
+        for cat, dollars in expense_cats.items():
+            # Emoji prefix detection: first char is non-ASCII
+            stripped = cat.lstrip()
+            if stripped and ord(stripped[0]) > 127:
+                prefix = stripped[0]
+                display_name = stripped[1:].strip()
+            else:
+                prefix = ""
+                display_name = stripped
+
+            # Map common emoji prefixes to group names
+            group = _emoji_group_name(prefix) if prefix else "Other"
+            expense_groups.setdefault(group, []).append((display_name, dollars))
+
+        # Strip emoji from income category names too
+        clean_income = []
+        for cat, dollars in income_cats.items():
+            stripped = cat.lstrip()
+            if stripped and ord(stripped[0]) > 127:
+                display_name = stripped[1:].strip()
+            else:
+                display_name = stripped
+            clean_income.append((display_name, dollars))
+
+        income_total = round(sum(income_cats.values()), 2)
+        expense_total = round(sum(expense_cats.values()), 2)
+        net_total = round(income_total + expense_total, 2)
+
+        # Compute expense group subtotals
+        expense_group_data = {}
+        for group, items in sorted(expense_groups.items()):
+            subtotal = round(sum(d for _, d in items), 2)
+            expense_group_data[group] = {
+                "items": sorted(items, key=lambda x: x[1]),
+                "subtotal": subtotal,
+            }
+
+        ctx["income"] = clean_income
+        ctx["income_total"] = income_total
+        ctx["expense_groups"] = expense_group_data
+        ctx["expense_total"] = expense_total
+        ctx["net_total"] = net_total
+        ctx["tx_count"] = len(filtered)
+
+    except YnabAuthError:
+        ctx["error"] = "YNAB authentication failed. Check your API token."
+    except YnabRateLimitError:
+        ctx["error"] = "YNAB rate limit reached. Try again in a minute."
+    except Exception as e:
+        logger.exception("YNAB fetch failed")
+        ctx["error"] = f"Failed to fetch YNAB data: {e}"
+
+    return templates.TemplateResponse("revenue/_ynab_partial.html", ctx)
+
+
+def _emoji_group_name(emoji: str) -> str:
+    """Map emoji prefixes to human-readable group names."""
+    mapping = {
+        "\U0001f4cb": "Administrative",     # clipboard
+        "\U0001f4c4": "Administrative",     # page facing up
+        "\U0001f4dd": "Administrative",     # memo
+        "\U0001f4e3": "Marketing",          # megaphone
+        "\U0001f4e2": "Marketing",          # loudspeaker
+        "\U0001f4f0": "Marketing",          # newspaper
+        "\U0001f528": "Operational",        # hammer
+        "\U0001f527": "Operational",        # wrench
+        "\U0001f6e0": "Operational",        # hammer and wrench
+        "\u2699": "Operational",            # gear
+        "\U0001f4da": "Publishing",         # books
+        "\U0001f4d6": "Publishing",         # open book
+        "\U0001f4d3": "Publishing",         # notebook
+        "\U0001f58a": "Publishing",         # pen
+        "\U0001f58d": "Publishing",         # crayon
+        "\U0001f4b0": "Income",             # money bag
+        "\U0001f4b5": "Income",             # dollar
+        "\U0001f4b3": "Payments",           # credit card
+        "\U0001f3e2": "Business",           # office building
+        "\U0001f4bb": "Technology",         # laptop
+        "\U0001f310": "Technology",         # globe
+    }
+    return mapping.get(emoji, "Other")
 
 
 # --- ClickUp Time Tracking ---

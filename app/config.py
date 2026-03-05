@@ -42,3 +42,9 @@ NEWSLETTER_FILE = DATA_DIR / "newsletter-items.json"
 
 # Revenue
 REVENUE_FILE = DATA_DIR / "revenue.json"
+
+# YNAB
+YNAB_API_TOKEN = os.environ.get("YNAB_API_TOKEN", "")
+YNAB_API_BASE = "https://api.ynab.com/v1"
+YNAB_BUDGET_ID = "9ce0d362-1d33-4837-8634-2820dbea5bf4"
+YNAB_CATEGORY_GROUP = "Lingua Ink"
