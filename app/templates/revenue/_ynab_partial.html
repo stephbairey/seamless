@@ -63,7 +63,7 @@
             {{ group }}
           </td>
         </tr>
-        {% for name, amount in data.items %}
+        {% for name, amount in data["items"] %}
         <tr style="border-bottom: 1px solid var(--border);">
           <td style="padding: 0.3rem 0.5rem 0.3rem 1.25rem;">{{ name }}</td>
           <td style="padding: 0.3rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--red);">${{ "%.2f"|format(amount|abs) }}</td>

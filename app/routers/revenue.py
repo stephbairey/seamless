@@ -343,20 +343,32 @@ async def ynab_refresh(
             ctx["error"] = "YNAB API token not configured. Add YNAB_API_TOKEN to secrets.env."
             return templates.TemplateResponse("revenue/_ynab_partial.html", ctx)
 
+        # Fetch categories to find IDs belonging to "Lingua Ink" group
+        cat_data = await ynab_client.get_categories(YNAB_BUDGET_ID)
+        cat_groups = cat_data.get("data", {}).get("category_groups", [])
+        li_category_ids: set[str] = set()
+        cat_id_to_name: dict[str, str] = {}
+        for group in cat_groups:
+            if group.get("name") == YNAB_CATEGORY_GROUP:
+                for cat in group.get("categories", []):
+                    li_category_ids.add(cat["id"])
+                    cat_id_to_name[cat["id"]] = cat.get("name", "Uncategorized")
+                break
+
         data = await ynab_client.get_transactions(YNAB_BUDGET_ID, since_date=start)
         transactions = data.get("data", {}).get("transactions", [])
 
-        # Filter to Lingua Ink category group and date range
+        # Filter to Lingua Ink categories and date range
         filtered = [
             t for t in transactions
-            if t.get("category_group_name") == YNAB_CATEGORY_GROUP
+            if t.get("category_id") in li_category_ids
             and t.get("date", "") <= end
         ]
 
         # Aggregate milliunits per category
         by_category: dict[str, int] = {}
         for t in filtered:
-            cat = t.get("category_name", "Uncategorized")
+            cat = cat_id_to_name.get(t.get("category_id", ""), t.get("category_name", "Uncategorized"))
             by_category[cat] = by_category.get(cat, 0) + t.get("amount", 0)
 
         # Split income (positive) vs expenses (negative), convert to dollars
