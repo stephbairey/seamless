@@ -6,4 +6,7 @@ Thumbs.db
 .vscode/
 secrets.env
 data/clickup-task-cache.json
+data/newsletter-items.json
+data/revenue.json
+data/sort-history.json
 __pycache__/
