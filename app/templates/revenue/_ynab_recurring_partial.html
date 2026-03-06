@@ -1,0 +1,53 @@
+{% if recurring_error %}
+<div class="card" style="border-color: var(--red); background: rgba(239,68,68,0.08);">
+  <p style="color: var(--red); margin: 0;">{{ recurring_error }}</p>
+</div>
+{% elif recurring is defined %}
+
+{% if recurring %}
+<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+  <h3 style="font-size: 1rem; margin: 0; color: var(--text);">Recurring Monthly Fees</h3>
+  <span style="font-size: 0.95rem; font-weight: 600; font-family: var(--font-mono); color: var(--red);">
+    ${{ "%.2f"|format(recurring_total) }}/mo
+  </span>
+</div>
+<p style="font-size: 0.75rem; color: var(--text-dim); margin: 0 0 0.75rem;">
+  Based on {{ recurring_months }} months of YNAB data. Showing payees appearing in 2+ months.
+</p>
+
+<div style="overflow-x: auto;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+    <thead>
+      <tr style="border-bottom: 2px solid var(--border);">
+        <th style="text-align: left; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Payee</th>
+        <th style="text-align: left; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Category</th>
+        <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Avg/mo</th>
+        <th style="text-align: center; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Months</th>
+        <th style="text-align: right; padding: 0.4rem 0.5rem; color: var(--text-dim); font-weight: 500;">Last Charge</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in recurring %}
+      <tr style="border-bottom: 1px solid var(--border);">
+        <td style="padding: 0.4rem 0.5rem; font-weight: 500;">{{ r.payee }}</td>
+        <td style="padding: 0.4rem 0.5rem; color: var(--text-muted); font-size: 0.8rem;">{{ r.category }}</td>
+        <td style="padding: 0.4rem 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--red);">${{ "%.2f"|format(r.monthly_avg) }}</td>
+        <td style="padding: 0.4rem 0.5rem; text-align: center; font-family: var(--font-mono);">{{ r.months_seen }}/{{ recurring_months }}</td>
+        <td style="padding: 0.4rem 0.5rem; text-align: right; font-size: 0.8rem; color: var(--text-muted);">{{ r.last_date }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+        <td style="padding: 0.5rem;" colspan="2">Monthly Total</td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--red);">${{ "%.2f"|format(recurring_total) }}</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+{% else %}
+<p style="color: var(--text-dim); font-size: 0.85rem;">No recurring fees detected in the last {{ recurring_months }} months.</p>
+{% endif %}
+
+{% endif %}
