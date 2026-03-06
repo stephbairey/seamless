@@ -1,95 +1,118 @@
-<!-- Period label -->
-<div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
-  {{ summary.period_label }}
+<!-- YNAB summary -->
+{% if ynab_error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 0.75rem 1rem; margin-bottom: 1rem;">
+  <div style="color: var(--red); font-weight: 500;">YNAB: {{ ynab_error }}</div>
 </div>
-
-<!-- Key metrics -->
+{% else %}
 <div class="check-summary" style="margin-bottom: 1.5rem;">
   <div class="stat">
-    <div class="stat-number" style="color: var(--text); font-size: 1.4rem;">${{ "%.0f"|format(summary.gross) }}</div>
-    <div class="stat-label">Gross</div>
+    <div class="stat-number" style="color: var(--green); font-size: 1.4rem;">${{ "%.2f"|format(ynab_income) }}</div>
+    <div class="stat-label">Income</div>
   </div>
   <div class="stat">
-    <div class="stat-number" style="color: var(--accent); font-size: 1.4rem;">${{ "%.0f"|format(summary.consulting) }}</div>
-    <div class="stat-label">Consulting</div>
+    <div class="stat-number" style="color: var(--red); font-size: 1.4rem;">${{ "%.2f"|format(ynab_expenses) }}</div>
+    <div class="stat-label">Expenses</div>
   </div>
   <div class="stat">
-    <div class="stat-number" style="color: var(--green); font-size: 1.4rem;">${{ "%.0f"|format(summary.publishing) }}</div>
-    <div class="stat-label">Publishing</div>
-  </div>
-  <div class="stat">
-    <div class="stat-number" style="color: #c084fc; font-size: 1.4rem;">${{ "%.0f"|format(summary.products) }}</div>
-    <div class="stat-label">Products</div>
-  </div>
-  <div class="stat">
-    <div class="stat-number" style="color: {% if summary.net >= 0 %}var(--green){% else %}var(--red){% endif %}; font-size: 1.4rem;">${{ "%.0f"|format(summary.net) }}</div>
+    <div class="stat-number" style="color: {% if ynab_net >= 0 %}var(--green){% else %}var(--red){% endif %}; font-size: 1.4rem;">${{ "%.2f"|format(ynab_net) }}</div>
     <div class="stat-label">Net</div>
   </div>
-</div>
-
-<!-- Consulting goal -->
-{% if summary.goal > 0 %}
-<div class="card" style="padding: 0.75rem 1rem; margin-bottom: 1rem;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
-    <span style="font-size: 0.85rem; font-weight: 500;">Consulting Goal</span>
-    <span style="font-size: 0.85rem; font-family: var(--font-mono);
-      {% if summary.goal_pct >= 100 %}color: var(--green);
-      {% elif summary.goal_pct >= 75 %}color: var(--text);
-      {% elif summary.goal_pct >= 50 %}color: var(--yellow);
-      {% else %}color: var(--red);{% endif %}">
-      {{ summary.goal_pct }}% (${{ "%.0f"|format(summary.consulting) }} / ${{ "%.0f"|format(summary.goal) }})
-    </span>
-  </div>
-  <div class="progress-bar">
-    <div class="progress-bar-fill" style="width: {{ [summary.goal_pct, 100]|min }}%;
-      {% if summary.goal_pct >= 100 %}background: var(--green);
-      {% elif summary.goal_pct >= 75 %}background: var(--accent);
-      {% elif summary.goal_pct >= 50 %}background: var(--yellow);
-      {% else %}background: var(--red);{% endif %}">
-    </div>
+  <div class="stat">
+    <div class="stat-number" style="color: var(--text); font-size: 1.4rem;">{{ ynab_tx_count }}</div>
+    <div class="stat-label">Transactions</div>
   </div>
 </div>
 {% endif %}
 
-<!-- By client breakdown -->
-{% if summary.by_client %}
-<div class="card" style="margin-bottom: 1rem;">
-  <h3 style="font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-muted);">By Client</h3>
-  {% set max_client = summary.by_client.values()|max if summary.by_client.values()|list else 1 %}
-  {% for client, amount in summary.by_client.items() %}
-  <div style="margin-bottom: 0.5rem;">
-    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
-      <span>{{ client }}</span>
-      <span style="font-family: var(--font-mono);">${{ "%.2f"|format(amount) }}</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-bar-fill" style="width: {{ (amount / max_client * 100) if max_client else 0 }}%; background: var(--accent);"></div>
-    </div>
-  </div>
-  {% endfor %}
+<!-- ClickUp time by client -->
+{% if clickup_error %}
+<div class="card" style="border-left: 3px solid var(--red); padding: 0.75rem 1rem;">
+  <div style="color: var(--red); font-weight: 500;">ClickUp: {{ clickup_error }}</div>
+</div>
+{% elif time_entries %}
+<h3 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-muted);">
+  ClickUp Time
+  {% if task_cache_synced %}
+  <span style="font-size: 0.7rem; font-weight: 400; color: var(--text-dim); margin-left: 0.5rem;">
+    Cache: {{ task_cache_synced[:16] | replace("T", " ") }} UTC
+  </span>
+  {% endif %}
+</h3>
+<div style="overflow-x: auto;">
+  <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+    <thead>
+      <tr style="border-bottom: 2px solid var(--border);">
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Project</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Hours</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Rate</th>
+        <th style="text-align: right; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Amount</th>
+        <th style="text-align: left; padding: 0.5rem; color: var(--text-dim); font-weight: 500;">Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set ns = namespace(total_hours=0, total_amount=0) %}
+      {% for client, data in time_entries.items() %}
+      {% set ns.total_hours = ns.total_hours + data.hours %}
+      {% set ns.total_amount = ns.total_amount + data.amount %}
+      <tr style="border-bottom: 1px solid var(--border);">
+        <td style="padding: 0.5rem; font-weight: 500;">{{ client }}</td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ "%.2f"|format(data.hours) }}</td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">
+          {% if data.rate %}${{ "%.2f"|format(data.rate) }}/hr{% else %}<span style="color: var(--text-dim);">N/A</span>{% endif %}
+        </td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">
+          {% if data.rate %}${{ "%.2f"|format(data.amount) }}{% else %}<span style="color: var(--text-dim);">$0.00</span>{% endif %}
+        </td>
+        <td style="padding: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+          {% if data.retainer %}
+            <span class="tag" style="background: var(--accent-dim); color: var(--accent); font-size: 0.7rem;">
+              Retainer: ${{ "%.0f"|format(data.retainer) }}
+            </span>
+            {% set remaining = data.retainer - data.amount %}
+            {% if remaining < 1000 %}
+              <span class="tag budget-warning" style="font-size: 0.7rem;">
+                ${{ "%.0f"|format(remaining) }} left
+              </span>
+            {% endif %}
+          {% endif %}
+          {% if data.ceiling %}
+            <span class="tag" style="background: rgba(192,132,252,0.12); color: #c084fc; font-size: 0.7rem;">
+              Ceiling: ${{ "%.0f"|format(data.ceiling) }}
+            </span>
+            {% if data.amount > data.ceiling * 0.8 %}
+              <span class="tag budget-danger" style="font-size: 0.7rem;">
+                {{ "%.0f"|format(data.amount / data.ceiling * 100) }}% of ceiling
+              </span>
+            {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% if data.tasks %}
+      <tr>
+        <td colspan="5" style="padding: 0.25rem 0.5rem 0.5rem 1.5rem;">
+          <div style="font-size: 0.75rem; color: var(--text-dim);">
+            {% for task in data.tasks %}
+              {{ task.name }} ({{ "%.2f"|format(task.hours) }}h){% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr style="border-top: 2px solid var(--border); font-weight: 600;">
+        <td style="padding: 0.5rem;">Total</td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono);">{{ "%.2f"|format(ns.total_hours) }}</td>
+        <td style="padding: 0.5rem;"></td>
+        <td style="padding: 0.5rem; text-align: right; font-family: var(--font-mono); color: var(--green);">${{ "%.2f"|format(ns.total_amount) }}</td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+{% elif not clickup_error %}
+<div style="font-size: 0.85rem; color: var(--text-dim); padding: 0.5rem 0;">
+  No ClickUp time entries found for this period.
 </div>
 {% endif %}
-
-<!-- By month breakdown -->
-{% if summary.by_month %}
-<div class="card" style="margin-bottom: 1rem;">
-  <h3 style="font-size: 0.9rem; margin-bottom: 0.75rem; color: var(--text-muted);">By Month</h3>
-  {% set max_month = summary.by_month.values()|max if summary.by_month.values()|list else 1 %}
-  {% for month, amount in summary.by_month|dictsort %}
-  <div style="margin-bottom: 0.5rem;">
-    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
-      <span style="font-family: var(--font-mono);">{{ month }}</span>
-      <span style="font-family: var(--font-mono);">${{ "%.2f"|format(amount) }}</span>
-    </div>
-    <div class="progress-bar">
-      <div class="progress-bar-fill" style="width: {{ (amount / max_month * 100) if max_month else 0 }}%; background: var(--green);"></div>
-    </div>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-
-<!-- Monthly costs summary -->
-<div style="font-size: 0.8rem; color: var(--text-dim); padding: 0.5rem 0;">
-  Recurring monthly costs: ${{ "%.2f"|format(summary.recurring_monthly) }}/mo
-</div>

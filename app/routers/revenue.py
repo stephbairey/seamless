@@ -1,15 +1,18 @@
 """Revenue workflow endpoints — KDP import, royalty reports, consignment,
 dashboard, manual entries, ClickUp time tracking."""
 
+import asyncio
+import fcntl
+import json
 import logging
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.config import TEMPLATES_DIR, YNAB_BUDGET_ID, YNAB_CATEGORY_GROUP
+from app.config import CLICKUP_TASK_CACHE, TEMPLATES_DIR, YNAB_BUDGET_ID, YNAB_CATEGORY_GROUP
 from app.models.revenue import ConsignmentEntry, RecurringCost, RevenueEntry
 from app.services.revenue_service import (
     build_summary,
@@ -47,19 +50,341 @@ async def revenue_home(request: Request):
 @router.get("/dashboard")
 async def dashboard_page(request: Request):
     ctx = _base_ctx(request, "dashboard")
-    ctx["summary"] = build_summary("month")
-    ctx["rates"] = get_client_rates()
-    ctx["costs"] = revenue_store.get_recurring_costs()
+    today = datetime.now(timezone.utc)
+    ctx["start_date"] = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    ctx["end_date"] = today.strftime("%Y-%m-%d")
     return templates.TemplateResponse("revenue/dashboard.html", ctx)
 
 
 @router.post("/dashboard/refresh")
-async def dashboard_refresh(request: Request, period: str = Form("month")):
+async def dashboard_refresh(
+    request: Request,
+    start: str = Form(""),
+    end: str = Form(""),
+):
     ctx = _base_ctx(request, "dashboard")
-    ctx["summary"] = build_summary(period)
-    ctx["rates"] = get_client_rates()
-    ctx["costs"] = revenue_store.get_recurring_costs()
+    today = datetime.now(timezone.utc)
+    if not start:
+        start = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    if not end:
+        end = today.strftime("%Y-%m-%d")
+
+    # Fetch YNAB and ClickUp concurrently
+    ynab_coro = _fetch_ynab_summary(start, end)
+    clickup_coro = _fetch_clickup_time(start, end)
+    ynab_result, clickup_result = await asyncio.gather(
+        ynab_coro, clickup_coro, return_exceptions=True,
+    )
+
+    # Unpack YNAB
+    if isinstance(ynab_result, Exception):
+        logger.exception("YNAB fetch failed in dashboard", exc_info=ynab_result)
+        ctx["ynab_error"] = f"Failed to fetch YNAB data: {ynab_result}"
+    elif isinstance(ynab_result, dict) and "error" in ynab_result:
+        ctx["ynab_error"] = ynab_result["error"]
+    else:
+        ctx.update(ynab_result)
+
+    # Unpack ClickUp
+    if isinstance(clickup_result, Exception):
+        logger.exception("ClickUp fetch failed in dashboard", exc_info=clickup_result)
+        ctx["clickup_error"] = f"Failed to fetch time entries: {clickup_result}"
+    elif isinstance(clickup_result, dict) and "error" in clickup_result:
+        ctx["clickup_error"] = clickup_result["error"]
+    else:
+        ctx.update(clickup_result)
+
+    # Always pass cache timestamp for display (even if ClickUp fetch failed)
+    if "task_cache_synced" not in ctx:
+        cache = _load_task_cache()
+        ctx["task_cache_synced"] = cache.get("last_synced")
+
     return templates.TemplateResponse("revenue/_dashboard_partial.html", ctx)
+
+
+@router.post("/dashboard/sync-tasks")
+async def dashboard_sync_tasks(request: Request):
+    """Full sync: bulk-fetch all tasks from ClickUp, rebuild the cache entirely."""
+    from app.services.clickup_client import clickup_client
+
+    ctx = _base_ctx(request, "dashboard")
+
+    if not clickup_client.is_configured:
+        ctx["sync_error"] = "ClickUp API token not configured."
+        return templates.TemplateResponse("revenue/_sync_result.html", ctx)
+
+    try:
+        project_rates = _load_project_rates()
+        await _build_task_project_map(clickup_client, project_rates)
+        cache = _load_task_cache()
+        ctx["sync_count"] = len(cache.get("tasks", {}))
+        ctx["sync_time"] = cache.get("last_synced", "")
+    except Exception as e:
+        logger.exception("Task sync failed")
+        ctx["sync_error"] = f"Sync failed: {e}"
+
+    return templates.TemplateResponse("revenue/_sync_result.html", ctx)
+
+
+async def _fetch_ynab_summary(start: str, end: str) -> dict:
+    """Fetch YNAB transactions and return headline numbers."""
+    from app.services.ynab_client import ynab_client, YnabAuthError, YnabRateLimitError
+
+    if not ynab_client.is_configured:
+        return {"error": "YNAB API token not configured. Add YNAB_API_TOKEN to secrets.env."}
+
+    try:
+        cat_data = await ynab_client.get_categories(YNAB_BUDGET_ID)
+        cat_groups = cat_data.get("data", {}).get("category_groups", [])
+        li_category_ids: set[str] = set()
+        cat_id_to_name: dict[str, str] = {}
+        for group in cat_groups:
+            if group.get("name") == YNAB_CATEGORY_GROUP:
+                for cat in group.get("categories", []):
+                    li_category_ids.add(cat["id"])
+                    cat_id_to_name[cat["id"]] = cat.get("name", "Uncategorized")
+                break
+
+        data = await ynab_client.get_transactions(YNAB_BUDGET_ID, since_date=start)
+        transactions = data.get("data", {}).get("transactions", [])
+
+        filtered = [
+            t for t in transactions
+            if t.get("category_id") in li_category_ids
+            and t.get("date", "") <= end
+        ]
+
+        # Aggregate: 💵-prefixed = income, rest = expenses
+        income_milliunits = 0
+        expense_milliunits = 0
+        for t in filtered:
+            cat_name = cat_id_to_name.get(t.get("category_id", ""), "")
+            amt = t.get("amount", 0)
+            if cat_name.lstrip().startswith("\U0001f4b5"):
+                income_milliunits += amt
+            else:
+                expense_milliunits += amt
+
+        income_net = round(income_milliunits / 1000, 2)
+        expense_total = round(abs(expense_milliunits) / 1000, 2)
+        net_total = round((income_milliunits + expense_milliunits) / 1000, 2)
+
+        return {
+            "ynab_income": income_net,
+            "ynab_expenses": expense_total,
+            "ynab_net": net_total,
+            "ynab_tx_count": len(filtered),
+        }
+    except YnabAuthError:
+        return {"error": "YNAB authentication failed. Check your API token."}
+    except YnabRateLimitError:
+        return {"error": "YNAB rate limit reached. Try again in a minute."}
+
+
+def _load_task_cache() -> dict:
+    """Read the task→project cache from disk."""
+    if not CLICKUP_TASK_CACHE.exists():
+        return {"tasks": {}, "last_synced": None}
+    try:
+        with open(CLICKUP_TASK_CACHE) as f:
+            fcntl.flock(f, fcntl.LOCK_SH)
+            data = json.load(f)
+            fcntl.flock(f, fcntl.LOCK_UN)
+        return data
+    except (json.JSONDecodeError, OSError) as e:
+        logger.error("Failed to read task cache: %s", e)
+        return {"tasks": {}, "last_synced": None}
+
+
+def _save_task_cache(cache: dict):
+    """Write the task→project cache to disk."""
+    CLICKUP_TASK_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    with open(CLICKUP_TASK_CACHE, "w") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        json.dump(cache, f, indent=2)
+        fcntl.flock(f, fcntl.LOCK_UN)
+
+
+async def _fetch_clickup_time(start: str, end: str) -> dict:
+    """Fetch ClickUp time entries and return by-project breakdown.
+    Uses a local task cache to avoid bulk-fetching all tasks on every refresh."""
+    from app.services.clickup_client import clickup_client
+
+    if not clickup_client.is_configured:
+        return {"error": "ClickUp API token not configured."}
+
+    time_data = await clickup_client.get_time_entries(start, end)
+    entries = time_data.get("data", [])
+
+    project_rates = _load_project_rates()
+    cache = _load_task_cache()
+    cached_tasks = cache.get("tasks", {})
+
+    # Collect task IDs not in cache
+    uncached_ids = set()
+    for entry in entries:
+        task = entry.get("task", {}) or {}
+        tid = task.get("id")
+        if tid and tid not in cached_tasks:
+            uncached_ids.add(tid)
+
+    # Fetch uncached tasks individually (sequential to avoid rate limits)
+    if uncached_ids:
+        for tid in uncached_ids:
+            try:
+                task_data = await clickup_client.get_task(tid)
+                project_name, _rate_info = _resolve_project(task_data, project_rates)
+                cached_tasks[tid] = {
+                    "project": project_name,
+                    "task_name": task_data.get("name", "Unknown"),
+                }
+            except Exception as e:
+                logger.warning("Failed to fetch task %s: %s", tid, e)
+        cache["tasks"] = cached_tasks
+        _save_task_cache(cache)
+
+    by_project: dict[str, dict] = {}
+    for entry in entries:
+        task = entry.get("task", {}) or {}
+        task_name = task.get("name", "Unknown")
+        tid = task.get("id")
+
+        if tid and tid in cached_tasks:
+            project_name = cached_tasks[tid]["project"]
+            task_name = cached_tasks[tid].get("task_name", task_name)
+        else:
+            project_name = "Unassigned"
+
+        # Look up rate from project_rates by name
+        rate_info = _NO_RATE
+        for info in project_rates.get("by_id", {}).values():
+            if info["name"] == project_name:
+                rate_info = info
+                break
+
+        duration_ms = int(entry.get("duration", 0))
+        hours = round(duration_ms / 3600000, 2)
+
+        if project_name not in by_project:
+            by_project[project_name] = {
+                "hours": 0,
+                "rate": rate_info.get("rate", 0),
+                "amount": 0,
+                "retainer": rate_info.get("retainer", 0),
+                "ceiling": rate_info.get("ceiling", 0),
+                "tasks": [],
+            }
+        by_project[project_name]["hours"] += hours
+        by_project[project_name]["amount"] = round(
+            by_project[project_name]["hours"] * by_project[project_name]["rate"], 2
+        )
+        by_project[project_name]["tasks"].append({
+            "name": task_name,
+            "hours": hours,
+        })
+
+    return {
+        "time_entries": by_project,
+        "task_cache_synced": cache.get("last_synced"),
+    }
+
+
+def _load_project_rates() -> dict[str, dict]:
+    """Load Project dropdown options from clickup-fields.yaml.
+    Returns {"by_id": {uuid: info}, "by_orderindex": {int: info}}."""
+    import yaml
+    from app.config import DATA_DIR
+
+    path = DATA_DIR / "clickup-fields.yaml"
+    if not path.exists():
+        return {"by_id": {}, "by_orderindex": {}}
+    with open(path) as f:
+        data = yaml.safe_load(f) or {}
+
+    for field in data.get("custom_fields", []):
+        if field.get("name") == "Project":
+            by_id = {}
+            by_orderindex = {}
+            for opt in field.get("options", []):
+                info = {
+                    "name": opt["name"],
+                    "rate": opt.get("rate", 0),
+                    "ceiling": opt.get("ceiling", 0),
+                    "retainer": opt.get("retainer", 0),
+                }
+                by_id[opt["id"]] = info
+                by_orderindex[opt.get("orderindex", -1)] = info
+            return {"by_id": by_id, "by_orderindex": by_orderindex}
+    return {"by_id": {}, "by_orderindex": {}}
+
+
+_NO_RATE = {"rate": 0, "ceiling": 0, "retainer": 0}
+
+
+def _resolve_project(task: dict, project_rates: dict) -> tuple[str, dict]:
+    """Resolve a task's Project dropdown to (project_name, rate_info).
+    ClickUp may return value as option UUID (str) or orderindex (int)."""
+    by_id = project_rates.get("by_id", {})
+    by_orderindex = project_rates.get("by_orderindex", {})
+
+    for field in task.get("custom_fields", []):
+        if field.get("name", "").lower() == "project":
+            selected = field.get("value")
+            if selected is None:
+                break
+            # Try as option UUID
+            if isinstance(selected, str) and selected in by_id:
+                info = by_id[selected]
+                return info["name"], info
+            # Try as orderindex (int or stringified int)
+            try:
+                idx = int(selected)
+            except (ValueError, TypeError):
+                idx = None
+            if idx is not None and idx in by_orderindex:
+                info = by_orderindex[idx]
+                return info["name"], info
+            # Fallback: check type_config.options from the API response itself
+            for opt in field.get("type_config", {}).get("options", []):
+                if opt.get("orderindex") == selected or opt.get("id") == selected:
+                    return opt.get("name", "Unknown"), _NO_RATE
+            break
+    return "Unassigned", _NO_RATE
+
+
+async def _build_task_project_map(clickup_client, project_rates: dict) -> dict[str, tuple[str, dict]]:
+    """Fetch all tasks from the master list and build task_id → (project, rates).
+    Uses paginated get_tasks (100/page) instead of individual get_task calls.
+    Saves results to the task cache for future use."""
+    result: dict[str, tuple[str, dict]] = {}
+    cache_tasks: dict[str, dict] = {}
+    page = 0
+    while True:
+        data = await clickup_client.get_tasks(page=page, include_closed=True)
+        tasks = data.get("tasks", [])
+        if not tasks:
+            break
+        for task in tasks:
+            tid = task.get("id")
+            if tid:
+                project_name, rate_info = _resolve_project(task, project_rates)
+                result[tid] = (project_name, rate_info)
+                cache_tasks[tid] = {
+                    "project": project_name,
+                    "task_name": task.get("name", "Unknown"),
+                }
+        if len(tasks) < 100:
+            break
+        page += 1
+
+    # Save to cache
+    cache = {
+        "tasks": cache_tasks,
+        "last_synced": datetime.now(timezone.utc).isoformat(),
+    }
+    _save_task_cache(cache)
+
+    return result
 
 
 @router.post("/entry/add")
@@ -449,6 +774,115 @@ async def ynab_refresh(
         ctx["error"] = f"Failed to fetch YNAB data: {e}"
 
     return templates.TemplateResponse("revenue/_ynab_partial.html", ctx)
+
+
+@router.post("/ynab/recurring")
+async def ynab_recurring(request: Request):
+    """Detect recurring monthly fees from YNAB expense transactions."""
+    ctx = _base_ctx(request, "ynab")
+
+    try:
+        from app.services.ynab_client import ynab_client, YnabAuthError, YnabRateLimitError
+
+        if not ynab_client.is_configured:
+            ctx["recurring_error"] = "YNAB API token not configured."
+            return templates.TemplateResponse("revenue/_ynab_recurring_partial.html", ctx)
+
+        # Fetch 6 months of data to detect patterns
+        lookback = datetime.now(timezone.utc) - timedelta(days=180)
+        start = lookback.strftime("%Y-%m-%d")
+
+        cat_data = await ynab_client.get_categories(YNAB_BUDGET_ID)
+        cat_groups = cat_data.get("data", {}).get("category_groups", [])
+        li_category_ids: set[str] = set()
+        cat_id_to_name: dict[str, str] = {}
+        for group in cat_groups:
+            if group.get("name") == YNAB_CATEGORY_GROUP:
+                for cat in group.get("categories", []):
+                    li_category_ids.add(cat["id"])
+                    cat_id_to_name[cat["id"]] = cat.get("name", "Uncategorized")
+                break
+
+        data = await ynab_client.get_transactions(YNAB_BUDGET_ID, since_date=start)
+        transactions = data.get("data", {}).get("transactions", [])
+
+        # Filter to LI expense categories (not income/💵-prefixed)
+        expense_txs = []
+        for t in transactions:
+            cid = t.get("category_id")
+            if cid not in li_category_ids:
+                continue
+            cat_name = cat_id_to_name.get(cid, "")
+            if cat_name.lstrip().startswith("\U0001f4b5"):
+                continue  # skip income categories
+            amt = t.get("amount", 0)
+            if amt >= 0:
+                continue  # skip inflows/refunds
+            expense_txs.append(t)
+
+        # Group by payee → {payee: {months: set, total: int, count: int, category: str, last_date: str}}
+        by_payee: dict[str, dict] = {}
+        for t in expense_txs:
+            payee = t.get("payee_name", "Unknown") or "Unknown"
+            date_str = t.get("date", "")
+            month_key = date_str[:7]  # YYYY-MM
+            cat_name = cat_id_to_name.get(t.get("category_id", ""), "")
+
+            if payee not in by_payee:
+                by_payee[payee] = {
+                    "months": set(),
+                    "total_milliunits": 0,
+                    "count": 0,
+                    "category": cat_name,
+                    "last_date": "",
+                }
+            by_payee[payee]["months"].add(month_key)
+            by_payee[payee]["total_milliunits"] += t.get("amount", 0)
+            by_payee[payee]["count"] += 1
+            if date_str > by_payee[payee]["last_date"]:
+                by_payee[payee]["last_date"] = date_str
+
+        # Filter to recurring (2+ distinct months) and compute monthly average
+        recurring = []
+        for payee, info in by_payee.items():
+            n_months = len(info["months"])
+            if n_months < 2:
+                continue
+            total_abs = abs(info["total_milliunits"])
+            monthly_avg = round(total_abs / n_months / 1000, 2)
+            # Clean category name (strip emoji prefix)
+            cat_display = info["category"].lstrip()
+            if cat_display and ord(cat_display[0]) > 127:
+                cat_display = cat_display[1:].strip()
+                # Strip subcategory group prefix if present
+                if ":" in cat_display:
+                    cat_display = cat_display.split(":", 1)[1].strip()
+
+            recurring.append({
+                "payee": payee,
+                "category": cat_display,
+                "monthly_avg": monthly_avg,
+                "months_seen": n_months,
+                "last_date": info["last_date"],
+                "total": round(total_abs / 1000, 2),
+            })
+
+        recurring.sort(key=lambda r: r["monthly_avg"], reverse=True)
+        monthly_total = round(sum(r["monthly_avg"] for r in recurring), 2)
+
+        ctx["recurring"] = recurring
+        ctx["recurring_total"] = monthly_total
+        ctx["recurring_months"] = 6
+
+    except YnabAuthError:
+        ctx["recurring_error"] = "YNAB authentication failed."
+    except YnabRateLimitError:
+        ctx["recurring_error"] = "YNAB rate limit reached."
+    except Exception as e:
+        logger.exception("YNAB recurring fetch failed")
+        ctx["recurring_error"] = f"Failed: {e}"
+
+    return templates.TemplateResponse("revenue/_ynab_recurring_partial.html", ctx)
 
 
 def _emoji_group_name(emoji: str) -> str:

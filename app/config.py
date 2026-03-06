@@ -42,6 +42,7 @@ NEWSLETTER_FILE = DATA_DIR / "newsletter-items.json"
 
 # Revenue
 REVENUE_FILE = DATA_DIR / "revenue.json"
+CLICKUP_TASK_CACHE = DATA_DIR / "clickup-task-cache.json"
 
 # YNAB
 YNAB_API_TOKEN = os.environ.get("YNAB_API_TOKEN", "")

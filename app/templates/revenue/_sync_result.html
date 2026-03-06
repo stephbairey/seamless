@@ -1,0 +1,5 @@
+{% if sync_error %}
+<span style="color: var(--danger);">{{ sync_error }}</span>
+{% else %}
+Task cache synced: {{ sync_count }} tasks ({{ sync_time[:16] | replace("T", " ") }} UTC)
+{% endif %}

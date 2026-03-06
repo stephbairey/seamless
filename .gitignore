@@ -5,4 +5,5 @@ Thumbs.db
 .idea/
 .vscode/
 secrets.env
+data/clickup-task-cache.json
 __pycache__/
