@@ -45,6 +45,7 @@ class KdpImport(BaseModel):
     record_count: int = 0
     date_range: str = ""  # "2026-01 to 2026-03"
     total_royalty: float = 0.0
+    kdp_account: str = ""  # "bairey.com" or "Lingua Ink Books"
 
 
 class RoyaltySplit(BaseModel):

@@ -460,11 +460,17 @@ async def kdp_page(request: Request):
 
 
 @router.post("/kdp/upload")
-async def kdp_upload(request: Request, file: UploadFile = File(...)):
+async def kdp_upload(
+    request: Request,
+    file: UploadFile = File(...),
+    kdp_account: str = Form(""),
+):
     ctx = _base_ctx(request, "kdp")
     try:
         content = await file.read()
-        imp, records = parse_kdp_csv(file.filename or "upload.csv", content)
+        imp, records = parse_kdp_csv(
+            file.filename or "upload.csv", content, kdp_account=kdp_account,
+        )
 
         # Duplicate check
         dupes = revenue_store.has_duplicate_records(records)
@@ -485,6 +491,41 @@ async def kdp_upload(request: Request, file: UploadFile = File(...)):
         ctx["error"] = f"Upload failed: {e}"
         ctx["records"] = []
 
+    ctx["imports"] = revenue_store.get_kdp_imports()
+    return templates.TemplateResponse("revenue/_kdp_partial.html", ctx)
+
+
+@router.post("/kdp/delete")
+async def kdp_delete(request: Request, import_id: str = Form("")):
+    """Delete a KDP import and all its records."""
+    if import_id:
+        revenue_store.remove_import(import_id)
+    ctx = _base_ctx(request, "kdp")
+    ctx["imports"] = revenue_store.get_kdp_imports()
+    return templates.TemplateResponse("revenue/kdp.html", ctx)
+
+
+@router.post("/kdp/export-range")
+async def kdp_export_range(
+    request: Request,
+    start_month: str = Form(""),
+    end_month: str = Form(""),
+):
+    """Export all KDP records in a date range as Transactions rows."""
+    ctx = _base_ctx(request, "kdp")
+    if not start_month or not end_month:
+        ctx["error"] = "Both start and end month are required."
+        ctx["imports"] = revenue_store.get_kdp_imports()
+        return templates.TemplateResponse("revenue/_kdp_partial.html", ctx)
+
+    records = revenue_store.get_kdp_records(
+        start_month=start_month, end_month=end_month,
+    )
+    tx_rows = transform_to_transactions(records)
+    ctx["tx_rows"] = tx_rows
+    ctx["tx_tsv"] = export_transactions_tsv(tx_rows)
+    ctx["records"] = records
+    ctx["export_range"] = f"{start_month} to {end_month}"
     ctx["imports"] = revenue_store.get_kdp_imports()
     return templates.TemplateResponse("revenue/_kdp_partial.html", ctx)
 

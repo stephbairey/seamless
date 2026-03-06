@@ -28,7 +28,7 @@
 
 {% if tx_rows %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-  <h3 style="font-size: 1rem; margin: 0;">Transactions ({{ tx_rows|length }} rows)</h3>
+  <h3 style="font-size: 1rem; margin: 0;">Transactions ({{ tx_rows|length }} rows){% if export_range %} <span style="font-weight: 400; font-size: 0.8rem; color: var(--text-dim);">{{ export_range }}</span>{% endif %}</h3>
   <button onclick="copyTsv()" class="btn btn-primary" style="font-size: 0.8rem;">Copy for Spreadsheet</button>
 </div>
 <pre id="tsv-data" style="display: none;">{{ tx_tsv }}</pre>

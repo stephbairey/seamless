@@ -76,7 +76,34 @@ KEEP_PCT = {
 }
 
 
-def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[KdpRecord]]:
+_FILENAME_DATE_RE = re.compile(r"-(\d{4})-(\d{2})-\d{2}-")
+
+# Authors whose KDP data comes from the bairey.com account
+_BAIREY_AUTHORS = {"maya bairey", "sulima malzin"}
+
+
+def _date_from_filename(filename: str) -> str:
+    """Extract YYYY-MM from KDP filename like
+    'KDP_Prior_Month_Royalties-2025-09-01-uuid.csv'."""
+    m = _FILENAME_DATE_RE.search(filename)
+    return f"{m.group(1)}-{m.group(2)}" if m else ""
+
+
+def _detect_kdp_account(records: list[KdpRecord]) -> str:
+    """Guess KDP account from author names in records."""
+    authors = {r.author_name.lower().strip() for r in records if r.author_name}
+    if not authors:
+        return ""
+    if authors <= _BAIREY_AUTHORS:
+        return "bairey.com"
+    if authors.isdisjoint(_BAIREY_AUTHORS):
+        return "Lingua Ink Books"
+    return ""  # mixed — shouldn't happen, but don't guess
+
+
+def parse_kdp_csv(
+    filename: str, content_bytes: bytes, kdp_account: str = "",
+) -> tuple[KdpImport, list[KdpRecord]]:
     """Parse a KDP royalty CSV. Handles three formats:
     - "Prior Month Royalties": metadata row 1 (Sales Period), headers row 2, data row 3+
     - "Combined Sales": headers row 1, data row 2+
@@ -97,12 +124,16 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
 
     lines = text.splitlines()
     if not lines:
-        return KdpImport(id=import_id, filename=filename, uploaded_at=now), []
+        return KdpImport(
+            id=import_id, filename=filename, uploaded_at=now,
+            date_range=_date_from_filename(filename),
+            kdp_account=kdp_account,
+        ), []
 
     # Auto-detect KENP daily CSV by checking headers for "KENP PAID"
     header_check = lines[0].lower()
     if "kenp paid" in header_check or "kenp read" in header_check:
-        return _parse_kenp_csv(import_id, now, filename, lines)
+        return _parse_kenp_csv(import_id, now, filename, lines, kdp_account)
 
     # Detect "Prior Month Royalties" format: row 1 starts with "Sales Period"
     metadata_date = ""
@@ -168,10 +199,18 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
         )
         records.append(record)
 
-    sorted_dates = sorted(dates_seen)
+    sorted_dates = sorted(d for d in dates_seen if d)
     date_range = ""
     if sorted_dates:
         date_range = f"{sorted_dates[0]} to {sorted_dates[-1]}" if len(sorted_dates) > 1 else sorted_dates[0]
+
+    # Fallback: extract date from filename when no rows produced dates
+    if not date_range:
+        date_range = _date_from_filename(filename)
+
+    # Auto-detect KDP account from authors if not explicitly provided
+    if not kdp_account:
+        kdp_account = _detect_kdp_account(records)
 
     imp = KdpImport(
         id=import_id,
@@ -180,12 +219,14 @@ def parse_kdp_csv(filename: str, content_bytes: bytes) -> tuple[KdpImport, list[
         record_count=len(records),
         date_range=date_range,
         total_royalty=round(total_royalty, 2),
+        kdp_account=kdp_account,
     )
     return imp, records
 
 
 def _parse_kenp_csv(
-    import_id: str, now: str, filename: str, lines: list[str]
+    import_id: str, now: str, filename: str, lines: list[str],
+    kdp_account: str = "",
 ) -> tuple[KdpImport, list[KdpRecord]]:
     """Parse a KENP daily CSV (Date, Title, Author, ASIN, Marketplace, KENP Read, KENP PAID)."""
     csv_text = "\n".join(lines)
@@ -242,6 +283,12 @@ def _parse_kenp_csv(
     if sorted_dates:
         date_range = f"{sorted_dates[0]} to {sorted_dates[-1]}" if len(sorted_dates) > 1 else sorted_dates[0]
 
+    if not date_range:
+        date_range = _date_from_filename(filename)
+
+    if not kdp_account:
+        kdp_account = _detect_kdp_account(records)
+
     imp = KdpImport(
         id=import_id,
         filename=filename,
@@ -249,6 +296,7 @@ def _parse_kenp_csv(
         record_count=len(records),
         date_range=date_range,
         total_royalty=round(total_royalty, 2),
+        kdp_account=kdp_account,
     )
     return imp, records
 

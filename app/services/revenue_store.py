@@ -52,7 +52,44 @@ class RevenueStore:
                 self._data[key] = []
         if not self._data["recurring_costs"]:
             self._data["recurring_costs"] = list(DEFAULT_COSTS)
+        self._backfill_kdp_imports()
         self._loaded = True
+
+    def _backfill_kdp_imports(self):
+        """One-time migration: add kdp_account and date_range to old imports."""
+        import re
+        date_re = re.compile(r"-(\d{4})-(\d{2})-\d{2}-")
+        # Build set of author names per import_id
+        authors_by_import: dict[str, set[str]] = {}
+        for rec in self._data.get("kdp_records", []):
+            iid = rec.get("import_id", "")
+            name = rec.get("author_name", "").lower().strip()
+            if iid and name:
+                authors_by_import.setdefault(iid, set()).add(name)
+
+        bairey_authors = {"maya bairey", "sulima malzin"}
+        dirty = False
+        for imp in self._data.get("kdp_imports", []):
+            # Backfill date_range from filename
+            if not imp.get("date_range"):
+                m = date_re.search(imp.get("filename", ""))
+                if m:
+                    imp["date_range"] = f"{m.group(1)}-{m.group(2)}"
+                    dirty = True
+            # Backfill kdp_account
+            if not imp.get("kdp_account"):
+                authors = authors_by_import.get(imp.get("id", ""), set())
+                if not authors:
+                    imp["kdp_account"] = "bairey.com"
+                    dirty = True
+                elif authors <= bairey_authors:
+                    imp["kdp_account"] = "bairey.com"
+                    dirty = True
+                elif authors.isdisjoint(bairey_authors):
+                    imp["kdp_account"] = "Lingua Ink Books"
+                    dirty = True
+        if dirty:
+            self._save()
 
     def _ensure_loaded(self):
         if not self._loaded:
@@ -78,13 +115,21 @@ class RevenueStore:
         self._ensure_loaded()
         return [KdpImport(**d) for d in self._data["kdp_imports"]]
 
-    def get_kdp_records(self, quarter: str = "", author: str = "") -> list[KdpRecord]:
-        """Filter KDP records. quarter='2026-Q1' matches months 01-03."""
+    def get_kdp_records(
+        self, quarter: str = "", author: str = "",
+        start_month: str = "", end_month: str = "",
+    ) -> list[KdpRecord]:
+        """Filter KDP records. quarter='2026-Q1' matches months 01-03.
+        start_month/end_month are YYYY-MM strings for range filtering."""
         self._ensure_loaded()
         records = [KdpRecord(**d) for d in self._data["kdp_records"]]
         if quarter:
             months = _quarter_months(quarter)
             records = [r for r in records if r.royalty_date in months]
+        if start_month:
+            records = [r for r in records if r.royalty_date >= start_month]
+        if end_month:
+            records = [r for r in records if r.royalty_date <= end_month]
         if author:
             author_lower = author.lower()
             records = [r for r in records if r.author_name.lower() == author_lower]
