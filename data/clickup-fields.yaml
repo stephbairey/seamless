@@ -33,66 +33,83 @@ custom_fields:
         id: "5018e8c5-0c2f-4f11-af92-d857b8e007c6"
         color: "#800000"
         orderindex: 0
+        rate: 0
       - name: "Lingua Ink Media"
         id: "80b8f09f-0235-49dc-9d72-a914dff7888e"
         color: "#e50000"
         orderindex: 1
+        rate: 0
       - name: "Dalton Law"
         id: "848daa77-22e1-48d1-9156-f692b966d244"
         color: "#AF7E2E"
         orderindex: 2
+        rate: 0
       - name: "Lynn Haller"
         id: "be20a38f-8990-4e37-ab2b-04a9a62c0404"
         color: "#0231E8"
         orderindex: 3
+        rate: 60
       - name: "Tomahawk Destiny"
         id: "226fe75e-8c30-4a59-ac6c-82cf375c5e55"
         color: "#02BCD4"
         orderindex: 4
+        rate: 80
       - name: "Lingua Ink Courses"
         id: "6b74f9c5-229f-4b67-bb10-9d3511304627"
         color: "#FF4081"
         orderindex: 5
+        rate: 0
       - name: "Lingua Ink Cohorts"
         id: "ea7c1965-6a37-4086-9224-72db30b70203"
         color: "#FF7FAB"
         orderindex: 6
+        rate: 0
       - name: "Daniela Morescalchi"
         id: "633e3bc7-055b-47fe-b65b-c2950b0e596e"
         color: "#E65100"
         orderindex: 7
+        rate: 0
       - name: "Sulima Malzin"
         id: "6a62e5e9-0dc5-4f5c-b11e-0fabbb917105"
         color: "#f9d900"
         orderindex: 8
+        rate: 0
       - name: "Carolyn Martin"
         id: "2c96fe38-9057-418c-bfec-4d60f919f0ff"
         color: "#ff7800"
         orderindex: 9
+        rate: 0
       - name: "Maya Bairey"
         id: "d721cedf-c9b5-4375-8bcd-1201711fe58a"
         color: "#81B1FF"
         orderindex: 10
+        rate: 0
       - name: "Personal"
         id: "72cdbc47-5044-49a8-93f0-31c26c95e469"
         color: "#b5bcc2"
         orderindex: 11
+        rate: 0
       - name: "Raging Grannies"
         id: "48dfc203-1c7a-4fbd-8d3b-4ef845159629"
         color: "#bf55ec"
         orderindex: 12
+        rate: 0
       - name: "Free Cohort"
         id: "724689ff-6931-47c1-b15b-f6b27971bc88"
         color: "#3397dd"
         orderindex: 13
+        rate: 0
       - name: "Job Search"
         id: "1be4ed5e-cf46-4a43-ac1e-f041836fa7ea"
         color: "#667684"
         orderindex: 14
+        rate: 0
       - name: "Devon Ervin"
         id: "04b61649-4b90-4525-a8fe-7b4654baf4b6"
         color: "#AF7E2E"
         orderindex: 15
+        rate: 195
+        ceiling: 1950
 
   - name: "Effort"
     field_id: "5db96854-9117-4857-8306-6f740ec31c3e"
